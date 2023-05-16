@@ -1,18 +1,14 @@
 package com.agilecheckup.dagger.module;
 
-import com.agilecheckup.dagger.component.DaggerRepositoryComponent;
+import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.QuestionService;
+import dagger.Binds;
 import dagger.Module;
-import dagger.Provides;
-
-import javax.inject.Singleton;
 
 @Module
-public class ServiceModule {
+public abstract class ServiceModule {
 
-  @Provides
-  @Singleton
-  public QuestionService provideQuestionService() {
-    return new QuestionService(DaggerRepositoryComponent.create().buildQuestionRepository());
-  }
+  @Binds
+  abstract AbstractCrudService provideQuestionService(QuestionService questionService);
+
 }

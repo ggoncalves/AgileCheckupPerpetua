@@ -1,17 +1,13 @@
 package com.agilecheckup.dagger.module;
 
+import com.agilecheckup.persistency.repository.CrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
+import dagger.Binds;
 import dagger.Module;
-import dagger.Provides;
-
-import javax.inject.Singleton;
 
 @Module
-public class RepositoryModule {
+public abstract class RepositoryModule {
 
-  @Provides
-  @Singleton
-  public QuestionRepository provideQuestionRepository() {
-    return new QuestionRepository();
-  }
+  @Binds
+  abstract CrudRepository provideQuestionRepository(QuestionRepository questionRepository);
 }
