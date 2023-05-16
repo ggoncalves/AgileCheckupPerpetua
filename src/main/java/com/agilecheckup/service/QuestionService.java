@@ -15,7 +15,8 @@ public class QuestionService extends AbstractCrudService<Question, CrudRepositor
   private QuestionRepository questionRepository;
 
   @Inject
-  public QuestionService() {
+  public QuestionService(QuestionRepository questionRepository) {
+    this.questionRepository = questionRepository;
   }
 
   public Optional<Question> create(String questionTxt, RateType rateType, String tenantId, Integer points) {
@@ -40,10 +41,6 @@ public class QuestionService extends AbstractCrudService<Question, CrudRepositor
 
   @Override
   CrudRepository<Question> getRepository() {
-    if (questionRepository == null) {
-      RepositoryComponent repositoryComponent = DaggerRepositoryComponent.create();
-      questionRepository = repositoryComponent.buildQuestionRepository();
-    }
     return questionRepository;
   }
 }
