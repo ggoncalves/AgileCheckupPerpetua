@@ -6,15 +6,17 @@ import com.agilecheckup.persistency.entity.Question;
 import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.service.QuestionService;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
+@Log4j2
 public class PerpetuaMain {
 
   private static QuestionService questionService;
 
   public static void main(String[] args) {
-    System.out.println("Perpetua ran");
+    log.info("Initializing PerpetuaMain Test");
     createQuestionTest();
     System.exit(1);
   }
