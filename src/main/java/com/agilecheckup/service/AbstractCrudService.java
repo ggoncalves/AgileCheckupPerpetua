@@ -1,13 +1,13 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.repository.CrudRepository;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 @Log4j2
-public abstract class AbstractCrudService<T, V extends CrudRepository<T>> {
+public abstract class AbstractCrudService<T, V extends AbstractCrudRepository<T>> {
 
   abstract V getRepository();
 

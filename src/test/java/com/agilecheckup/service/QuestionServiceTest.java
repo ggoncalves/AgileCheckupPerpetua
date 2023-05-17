@@ -3,31 +3,34 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.Question;
 import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.persistency.repository.QuestionRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static com.agilecheckup.util.TestObjectFactory.copyQuestionAndAddId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class QuestionServiceTest {
 
   private static final String QUESTION_ID = "1234";
 
+  @InjectMocks
+  @Spy
   private QuestionService questionService;
 
-  private QuestionRepository questionRepository = Mockito.mock(QuestionRepository.class);
+  @Mock
+  private QuestionRepository questionRepository;
 
   private Question originalQuestion = createMockedQuestion();
-
-  @BeforeEach
-  void setUp() {
-    questionService = Mockito.spy(new QuestionService(questionRepository));
-    assertNotNull(questionService);
-  }
 
   @Test
   void create() {
@@ -60,24 +63,5 @@ class QuestionServiceTest {
     assertThrows(NullPointerException.class, () -> {
       questionService.create(null, originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
     });
-  }
-
-  private Question createMockedQuestion() {
-    return Question.builder()
-        .question("question")
-        .rateType(RateType.YES_NO)
-        .tenantId("tenantId")
-        .points(5)
-        .build();
-  }
-
-  private Question copyQuestionAndAddId(Question question, String id) {
-    return Question.builder()
-        .id(id)
-        .question(question.getQuestion())
-        .rateType(question.getRateType())
-        .tenantId(question.getTenantId())
-        .points(question.getPoints())
-        .build();
   }
 }

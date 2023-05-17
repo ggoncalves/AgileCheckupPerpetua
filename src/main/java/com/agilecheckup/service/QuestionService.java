@@ -1,16 +1,14 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.dagger.component.DaggerRepositoryComponent;
-import com.agilecheckup.dagger.component.RepositoryComponent;
 import com.agilecheckup.persistency.entity.Question;
 import com.agilecheckup.persistency.entity.RateType;
-import com.agilecheckup.persistency.repository.CrudRepository;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class QuestionService extends AbstractCrudService<Question, CrudRepository<Question>> {
+public class QuestionService extends AbstractCrudService<Question, AbstractCrudRepository<Question>> {
 
   private QuestionRepository questionRepository;
 
@@ -40,7 +38,7 @@ public class QuestionService extends AbstractCrudService<Question, CrudRepositor
 
 
   @Override
-  CrudRepository<Question> getRepository() {
+  AbstractCrudRepository<Question> getRepository() {
     return questionRepository;
   }
 }

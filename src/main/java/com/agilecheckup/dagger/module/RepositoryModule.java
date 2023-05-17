@@ -1,6 +1,6 @@
 package com.agilecheckup.dagger.module;
 
-import com.agilecheckup.persistency.repository.CrudRepository;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
 import dagger.Binds;
 import dagger.Module;
@@ -9,5 +9,5 @@ import dagger.Module;
 public abstract class RepositoryModule {
 
   @Binds
-  abstract CrudRepository provideQuestionRepository(QuestionRepository questionRepository);
+  abstract AbstractCrudRepository provideQuestionRepository(QuestionRepository questionRepository);
 }
