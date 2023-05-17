@@ -2,16 +2,18 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.repository.CrudRepository;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
+@Log4j2
 public abstract class AbstractCrudService<T, V extends CrudRepository<T>> {
 
   abstract V getRepository();
 
   public Optional<T> create(T t) {
     T saved = getRepository().save(t);
-    System.out.println("Saved = " + saved);
+    log.debug("Saved " + saved);
     return Optional.of(saved);
   }
 
@@ -24,7 +26,7 @@ public abstract class AbstractCrudService<T, V extends CrudRepository<T>> {
   }
 
   public Optional<T> fetchAndCompare(String id, T t) {
-    System.out.println("Fetching: " + id);
+    log.debug("Fetching " + id);
     Optional<T> fetched = findById(id);
     assert t.equals(fetched);
     return fetched;
