@@ -1,4 +1,4 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.person;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;

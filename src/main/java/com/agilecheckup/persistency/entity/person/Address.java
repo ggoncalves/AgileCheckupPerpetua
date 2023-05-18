@@ -1,5 +1,6 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.person;
 
+import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.*;
@@ -11,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class Address extends AbstractEntity {
+public class Address extends BaseEntity {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "street")

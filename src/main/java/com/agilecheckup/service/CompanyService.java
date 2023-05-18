@@ -1,7 +1,7 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Company;
-import com.agilecheckup.persistency.entity.PersonDocumentType;
+import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.CompanyRepository;
 

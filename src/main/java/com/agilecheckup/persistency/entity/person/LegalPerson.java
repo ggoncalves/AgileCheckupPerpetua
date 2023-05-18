@@ -1,4 +1,4 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.person;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
@@ -6,15 +6,16 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class AbstractTenantableEntity extends AbstractAuditableEntity implements Tenantable {
+public class LegalPerson extends Person {
 
-  @DynamoDBAttribute(attributeName = "tenantId")
   @NonNull
-  private String tenantId;
+  @DynamoDBAttribute(attributeName = "description")
+  private String description;
 
 }

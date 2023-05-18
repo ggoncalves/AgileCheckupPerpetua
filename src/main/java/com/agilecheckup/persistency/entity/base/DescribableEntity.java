@@ -1,4 +1,4 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.base;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class AbstractDescribableEntity extends AbstractAuditableEntity implements Describable {
+public class DescribableEntity extends AuditableEntity implements Describable {
 
   @DynamoDBAttribute(attributeName = "name")
   @NonNull

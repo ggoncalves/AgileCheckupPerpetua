@@ -1,5 +1,6 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.person;
 
+import com.agilecheckup.persistency.entity.base.AuditableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -11,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class Person extends AbstractAuditableEntity {
+public class Person extends AuditableEntity {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "name")

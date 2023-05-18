@@ -1,6 +1,7 @@
 package com.agilecheckup.util;
 
 import com.agilecheckup.persistency.entity.*;
+import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 
 public class TestObjectFactory {
 

@@ -1,5 +1,6 @@
 package com.agilecheckup.persistency.entity;
 
+import com.agilecheckup.persistency.entity.base.TenantableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
@@ -13,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBTable(tableName = "Question")
-public class Question extends AbstractTenantableEntity {
+public class Question extends TenantableEntity {
 
   @DynamoDBAttribute(attributeName = "question")
   @NonNull

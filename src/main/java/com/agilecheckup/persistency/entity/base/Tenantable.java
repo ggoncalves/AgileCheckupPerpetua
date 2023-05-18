@@ -1,4 +1,4 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.base;
 
 public interface Tenantable {
 

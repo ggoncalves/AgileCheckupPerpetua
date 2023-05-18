@@ -1,5 +1,8 @@
 package com.agilecheckup.persistency.entity;
 
+import com.agilecheckup.persistency.entity.base.Tenantable;
+import com.agilecheckup.persistency.entity.person.LegalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
