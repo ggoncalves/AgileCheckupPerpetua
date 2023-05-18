@@ -1,9 +1,6 @@
 package com.agilecheckup.util;
 
-import com.agilecheckup.persistency.entity.Company;
-import com.agilecheckup.persistency.entity.PersonDocumentType;
-import com.agilecheckup.persistency.entity.Question;
-import com.agilecheckup.persistency.entity.RateType;
+import com.agilecheckup.persistency.entity.*;
 
 public class TestObjectFactory {
 
@@ -67,7 +64,69 @@ public class TestObjectFactory {
         .size(company.getSize())
         .address(company.getAddress())
         .build();
+  }
 
+  public static Department createMockedDepartment() {
+    return Department.builder()
+        .company(createMockedCompany("A company Id"))
+        .name("DepartmentName")
+        .description("Department description")
+        .tenantId("tenantId")
+        .build();
+  }
 
+  public static Department createMockedDepartmentWithDependenciesId(String companyId) {
+    return Department.builder()
+        .company(createMockedCompany(companyId))
+        .name("DepartmentName")
+        .description("Department description")
+        .tenantId("tenantId")
+        .build();
+  }
+
+  public static Department createMockedDepartment(String id) {
+    return copyDepartmentAndAddId(createMockedDepartment(), id);
+  }
+
+  public static Department copyDepartmentAndAddId(Department department, String id) {
+    return Department.builder()
+        .id(id)
+        .company(department.getCompany())
+        .name(department.getName())
+        .description(department.getDescription())
+        .tenantId(department.getTenantId())
+        .build();
+  }
+
+  public static Team createMockedTeam() {
+    return Team.builder()
+        .department(createMockedDepartment("A DepartmentId"))
+        .name("TeamName")
+        .description("Team description")
+        .tenantId("tenantId")
+        .build();
+  }
+
+  public static Team createMockedTeamWithDependenciesId(String companyId, String departmentId) {
+    return Team.builder()
+        .department(createMockedDepartment(departmentId))
+        .name("TeamName")
+        .description("Team description")
+        .tenantId("tenantId")
+        .build();
+  }
+
+  public static Team createMockedTeam(String id) {
+    return copyTeamAndAddId(createMockedTeam(), id);
+  }
+
+  public static Team copyTeamAndAddId(Team team, String id) {
+    return Team.builder()
+        .id(id)
+        .department(team.getDepartment())
+        .name(team.getName())
+        .description(team.getDescription())
+        .tenantId(team.getTenantId())
+        .build();
   }
 }

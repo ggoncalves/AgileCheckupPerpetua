@@ -1,8 +1,6 @@
 package com.agilecheckup.dagger.module;
 
-import com.agilecheckup.service.AbstractCrudService;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.*;
 import dagger.Binds;
 import dagger.Module;
 
@@ -14,5 +12,11 @@ public abstract class ServiceModule {
 
   @Binds
   abstract AbstractCrudService provideCompanyService(CompanyService companyService);
+
+  @Binds
+  abstract AbstractCrudService provideDepartmentService(DepartmentService departmentService);
+
+  @Binds
+  abstract AbstractCrudService provideTeamService(TeamService teamService);
 
 }
