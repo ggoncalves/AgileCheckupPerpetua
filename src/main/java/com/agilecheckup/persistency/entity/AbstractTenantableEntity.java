@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class AbstractTenantableEntity extends AbstractEntity implements Tenantable {
+public class AbstractTenantableEntity extends AbstractAuditableEntity implements Tenantable {
 
   @DynamoDBAttribute(attributeName = "tenantId")
   @NonNull

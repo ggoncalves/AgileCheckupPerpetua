@@ -30,7 +30,7 @@ class QuestionServiceTest {
   @Mock
   private QuestionRepository questionRepository;
 
-  private Question originalQuestion = createMockedQuestion();
+  private final Question originalQuestion = createMockedQuestion();
 
   @Test
   void create() {
@@ -52,16 +52,12 @@ class QuestionServiceTest {
   @Test
   void create_NullQuestion() {
     // When
-    assertThrows(NullPointerException.class, () -> {
-      questionService.create(null, originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
-    });
+    assertThrows(NullPointerException.class, () -> questionService.create(null, originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints()));
   }
 
   @Test
   void create_NullPoints() {
     // When
-    assertThrows(NullPointerException.class, () -> {
-      questionService.create(null, originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
-    });
+    assertThrows(NullPointerException.class, () -> questionService.create(originalQuestion.getQuestion(), originalQuestion.getRateType(), originalQuestion.getTenantId(), null));
   }
 }

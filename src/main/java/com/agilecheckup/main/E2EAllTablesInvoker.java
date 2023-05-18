@@ -1,10 +1,10 @@
 package com.agilecheckup.main;
 
 import com.agilecheckup.main.runner.CommandTableRunner;
+import com.agilecheckup.main.runner.CompanyTableRunner;
 import com.agilecheckup.main.runner.QuestionTableRunner;
 import com.google.common.collect.ImmutableSet;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class E2EAllTablesInvoker {
@@ -20,10 +20,17 @@ public class E2EAllTablesInvoker {
   }
 
   void initTableRunnerSet() {
-    tableRunnerSet = ImmutableSet.of(createQuestionTableRunner(true));
+    tableRunnerSet = ImmutableSet.of(
+        createQuestionTableRunner(true),
+        createCompanyTableRunner(true)
+    );
   }
 
   CommandTableRunner createQuestionTableRunner(final boolean mustDelete) {
     return new QuestionTableRunner(mustDelete);
+  }
+
+  CommandTableRunner createCompanyTableRunner(final boolean mustDelete) {
+    return new CompanyTableRunner(mustDelete);
   }
 }

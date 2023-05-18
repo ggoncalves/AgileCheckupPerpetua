@@ -6,19 +6,16 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class AbstractDescribableEntity extends AbstractAuditableEntity implements Describable {
+public class LegalPerson extends Person {
 
-  @DynamoDBAttribute(attributeName = "name")
   @NonNull
-  private String name;
-
   @DynamoDBAttribute(attributeName = "description")
-  @NonNull
   private String description;
 
 }
