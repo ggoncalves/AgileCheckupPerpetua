@@ -22,7 +22,7 @@ public abstract class AbstractCrudService<T, V extends AbstractCrudRepository<T>
   }
 
   public Optional<T> findById(String id) {
-    return Optional.of(getRepository().findById(id));
+    return Optional.ofNullable(getRepository().findById(id));
   }
 
   public Optional<T> fetchAndCompare(String id, T t) {

@@ -19,4 +19,10 @@ public abstract class ServiceModule {
   @Binds
   abstract AbstractCrudService provideTeamService(TeamService teamService);
 
+  @Binds
+  abstract AbstractCrudService providePerformanceCycleService(PerformanceCycleService performanceCycleService);
+
+  @Binds
+  abstract AbstractCrudService provideAssessmentMatrix(AssessmentMatrixService assessmentMatrixService);
+
 }

@@ -1,10 +1,7 @@
 package com.agilecheckup.dagger.component;
 
 import com.agilecheckup.dagger.module.ServiceModule;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.DepartmentService;
-import com.agilecheckup.service.QuestionService;
-import com.agilecheckup.service.TeamService;
+import com.agilecheckup.service.*;
 import dagger.Component;
 
 import javax.inject.Singleton;
@@ -19,4 +16,8 @@ public interface ServiceComponent {
   DepartmentService buildDepartmentService();
 
   TeamService buildTeamService();
+
+  PerformanceCycleService buildPerformanceCycleService();
+
+  AssessmentMatrixService buildAssessmentMatrixService();
 }

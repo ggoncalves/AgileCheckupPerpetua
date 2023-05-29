@@ -1,7 +1,14 @@
 package com.agilecheckup.util;
 
 import com.agilecheckup.persistency.entity.*;
+import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import lombok.NonNull;
+import org.apache.commons.lang3.SerializationUtils;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TestObjectFactory {
 
@@ -129,5 +136,82 @@ public class TestObjectFactory {
         .description(team.getDescription())
         .tenantId(team.getTenantId())
         .build();
+  }
+
+  public static PerformanceCycle createMockedPerformanceCycleWithDependenciesId(String companyId) {
+    return PerformanceCycle.builder()
+        .name("PerformanceCycleName")
+        .description("PerformanceCycle description")
+        .tenantId("tenantId")
+        .company(createMockedCompany(companyId))
+        .isActive(true)
+        .isTimeSensitive(false)
+        .build();
+  }
+
+  public static AssessmentMatrix createMockedAssessmentMatrix(String dependenciesId, String id, Set<Pillar> pillars) {
+    return cloneWithId(createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillars), id);
+  }
+
+  public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Set<Pillar> pillars) {
+    return AssessmentMatrix.builder()
+        .name("AssessmentMatrixName")
+        .description("AssessmentMatrix description")
+        .tenantId("tenantId")
+        .performanceCycle(createMockedPerformanceCycle(dependenciesId, dependenciesId))
+        .pillars(pillars)
+        .build();
+  }
+
+  public static PerformanceCycle createMockedPerformanceCycle(String companyId, String id) {
+    return cloneWithId(createMockedPerformanceCycleWithDependenciesId(companyId), id);
+  }
+
+  public static Pillar createMockedPillar(@NonNull String name, @NonNull String description, Set<Category> categories) {
+    return Pillar.builder()
+        .name(name)
+        .description(description)
+        .categories(categories)
+        .build();
+  }
+
+  public static Set<Pillar> createMockedPillarSet(Integer pillarSize, Integer categorySize, String pillarPrefix, String categoryPrefix) {
+    return IntStream.range(1, pillarSize + 1)
+        .mapToObj(i -> createMockedPillar(
+            strName(pillarPrefix, i),
+            strDescription(pillarPrefix, i),
+            IntStream.range(1, categorySize + 1)
+                .mapToObj(ci -> createMockedCategory(strName(categoryPrefix + i, ci), strDescription(categoryPrefix + i, ci)))
+                .collect(Collectors.toSet())
+        )).collect(Collectors.toSet());
+  }
+
+  public static Set<Category> createMockedCategorySet(Integer size, String prefix) {
+    return IntStream.range(1, size + 1).mapToObj(i -> createMockedCategory(strName(prefix, i), strDescription(prefix, i))).collect(Collectors.toSet());
+  }
+
+  private static String strName(String prefix, Integer i) {
+    return str(prefix + " Name - ", i);
+  }
+
+  private static String strDescription(String prefix, Integer i) {
+    return str(prefix + " Description - ", i);
+  }
+
+  private static String str(String prefix, Integer i) {
+    return new StringBuilder().append(prefix).append(" ").append(i).toString();
+  }
+
+  public static Category createMockedCategory(@NonNull String name, @NonNull String description) {
+    return Category.builder()
+        .name(name)
+        .description(description)
+        .build();
+  }
+
+  public static <T extends BaseEntity> T cloneWithId(T t, String id) {
+    T clonedT = SerializationUtils.clone(t);
+    clonedT.setId(id);
+    return clonedT;
   }
 }

@@ -19,25 +19,13 @@ public class E2EAllTablesInvoker {
 
   void initTableRunnerSet() {
     tableRunnerSet = ImmutableSet.of(
-        createQuestionTableRunner(true),
-        createCompanyTableRunner(true),
-        createDepartmentTableRunner(true),
-        createTeamTableRunner(true)
+        new QuestionTableRunner(true),
+        new CompanyTableRunner(true),
+        new DepartmentTableRunner(true),
+        new TeamTableRunner(true),
+        new PerformanceCycleTableRunner(true),
+        new AssessmentMatrixTableRunner(true)
     );
   }
 
-  CommandTableRunner createQuestionTableRunner(final boolean mustDelete) {
-    return new QuestionTableRunner(mustDelete);
-  }
-
-  CommandTableRunner createCompanyTableRunner(final boolean mustDelete) {
-    return new CompanyTableRunner(mustDelete);
-  }
-
-  CommandTableRunner createDepartmentTableRunner(final boolean mustDelete) {
-    return new DepartmentTableRunner(mustDelete);
-  }
-  CommandTableRunner createTeamTableRunner(final boolean mustDelete) {
-    return new TeamTableRunner(mustDelete);
-  }
 }
