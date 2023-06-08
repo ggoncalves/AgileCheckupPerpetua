@@ -2,8 +2,10 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,13 +17,12 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class PerformanceCycleServiceTest {
-
-  private static final String PerformanceCycle_ID = "1234";
+class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
 
   @InjectMocks
   @Spy
@@ -33,16 +34,22 @@ class PerformanceCycleServiceTest {
   @Mock
   private CompanyService mockCompanyService;
 
-  private final PerformanceCycle originalPerformanceCycle = createMockedPerformanceCycleWithDependenciesId(GENERIC_ID_1234);
+  private static PerformanceCycle originalPerformanceCycle;
 
-  private final Company company = createMockedCompany(GENERIC_ID_1234);
+  private final Company company = createMockedCompany(DEFAULT_ID);
+
+  @BeforeAll
+  static void beforeAll() {
+    originalPerformanceCycle = createMockedPerformanceCycleWithDependenciesId(DEFAULT_ID);
+    originalPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
+  }
 
   @Test
   void create() {
-    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, PerformanceCycle_ID);
+    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedPerformanceCycle).when(mockPerformanceCycleRepository).save(originalPerformanceCycle);
+    doReturn(savedPerformanceCycle).when(mockPerformanceCycleRepository).save(any());
     doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompany().getId());
 
     // When
@@ -72,7 +79,7 @@ class PerformanceCycleServiceTest {
 
   @Test
   void createInvalidCompanyId() {
-    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, PerformanceCycle_ID);
+    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
 
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockCompanyService).findById(originalPerformanceCycle.getCompany().getId());
@@ -103,5 +110,10 @@ class PerformanceCycleServiceTest {
           originalPerformanceCycle.getIsTimeSensitive()
       );
     });
+  }
+
+  @Override
+  AbstractCrudService<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> getCrudServiceSpy() {
+    return performanceCycleService;
   }
 }

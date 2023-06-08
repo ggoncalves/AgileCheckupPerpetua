@@ -24,13 +24,18 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
                                            Set<Pillar> pillars) {
-    return super.create(AssessmentMatrix.builder()
+    return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillars));
+  }
+
+  private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
+                                                  Set<Pillar> pillars) {
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .performanceCycle(getPerformanceCycle(performanceCycleId))
-        .pillars(pillars)
-        .build());
+        .pillars(pillars).build();
+    return setFixedIdIfConfigured(assessmentMatrix);
   }
 
   private PerformanceCycle getPerformanceCycle(String performanceCycleId) {

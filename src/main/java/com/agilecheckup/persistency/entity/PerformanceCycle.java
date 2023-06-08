@@ -38,4 +38,8 @@ public class PerformanceCycle extends TenantDescribableEntity {
 
   @DynamoDBAttribute(attributeName = "endDate")
   private Date endDate;
+
+  // TODO: Add the field below
+//  @DynamoDBAttribute(attributeName = "consulting")
+//  private Person consulting;
 }

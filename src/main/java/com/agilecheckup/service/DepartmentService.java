@@ -22,13 +22,18 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
   }
 
   public Optional<Department> create(String name, String description, String tenantId, String companyId) {
+    return super.create(createDepartment(name, description, tenantId, companyId));
+  }
+
+  private Department createDepartment(String name, String description, String tenantId, String companyId) {
     Optional<Company> company = companyService.findById(companyId);
-    return super.create(Department.builder()
+    Department department = Department.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .company(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "Department", "Company")))
-        .build());
+        .build();
+    return setFixedIdIfConfigured(department);
   }
 
   @Override

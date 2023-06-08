@@ -1,6 +1,7 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.CompanyRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,13 +15,12 @@ import java.util.Optional;
 import static com.agilecheckup.util.TestObjectFactory.copyCompanyAndAddId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyServiceTest {
-
-  private static final String COMPANY_ID = "1234";
+class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRepository<Company>> {
 
   @InjectMocks
   @Spy
@@ -29,14 +29,14 @@ class CompanyServiceTest {
   @Mock
   private CompanyRepository companyRepository;
 
-  private Company originalCompany = createMockedCompany();
+  private Company originalCompany = createMockedCompany(DEFAULT_ID);
 
   @Test
   void create() {
-    Company savedCompany = copyCompanyAndAddId(originalCompany, COMPANY_ID);
+    Company savedCompany = copyCompanyAndAddId(originalCompany, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedCompany).when(companyRepository).save(originalCompany);
+    doReturn(savedCompany).when(companyRepository).save(any());
 
     // When
     Optional<Company> companyOptional = companyService.create(
@@ -65,5 +65,10 @@ class CompanyServiceTest {
           originalCompany.getDescription(),
           originalCompany.getTenantId());
     });
+  }
+
+  @Override
+  AbstractCrudService<Company, AbstractCrudRepository<Company>> getCrudServiceSpy() {
+    return companyService;
   }
 }

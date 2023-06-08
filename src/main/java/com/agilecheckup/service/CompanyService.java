@@ -18,14 +18,18 @@ public class CompanyService extends AbstractCrudService<Company, AbstractCrudRep
   }
 
   public Optional<Company> create(String documentNumber, String name, String email, String description, String tenantId) {
-    return super.create(Company.builder()
+    return super.create(createCompany(documentNumber, name, email, description, tenantId));
+  }
+
+  private Company createCompany(String documentNumber, String name, String email, String description, String tenantId) {
+    Company company = Company.builder()
         .personDocumentType(PersonDocumentType.CNPJ)
         .documentNumber(documentNumber)
         .name(name)
         .email(email)
         .description(description)
-        .tenantId(tenantId)
-        .build());
+        .tenantId(tenantId).build();
+    return setFixedIdIfConfigured(company);
   }
 
   @Override

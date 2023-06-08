@@ -23,15 +23,21 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
 
   public Optional<PerformanceCycle> create(String name, String description, String tenantId, String companyId,
                                            Boolean isActive, Boolean isTimeSensitive) {
+    return super.create(createPerformanceCycle(name, description, tenantId, companyId, isActive, isTimeSensitive));
+  }
+
+  private PerformanceCycle createPerformanceCycle(String name, String description, String tenantId, String companyId,
+                                                  Boolean isActive, Boolean isTimeSensitive) {
     Optional<Company> company = companyService.findById(companyId);
-    return super.create(PerformanceCycle.builder()
+    PerformanceCycle performanceCycle = PerformanceCycle.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .company(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")))
         .isActive(isActive)
         .isTimeSensitive(isTimeSensitive)
-        .build());
+        .build();
+    return setFixedIdIfConfigured(performanceCycle);
   }
 
   @Override

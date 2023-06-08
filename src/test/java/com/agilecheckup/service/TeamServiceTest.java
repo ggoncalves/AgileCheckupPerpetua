@@ -2,8 +2,10 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Department;
 import com.agilecheckup.persistency.entity.Team;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,13 +17,12 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class TeamServiceTest {
-
-  private static final String TEAM_ID = "1234";
+class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
 
   @InjectMocks
   @Spy
@@ -34,16 +35,22 @@ class TeamServiceTest {
   @Mock
   private DepartmentService mockDepartmentService;
 
-  private final Team originalTeam = createMockedTeamWithDependenciesId(GENERIC_ID_1234, GENERIC_ID_1234);
+  private Team originalTeam;
 
   private final Department department = createMockedDepartment(GENERIC_ID_1234);
 
+  @BeforeEach
+  void setUpBefore() {
+    originalTeam = createMockedTeamWithDependenciesId(GENERIC_ID_1234, GENERIC_ID_1234);
+    originalTeam = cloneWithId(originalTeam, DEFAULT_ID);
+  }
+
   @Test
   void create() {
-    Team savedTeam = copyTeamAndAddId(originalTeam, TEAM_ID);
+    Team savedTeam = copyTeamAndAddId(originalTeam, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedTeam).when(mockedTeamRepository).save(originalTeam);
+    doReturn(savedTeam).when(mockedTeamRepository).save(any());
     doReturn(Optional.of(department)).when(mockDepartmentService).findById(originalTeam.getDepartment().getId());
 
     // When
@@ -63,7 +70,7 @@ class TeamServiceTest {
 
   @Test
   void createInvalidCompanyId() {
-    Team savedTeam = copyTeamAndAddId(originalTeam, TEAM_ID);
+    Team savedTeam = copyTeamAndAddId(originalTeam, DEFAULT_ID);
 
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockDepartmentService).findById(originalTeam.getDepartment().getId());
@@ -81,7 +88,7 @@ class TeamServiceTest {
 
   @Test
   void createInvalidDepartmentId() {
-    Team savedTeam = copyTeamAndAddId(originalTeam, TEAM_ID);
+    Team savedTeam = copyTeamAndAddId(originalTeam, DEFAULT_ID);
 
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockDepartmentService).findById(originalTeam.getDepartment().getId());
@@ -106,5 +113,10 @@ class TeamServiceTest {
         originalTeam.getTenantId(),
         originalTeam.getDepartment().getId()
     ));
+  }
+
+  @Override
+  AbstractCrudService<Team, AbstractCrudRepository<Team>> getCrudServiceSpy() {
+    return teamService;
   }
 }

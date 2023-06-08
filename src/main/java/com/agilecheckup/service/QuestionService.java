@@ -18,23 +18,18 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   }
 
   public Optional<Question> create(String questionTxt, RateType rateType, String tenantId, Integer points) {
-    return super.create(Question.builder()
+    return super.create(createQuestion(questionTxt, rateType, tenantId, points));
+  }
+
+  private Question createQuestion(String questionTxt, RateType rateType, String tenantId, Integer points) {
+    Question question = Question.builder()
         .question(questionTxt)
         .rateType(rateType)
         .tenantId(tenantId)
         .points(points)
-        .build());
+        .build();
+    return setFixedIdIfConfigured(question);
   }
-
-//  private ImpactLevel getImpactLevelById(String impactLevelId) {
-//    return getById(impactLevelId, impactLevelService, "impactLevelId");
-//  }
-//
-//  private Principle getPrincipleById(String principleId) {
-//    return getById(principleId, principleService, "principalId");
-//  }
-
-//s
 
 
   @Override

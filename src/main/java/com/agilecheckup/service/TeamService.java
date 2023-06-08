@@ -21,13 +21,18 @@ public class TeamService extends AbstractCrudService<Team, AbstractCrudRepositor
   }
 
   public Optional<Team> create(String name, String description, String tenantId, String departmentId) {
+    return super.create(createTeam(name, description, tenantId, departmentId));
+  }
+
+  private Team createTeam(String name, String description, String tenantId, String departmentId) {
     Optional<Department> department = departmentService.findById(departmentId);
-    return super.create(Team.builder()
+    Team team = Team.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .department(department.orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department")))
-        .build());
+        .build();
+    return setFixedIdIfConfigured(team);
   }
 
   @Override

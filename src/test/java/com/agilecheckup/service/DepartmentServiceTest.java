@@ -2,8 +2,10 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.Department;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.DepartmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,13 +17,12 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DepartmentServiceTest {
-
-  private static final String DEPARTMENT_ID = "1234";
+class DepartmentServiceTest extends AbstractCrudServiceTest<Department, AbstractCrudRepository<Department>> {
 
   @InjectMocks
   @Spy
@@ -33,16 +34,22 @@ class DepartmentServiceTest {
   @Mock
   private CompanyService mockCompanyService;
 
-  private final Department originalDepartment = createMockedDepartmentWithDependenciesId(GENERIC_ID_1234);
+  private static Department originalDepartment;
 
-  private final Company company = createMockedCompany(GENERIC_ID_1234);
+  private final Company company = createMockedCompany(DEFAULT_ID);
+
+  @BeforeAll
+  static void beforeAll() {
+     originalDepartment = createMockedDepartmentWithDependenciesId(DEFAULT_ID);
+     originalDepartment = cloneWithId(originalDepartment, DEFAULT_ID);
+  }
 
   @Test
   void create() {
-    Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEPARTMENT_ID);
+    Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedDepartment).when(mockDepartmentRepository).save(originalDepartment);
+    doReturn(savedDepartment).when(mockDepartmentRepository).save(any());
     doReturn(Optional.of(company)).when(mockCompanyService).findById(originalDepartment.getCompany().getId());
 
     // When
@@ -63,7 +70,7 @@ class DepartmentServiceTest {
 
   @Test
   void createInvalidCompanyId() {
-    Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEPARTMENT_ID);
+    Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEFAULT_ID);
 
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockCompanyService).findById(originalDepartment.getCompany().getId());
@@ -90,5 +97,10 @@ class DepartmentServiceTest {
           originalDepartment.getCompany().getId()
       );
     });
+  }
+
+  @Override
+  AbstractCrudService<Department, AbstractCrudRepository<Department>> getCrudServiceSpy() {
+    return departmentService;
   }
 }

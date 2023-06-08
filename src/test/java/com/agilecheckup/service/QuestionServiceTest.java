@@ -2,7 +2,9 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.Question;
 import com.agilecheckup.persistency.entity.RateType;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,13 +17,12 @@ import java.util.Optional;
 import static com.agilecheckup.util.TestObjectFactory.copyQuestionAndAddId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceTest {
-
-  private static final String QUESTION_ID = "1234";
+class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrudRepository<Question>> {
 
   @InjectMocks
   @Spy
@@ -30,14 +31,19 @@ class QuestionServiceTest {
   @Mock
   private QuestionRepository questionRepository;
 
-  private final Question originalQuestion = createMockedQuestion();
+  private Question originalQuestion;
+
+  @BeforeEach
+  void setUpBefore() {
+    originalQuestion = createMockedQuestion(DEFAULT_ID);
+  }
 
   @Test
   void create() {
-    Question savedQuestion = copyQuestionAndAddId(originalQuestion, QUESTION_ID);
+    Question savedQuestion = copyQuestionAndAddId(originalQuestion, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedQuestion).when(questionRepository).save(originalQuestion);
+    doReturn(savedQuestion).when(questionRepository).save(any());
 
     // When
     Optional<Question> questionOptional = questionService.create(originalQuestion.getQuestion(), originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
@@ -59,5 +65,10 @@ class QuestionServiceTest {
   void create_NullPoints() {
     // When
     assertThrows(NullPointerException.class, () -> questionService.create(originalQuestion.getQuestion(), originalQuestion.getRateType(), originalQuestion.getTenantId(), null));
+  }
+
+  @Override
+  AbstractCrudService<Question, AbstractCrudRepository<Question>> getCrudServiceSpy() {
+    return questionService;
   }
 }
