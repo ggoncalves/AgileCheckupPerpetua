@@ -8,11 +8,13 @@ import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.CompanyService;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public class CompanyTableRunner extends AbstractCommandRunner<Company> {
+public class CompanyTableRunner extends AbstractEntityCrudRunner<Company> {
 
   private CompanyService companyService;
 
@@ -21,8 +23,10 @@ public class CompanyTableRunner extends AbstractCommandRunner<Company> {
   }
 
   @Override
-  protected Supplier<Optional<Company>> getCreateSupplier() {
-    return () -> getCompanyService().create("0001", "CompanyName", "company@email.com", "Company Description", "Another TenantId");
+  protected Collection<Supplier<Optional<Company>>> getCreateSupplier() {
+    Collection<Supplier<Optional<Company>>> collection = new ArrayList<>();
+    collection.add(() -> getCompanyService().create("0001", "CompanyName", "company@email.com", "Company Description", "Another TenantId"));
+    return collection;
   }
 
   @Override

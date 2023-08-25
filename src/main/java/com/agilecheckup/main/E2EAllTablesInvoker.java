@@ -7,14 +7,14 @@ import java.util.Set;
 
 public class E2EAllTablesInvoker {
 
-  private Set<CommandTableRunner> tableRunnerSet;
+  private Set<CrudRunner> tableRunnerSet;
 
   E2EAllTablesInvoker() {
     initTableRunnerSet();
   }
 
   protected void invoke() {
-    tableRunnerSet.forEach(CommandTableRunner::run);
+    tableRunnerSet.forEach(CrudRunner::run);
   }
 
   void initTableRunnerSet() {

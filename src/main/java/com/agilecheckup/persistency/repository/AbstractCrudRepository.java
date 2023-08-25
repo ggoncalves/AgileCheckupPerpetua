@@ -8,10 +8,12 @@ import com.google.common.annotations.VisibleForTesting;
 
 public abstract class AbstractCrudRepository<T>{
 
-  private final DynamoDBMapper dynamoDBMapper;
+  protected final DynamoDBMapper dynamoDBMapper;
 
   private final Class<T> clazz;
 
+
+  // TODO :See ChatGPT prompt https://chat.openai.com/c/e0e78642-75b6-490f-bd7b-c2cae182be95
   public AbstractCrudRepository(Class<T> clazz) {
     this(clazz, DaggerAwsConfigComponent.create().buildDynamoDbMapper());
   }

@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
+@ToString(callSuper=true, includeFieldNames=true)
 public class TenantableEntity extends AuditableEntity implements Tenantable {
 
   @DynamoDBAttribute(attributeName = "tenantId")

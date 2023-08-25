@@ -57,7 +57,7 @@ abstract class AbstractRepositoryTest<T> {
 
     // Then
     verify(getRepository()).findById(GENERIC_ID_1234);
-    verify(dynamoDBMapperMock).load(mockedT.getClass(), GENERIC_ID_1234);
+    verify(dynamoDBMapperMock).load(argThat(arg -> arg.isInstance(mockedT)), eq(GENERIC_ID_1234));
   }
 
   @Test
@@ -67,7 +67,7 @@ abstract class AbstractRepositoryTest<T> {
 
     // Then
     verify(getRepository()).findAll();
-    verify(dynamoDBMapperMock).scan(eq(mockedT.getClass()), any(DynamoDBScanExpression.class));
+    verify(dynamoDBMapperMock).scan(argThat(arg -> arg.isInstance(mockedT)), any(DynamoDBScanExpression.class));
   }
 
   abstract AbstractCrudRepository getRepository();

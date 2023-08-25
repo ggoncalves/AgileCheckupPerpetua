@@ -8,11 +8,13 @@ import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.PerformanceCycleService;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public class PerformanceCycleTableRunner extends AbstractCommandRunner<PerformanceCycle> {
+public class PerformanceCycleTableRunner extends AbstractEntityCrudRunner<PerformanceCycle> {
 
   private PerformanceCycleService performanceCycleService;
 
@@ -21,15 +23,17 @@ public class PerformanceCycleTableRunner extends AbstractCommandRunner<Performan
   }
 
   @Override
-  protected Supplier<Optional<PerformanceCycle>> getCreateSupplier() {
-    return () -> getPerformanceCycleService().create(
+  protected Collection<Supplier<Optional<PerformanceCycle>>> getCreateSupplier() {
+    Collection<Supplier<Optional<PerformanceCycle>>> collection = new ArrayList<>();
+    collection.add(() -> getPerformanceCycleService().create(
         "PerformanceCycleName",
         "PerformanceCycle Description",
         "Another TenantId",
         "19bcdfcb-9162-4a0b-a5c3-c034702d0961",
         true,
         false
-    );
+    ));
+    return collection;
   }
 
   @Override

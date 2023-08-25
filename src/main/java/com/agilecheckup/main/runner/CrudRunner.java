@@ -1,6 +1,6 @@
 package com.agilecheckup.main.runner;
 
-public interface CommandTableRunner {
+public interface CrudRunner {
 
   void run();
 }

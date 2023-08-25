@@ -11,12 +11,14 @@ import com.agilecheckup.service.AssessmentMatrixService;
 import com.google.common.collect.ImmutableSet;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
 @Log4j2
-public class AssessmentMatrixTableRunner extends AbstractCommandRunner<AssessmentMatrix> {
+public class AssessmentMatrixTableRunner extends AbstractEntityCrudRunner<AssessmentMatrix> {
 
   private AssessmentMatrixService assessmentMatrixService;
 
@@ -25,7 +27,7 @@ public class AssessmentMatrixTableRunner extends AbstractCommandRunner<Assessmen
   }
 
   @Override
-  protected Supplier<Optional<AssessmentMatrix>> getCreateSupplier() {
+  protected Collection<Supplier<Optional<AssessmentMatrix>>> getCreateSupplier() {
     Category c1 = Category.builder()
         .name("Categoria de Nome 1")
         .description("Categoria de Descrição 1")
@@ -64,13 +66,15 @@ public class AssessmentMatrixTableRunner extends AbstractCommandRunner<Assessmen
 
     Set<Pillar> pillars = ImmutableSet.of(p1, p2);
 
-    return () -> getAssessmentMatrixService().create(
+    Collection<Supplier<Optional<AssessmentMatrix>>> collection = new ArrayList<>();
+    collection.add(() -> getAssessmentMatrixService().create(
         "AssessmentMatrixName",
         "AssessmentMatrix Description",
         "Another TenantId",
         "19bcdfcb-9162-4a0b-a5c3-c034702d0961",
         pillars
-    );
+    ));
+    return collection;
   }
 
   @Override

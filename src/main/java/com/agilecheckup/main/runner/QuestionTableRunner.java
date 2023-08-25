@@ -9,11 +9,13 @@ import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.QuestionService;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public class QuestionTableRunner extends AbstractCommandRunner<Question> {
+ public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
 
   private QuestionService questionService;
 
@@ -22,9 +24,12 @@ public class QuestionTableRunner extends AbstractCommandRunner<Question> {
   }
 
   @Override
-  protected Supplier<Optional<Question>> getCreateSupplier() {
-    return () -> getQuestionService().create("Pergunta oficial", RateType.STAR_THREE, "OrinnovaSuper",
-        15);
+  protected Collection<Supplier<Optional<Question>>> getCreateSupplier() {
+    Collection<Supplier<Optional<Question>>> collection = new ArrayList<>();
+    collection.add(() -> getQuestionService().create("Pergunta oficial", RateType.STAR_THREE, "OrinnovaSuper",
+        15
+    ));
+    return collection;
   }
 
   @Override

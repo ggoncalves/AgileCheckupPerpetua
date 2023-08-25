@@ -8,11 +8,13 @@ import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.DepartmentService;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public class DepartmentTableRunner extends AbstractCommandRunner<Department> {
+public class DepartmentTableRunner extends AbstractEntityCrudRunner<Department> {
 
   private DepartmentService departmentService;
 
@@ -21,8 +23,10 @@ public class DepartmentTableRunner extends AbstractCommandRunner<Department> {
   }
 
   @Override
-  protected Supplier<Optional<Department>> getCreateSupplier() {
-    return () -> getDepartmentService().create("DepartmentName", "Department Description", "Another TenantId", "19bcdfcb-9162-4a0b-a5c3-c034702d0961");
+  protected Collection<Supplier<Optional<Department>>> getCreateSupplier() {
+    Collection<Supplier<Optional<Department>>> collection = new ArrayList<>();
+    collection.add(() -> getDepartmentService().create("DepartmentName", "Department Description", "Another TenantId", "19bcdfcb-9162-4a0b-a5c3-c034702d0961"));
+    return collection;
   }
 
   @Override

@@ -8,11 +8,13 @@ import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.TeamService;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public class TeamTableRunner extends AbstractCommandRunner<Team> {
+public class TeamTableRunner extends AbstractEntityCrudRunner<Team> {
 
   private TeamService teamService;
 
@@ -21,10 +23,12 @@ public class TeamTableRunner extends AbstractCommandRunner<Team> {
   }
 
   @Override
-  protected Supplier<Optional<Team>> getCreateSupplier() {
+  protected Collection<Supplier<Optional<Team>>> getCreateSupplier() {
     // Must be aware that, the id must be valid.
     // TODO: This test should be changed to allow create a known departmentId at first.
-    return () -> getTeamService().create("TeamName", "Team Description", "Another TenantId", "8db3abd1-d1a8-46e4-8d87-1dcce1825e51");
+    Collection<Supplier<Optional<Team>>> collection = new ArrayList<>();
+    collection.add(() -> getTeamService().create("TeamName", "Team Description", "Another TenantId", "8db3abd1-d1a8-46e4-8d87-1dcce1825e51"));
+    return collection;
   }
 
   @Override
