@@ -1,6 +1,7 @@
 package com.agilecheckup.main.runner;
 
 import com.agilecheckup.persistency.entity.base.AuditableEntity;
+import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import lombok.extern.log4j.Log4j2;
 
@@ -9,7 +10,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Log4j2
-public abstract class AbstractEntityCrudRunner<T extends AuditableEntity> extends AbstractCrudRunner<T> {
+public abstract class AbstractEntityCrudRunner<T extends BaseEntity> extends AbstractCrudRunner<T> {
 
   protected AbstractEntityCrudRunner(boolean mustDelete) {
     super(mustDelete);
@@ -42,7 +43,6 @@ public abstract class AbstractEntityCrudRunner<T extends AuditableEntity> extend
       log.info("Fetching: " + entity.getId() + " from " + entity.getClass());
       T fetchedEntity = getCrudService().findById(entity.getId()).get();
       log.info("IsEquals = " + entity.equals(fetchedEntity));
-      log.info("Is Date Okay? " + entity.getCreatedDate() + " and " + fetchedEntity.getLastUpdatedDate());
       verifySavedEntity(entity, fetchedEntity);
     });
   }

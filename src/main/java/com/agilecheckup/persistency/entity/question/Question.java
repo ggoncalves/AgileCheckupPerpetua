@@ -1,5 +1,6 @@
-package com.agilecheckup.persistency.entity;
+package com.agilecheckup.persistency.entity.question;
 
+import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.persistency.entity.base.TenantableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel;

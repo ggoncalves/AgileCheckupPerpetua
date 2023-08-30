@@ -1,7 +1,7 @@
 package com.agilecheckup.persistency.repository;
 
 
-import com.agilecheckup.persistency.entity.Question;
+import com.agilecheckup.persistency.entity.question.Question;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -18,5 +18,4 @@ public class QuestionRepository extends AbstractCrudRepository<Question> {
   public QuestionRepository(DynamoDBMapper dynamoDBMapper) {
     super(Question.class, dynamoDBMapper);
   }
-
 }

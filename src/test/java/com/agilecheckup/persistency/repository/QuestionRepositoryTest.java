@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.repository;
 
-import com.agilecheckup.persistency.entity.Question;
+import com.agilecheckup.persistency.entity.question.Question;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;

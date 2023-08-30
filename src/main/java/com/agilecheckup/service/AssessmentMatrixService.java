@@ -1,10 +1,12 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -33,14 +35,14 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
         .name(name)
         .description(description)
         .tenantId(tenantId)
-        .performanceCycle(getPerformanceCycle(performanceCycleId))
+        .performanceCycleId(getPerformanceCycle(performanceCycleId).orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId())
         .pillars(pillars).build();
     return setFixedIdIfConfigured(assessmentMatrix);
   }
 
-  private PerformanceCycle getPerformanceCycle(String performanceCycleId) {
+  private Optional<PerformanceCycle> getPerformanceCycle(String performanceCycleId) {
     if (performanceCycleId == null) return null;
-    return performanceCycleService.findById(performanceCycleId).orElse(null);
+    return performanceCycleService.findById(performanceCycleId);
   }
 
   @Override

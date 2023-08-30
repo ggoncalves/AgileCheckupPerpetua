@@ -50,14 +50,14 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
 
     // Prevent/Stub
     doReturn(savedAssessmentMatrix).when(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
-    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycle().getId());
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycleId());
 
     // When
     Optional<AssessmentMatrix> assessmentMatrixOptional = assessmentMatrixService.create(
         originalAssessmentMatrix.getName(),
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
-        originalAssessmentMatrix.getPerformanceCycle().getId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
         originalAssessmentMatrix.getPillars()
     );
 
@@ -69,24 +69,24 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
         originalAssessmentMatrix.getName(),
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
-        originalAssessmentMatrix.getPerformanceCycle().getId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
         originalAssessmentMatrix.getPillars()
     );
-    verify(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycle().getId());
+    verify(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycleId());
   }
 
   @Test
   void createNonExistantPerformanceCycleId() {
-    assertCreatePerformanceCycleIdFor("NonExistentPerformanceCycleId");
+    assertThrows(NullPointerException.class, () -> assertCreateAssessmentMatrixFor("NonExistentPerformanceCycleId"));
   }
 
   @Test
   void createNullPerformanceCycleId() {
-    assertCreatePerformanceCycleIdFor(null);
+    assertThrows(NullPointerException.class, () -> assertCreateAssessmentMatrixFor(null));
   }
 
-  void assertCreatePerformanceCycleIdFor(String performanceCycleId) {
-    originalAssessmentMatrix.setPerformanceCycle(null);
+  void assertCreateAssessmentMatrixFor(String performanceCycleId) {
+    originalAssessmentMatrix.setPerformanceCycleId(null);
     AssessmentMatrix savedAssessmentMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
 
     // Prevent/Stub
@@ -129,7 +129,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
           null,
           originalAssessmentMatrix.getDescription(),
           originalAssessmentMatrix.getTenantId(),
-          originalAssessmentMatrix.getPerformanceCycle().getId(),
+          originalAssessmentMatrix.getPerformanceCycleId(),
           originalAssessmentMatrix.getPillars()
       );
     });

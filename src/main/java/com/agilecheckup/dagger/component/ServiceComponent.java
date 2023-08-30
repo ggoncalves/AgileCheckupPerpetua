@@ -20,4 +20,6 @@ public interface ServiceComponent {
   PerformanceCycleService buildPerformanceCycleService();
 
   AssessmentMatrixService buildAssessmentMatrixService();
+
+  EmployeeAssessmentService buildEmployeeAssessmentService();
 }

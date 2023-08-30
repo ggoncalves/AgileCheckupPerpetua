@@ -19,9 +19,8 @@ import java.util.Date;
 public class PerformanceCycle extends TenantDescribableEntity {
 
   @NonNull
-  @DynamoDBAttribute(attributeName = "company")
-  @DynamoDBTypeConvertedJson
-  private Company company;
+  @DynamoDBAttribute(attributeName = "companyId")
+  private String companyId;
 
   @NonNull
   @DynamoDBAttribute(attributeName = "isTimeSensitive")

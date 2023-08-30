@@ -2,7 +2,8 @@ package com.agilecheckup.util;
 
 import com.agilecheckup.persistency.entity.*;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
-import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import com.agilecheckup.persistency.entity.person.*;
+import com.agilecheckup.persistency.entity.question.Question;
 import lombok.NonNull;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -12,7 +13,6 @@ import java.util.stream.IntStream;
 
 public class TestObjectFactory {
 
-  public static final String QUESTION_ID_1234 = "1234";
   public static final String GENERIC_ID_1234 = "1234";
 
   public static Question createMockedQuestion() {
@@ -76,16 +76,39 @@ public class TestObjectFactory {
 
   public static Department createMockedDepartment() {
     return Department.builder()
-        .company(createMockedCompany("A company Id"))
+        .companyId("A company Id")
         .name("DepartmentName")
         .description("Department description")
         .tenantId("tenantId")
         .build();
   }
 
+  public static EmployeeAssessment createMockedEmployeeAssessment(String id, String name, String assessmentMatrixId) {
+    return EmployeeAssessment.builder()
+        .id(id)
+        .assessmentMatrixId(assessmentMatrixId)
+        .team(createMockedTeam(id))
+        .employee(createMockedNaturalPerson(name))
+        .build();
+  }
+
+  public static NaturalPerson createMockedNaturalPerson(String name) {
+    return NaturalPerson.builder()
+        .id(null)
+        .name(name)
+        .email("name@company.com")
+        .documentNumber("1234")
+        .personDocumentType(PersonDocumentType.CPF)
+        .gender(Gender.MALE)
+        .genderPronoun(GenderPronoun.HE)
+        .build();
+  }
+
+
+
   public static Department createMockedDepartmentWithDependenciesId(String companyId) {
     return Department.builder()
-        .company(createMockedCompany(companyId))
+        .companyId(companyId)
         .name("DepartmentName")
         .description("Department description")
         .tenantId("tenantId")
@@ -99,7 +122,7 @@ public class TestObjectFactory {
   public static Department copyDepartmentAndAddId(Department department, String id) {
     return Department.builder()
         .id(id)
-        .company(department.getCompany())
+        .companyId(department.getCompanyId())
         .name(department.getName())
         .description(department.getDescription())
         .tenantId(department.getTenantId())
@@ -115,7 +138,7 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Team createMockedTeamWithDependenciesId(String companyId, String departmentId) {
+  public static Team createMockedTeamWithDependenciesId(String departmentId) {
     return Team.builder()
         .department(createMockedDepartment(departmentId))
         .name("TeamName")
@@ -143,7 +166,7 @@ public class TestObjectFactory {
         .name("PerformanceCycleName")
         .description("PerformanceCycle description")
         .tenantId("tenantId")
-        .company(createMockedCompany(companyId))
+        .companyId(companyId)
         .isActive(true)
         .isTimeSensitive(false)
         .build();
@@ -158,7 +181,7 @@ public class TestObjectFactory {
         .name("AssessmentMatrixName")
         .description("AssessmentMatrix description")
         .tenantId("tenantId")
-        .performanceCycle(createMockedPerformanceCycle(dependenciesId, dependenciesId))
+        .performanceCycleId(dependenciesId)
         .pillars(pillars)
         .build();
   }

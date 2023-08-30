@@ -1,6 +1,7 @@
 package com.agilecheckup.main;
 
 import com.agilecheckup.main.runner.*;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
@@ -24,7 +25,8 @@ public class E2EAllTablesInvoker {
         new DepartmentTableRunner(true),
         new TeamTableRunner(true),
         new PerformanceCycleTableRunner(true),
-        new AssessmentMatrixTableRunner(true)
+        new AssessmentMatrixTableRunner(true),
+        new EmployeeAssessmentTableRunner(true)
     );
   }
 

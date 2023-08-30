@@ -2,7 +2,7 @@ package com.agilecheckup.main.runner;
 
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
-import com.agilecheckup.persistency.entity.Question;
+import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;

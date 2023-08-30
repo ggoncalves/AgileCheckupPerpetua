@@ -50,22 +50,22 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
 
     // Prevent/Stub
     doReturn(savedDepartment).when(mockDepartmentRepository).save(any());
-    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalDepartment.getCompany().getId());
+    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalDepartment.getCompanyId());
 
     // When
     Optional<Department> departmentOptional = departmentService.create(
         originalDepartment.getName(),
         originalDepartment.getDescription(),
         originalDepartment.getTenantId(),
-        originalDepartment.getCompany().getId()
+        originalDepartment.getCompanyId()
     );
 
     // Then
     assertTrue(departmentOptional.isPresent());
     assertEquals(savedDepartment, departmentOptional.get());
     verify(mockDepartmentRepository).save(originalDepartment);
-    verify(departmentService).create(originalDepartment.getName(), originalDepartment.getDescription(), originalDepartment.getTenantId(), originalDepartment.getCompany().getId());
-    verify(mockCompanyService).findById(originalDepartment.getCompany().getId());
+    verify(departmentService).create(originalDepartment.getName(), originalDepartment.getDescription(), originalDepartment.getTenantId(), originalDepartment.getCompanyId());
+    verify(mockCompanyService).findById(originalDepartment.getCompanyId());
   }
 
   @Test
@@ -73,7 +73,7 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
     Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(Optional.empty()).when(mockCompanyService).findById(originalDepartment.getCompany().getId());
+    doReturn(Optional.empty()).when(mockCompanyService).findById(originalDepartment.getCompanyId());
 
     // When
     assertThrows(InvalidIdReferenceException.class, () -> {
@@ -81,7 +81,7 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
           originalDepartment.getName(),
           originalDepartment.getDescription(),
           originalDepartment.getTenantId(),
-          originalDepartment.getCompany().getId()
+          originalDepartment.getCompanyId()
       );
     });
   }
@@ -94,7 +94,7 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
           null,
           originalDepartment.getDescription(),
           originalDepartment.getTenantId(),
-          originalDepartment.getCompany().getId()
+          originalDepartment.getCompanyId()
       );
     });
   }

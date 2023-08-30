@@ -33,7 +33,7 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
         .name(name)
         .description(description)
         .tenantId(tenantId)
-        .company(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")))
+        .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId())
         .isActive(isActive)
         .isTimeSensitive(isTimeSensitive)
         .build();

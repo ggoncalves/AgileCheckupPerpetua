@@ -41,7 +41,7 @@ class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudReposito
 
   @BeforeEach
   void setUpBefore() {
-    originalTeam = createMockedTeamWithDependenciesId(GENERIC_ID_1234, GENERIC_ID_1234);
+    originalTeam = createMockedTeamWithDependenciesId(GENERIC_ID_1234);
     originalTeam = cloneWithId(originalTeam, DEFAULT_ID);
   }
 

@@ -31,7 +31,7 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
         .name(name)
         .description(description)
         .tenantId(tenantId)
-        .company(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "Department", "Company")))
+        .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "Department", "Company")).getId())
         .build();
     return setFixedIdIfConfigured(department);
   }

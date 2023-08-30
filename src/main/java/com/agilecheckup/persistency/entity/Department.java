@@ -17,9 +17,8 @@ public class Department extends TenantDescribableEntity {
 
   // If this class is refactored to be embedded inside Company, audit date and id shaw be removed.
   @NonNull
-  @DynamoDBAttribute(attributeName = "company")
-  @DynamoDBTypeConvertedJson
-  private Company company;
+  @DynamoDBAttribute(attributeName = "companyId")
+  private String companyId;
 
 
 }

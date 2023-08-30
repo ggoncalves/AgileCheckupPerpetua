@@ -50,14 +50,14 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
 
     // Prevent/Stub
     doReturn(savedPerformanceCycle).when(mockPerformanceCycleRepository).save(any());
-    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompany().getId());
+    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
 
     // When
     Optional<PerformanceCycle> performanceCycleOptional = performanceCycleService.create(
         originalPerformanceCycle.getName(),
         originalPerformanceCycle.getDescription(),
         originalPerformanceCycle.getTenantId(),
-        originalPerformanceCycle.getCompany().getId(),
+        originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
         originalPerformanceCycle.getIsTimeSensitive()
     );
@@ -70,11 +70,11 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         originalPerformanceCycle.getName(),
         originalPerformanceCycle.getDescription(),
         originalPerformanceCycle.getTenantId(),
-        originalPerformanceCycle.getCompany().getId(),
+        originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
         originalPerformanceCycle.getIsTimeSensitive()
     );
-    verify(mockCompanyService).findById(originalPerformanceCycle.getCompany().getId());
+    verify(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
   }
 
   @Test
@@ -82,7 +82,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
     PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(Optional.empty()).when(mockCompanyService).findById(originalPerformanceCycle.getCompany().getId());
+    doReturn(Optional.empty()).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
 
     // When
     assertThrows(InvalidIdReferenceException.class, () -> {
@@ -90,7 +90,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
           originalPerformanceCycle.getName(),
           originalPerformanceCycle.getDescription(),
           originalPerformanceCycle.getTenantId(),
-          originalPerformanceCycle.getCompany().getId(),
+          originalPerformanceCycle.getCompanyId(),
           originalPerformanceCycle.getIsActive(),
           originalPerformanceCycle.getIsTimeSensitive()
       );
@@ -105,7 +105,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
           null,
           originalPerformanceCycle.getDescription(),
           originalPerformanceCycle.getTenantId(),
-          originalPerformanceCycle.getCompany().getId(),
+          originalPerformanceCycle.getCompanyId(),
           originalPerformanceCycle.getIsActive(),
           originalPerformanceCycle.getIsTimeSensitive()
       );

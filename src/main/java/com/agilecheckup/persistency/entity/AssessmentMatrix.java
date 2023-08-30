@@ -4,10 +4,7 @@ import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
@@ -20,9 +17,9 @@ import java.util.Set;
 @DynamoDBTable(tableName = "AssessmentMatrix")
 public class AssessmentMatrix extends TenantDescribableEntity {
 
+  @NonNull
   @DynamoDBAttribute(attributeName = "performanceCycle")
-  @DynamoDBTypeConvertedJson
-  private PerformanceCycle performanceCycle;
+  private String performanceCycleId;
 
   @DynamoDBAttribute(attributeName = "pillars")
   @DynamoDBTypeConvertedJson

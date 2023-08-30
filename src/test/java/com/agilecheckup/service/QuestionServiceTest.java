@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.Question;
+import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;

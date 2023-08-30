@@ -71,7 +71,7 @@ public class AssessmentMatrixTableRunner extends AbstractEntityCrudRunner<Assess
         "AssessmentMatrixName",
         "AssessmentMatrix Description",
         "Another TenantId",
-        "19bcdfcb-9162-4a0b-a5c3-c034702d0961",
+        "321c5be6-9534-4b7c-9919-2f4418900935",
         pillars
     ));
     return collection;

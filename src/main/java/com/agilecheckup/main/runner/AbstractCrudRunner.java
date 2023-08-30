@@ -1,6 +1,7 @@
 package com.agilecheckup.main.runner;
 
 import com.agilecheckup.persistency.entity.base.AuditableEntity;
+import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Log4j2
-public abstract class AbstractCrudRunner<T extends AuditableEntity> implements CrudRunner {
+public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRunner {
 
   private final boolean mustDelete;
 
