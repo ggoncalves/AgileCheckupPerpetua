@@ -6,7 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentRepositoryTest extends AbstractRepositoryTest<EmployeeAssessment> {

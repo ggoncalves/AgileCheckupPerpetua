@@ -1,7 +1,6 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;

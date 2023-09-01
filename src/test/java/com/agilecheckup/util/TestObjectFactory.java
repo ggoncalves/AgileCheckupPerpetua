@@ -2,11 +2,17 @@ package com.agilecheckup.util;
 
 import com.agilecheckup.persistency.entity.*;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
-import com.agilecheckup.persistency.entity.person.*;
+import com.agilecheckup.persistency.entity.person.Gender;
+import com.agilecheckup.persistency.entity.person.GenderPronoun;
+import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionOption;
 import lombok.NonNull;
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,7 +24,7 @@ public class TestObjectFactory {
   public static Question createMockedQuestion() {
     return Question.builder()
         .question("question")
-        .rateType(RateType.YES_NO)
+        .questionType(QuestionType.YES_NO)
         .tenantId("tenantId")
         .points(5)
         .build();
@@ -28,9 +34,41 @@ public class TestObjectFactory {
     return Question.builder()
         .id(id)
         .question("question")
-        .rateType(RateType.YES_NO)
+        .questionType(QuestionType.YES_NO)
         .tenantId("tenantId")
         .points(5)
+        .build();
+  }
+
+  public static Question createMockedCustomQuestion(String id) {
+    return Question.builder()
+        .id(id)
+        .question("question")
+        .questionType(QuestionType.CUSTOMIZED)
+        .tenantId("tenantId")
+        .optionGroup(createMockedOptionGroup(0, 5, 10, 20, 30))
+        .build();
+  }
+
+  public static OptionGroup createMockedOptionGroup(Integer ... points) {
+    return OptionGroup.builder()
+        .isMultipleChoice(false)
+        .showFlushed(true)
+        .options(createMockedQuestionOptionList("OptionPrefix", points))
+        .build();
+  }
+
+  public static List<QuestionOption> createMockedQuestionOptionList(String prefix, Integer... points) {
+    return IntStream.range(0, points.length)
+        .mapToObj(index -> createQuestionOption(index, prefix, points[index]))
+        .collect(Collectors.toList());
+  }
+
+  private static QuestionOption createQuestionOption(Integer id, String prefix, int points) {
+    return QuestionOption.builder()
+        .id(id)
+        .text(prefix + "" + id)
+        .points(points)
         .build();
   }
 
@@ -38,7 +76,7 @@ public class TestObjectFactory {
     return Question.builder()
         .id(id)
         .question(question.getQuestion())
-        .rateType(question.getRateType())
+        .questionType(question.getQuestionType())
         .tenantId(question.getTenantId())
         .points(question.getPoints())
         .build();

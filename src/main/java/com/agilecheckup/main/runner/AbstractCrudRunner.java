@@ -1,6 +1,5 @@
 package com.agilecheckup.main.runner;
 
-import com.agilecheckup.persistency.entity.base.AuditableEntity;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;

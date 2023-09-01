@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity;
 
-public enum RateType {
+public enum QuestionType {
   STAR_THREE,
   STAR_FIVE,
   YES_NO,

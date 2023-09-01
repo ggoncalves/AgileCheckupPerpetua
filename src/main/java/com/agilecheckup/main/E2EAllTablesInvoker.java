@@ -1,7 +1,6 @@
 package com.agilecheckup.main;
 
 import com.agilecheckup.main.runner.*;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;

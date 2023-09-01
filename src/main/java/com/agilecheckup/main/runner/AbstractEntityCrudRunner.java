@@ -1,6 +1,5 @@
 package com.agilecheckup.main.runner;
 
-import com.agilecheckup.persistency.entity.base.AuditableEntity;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import lombok.extern.log4j.Log4j2;

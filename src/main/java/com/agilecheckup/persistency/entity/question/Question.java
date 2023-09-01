@@ -1,11 +1,8 @@
 package com.agilecheckup.persistency.entity.question;
 
-import com.agilecheckup.persistency.entity.RateType;
+import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.base.TenantableEntity;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTyped;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -28,8 +25,12 @@ public class Question extends TenantableEntity {
   private Integer points;
 
   @NonNull
-  @DynamoDBAttribute(attributeName = "rateType")
+  @DynamoDBAttribute(attributeName = "type")
   @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.S)
-  private RateType rateType;
+  private QuestionType questionType;
+
+  @DynamoDBAttribute(attributeName = "optionGroup")
+  @DynamoDBTypeConvertedJson
+  private OptionGroup optionGroup;
 
 }

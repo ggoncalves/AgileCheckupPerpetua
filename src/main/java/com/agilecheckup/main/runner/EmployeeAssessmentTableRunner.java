@@ -2,24 +2,18 @@ package com.agilecheckup.main.runner;
 
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
-import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;
-import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.EmployeeAssessmentService;
-import com.google.common.collect.ImmutableSet;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 @Log4j2

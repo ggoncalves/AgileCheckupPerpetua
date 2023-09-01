@@ -4,7 +4,6 @@ import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBConvertedBool;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

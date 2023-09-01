@@ -1,7 +1,6 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.persistency.entity.RateType;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.copyQuestionAndAddId;
-import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -32,10 +30,12 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   private QuestionRepository questionRepository;
 
   private Question originalQuestion;
+  private Question originalCustomQuestion;
 
   @BeforeEach
   void setUpBefore() {
     originalQuestion = createMockedQuestion(DEFAULT_ID);
+    originalCustomQuestion = createMockedCustomQuestion(DEFAULT_ID);
   }
 
   @Test
@@ -46,25 +46,45 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     doReturn(savedQuestion).when(questionRepository).save(any());
 
     // When
-    Optional<Question> questionOptional = questionService.create(originalQuestion.getQuestion(), originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
+    Optional<Question> questionOptional = questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
 
     // Then
     assertTrue(questionOptional.isPresent());
     assertEquals(savedQuestion, questionOptional.get());
     verify(questionRepository).save(originalQuestion);
-    verify(questionService).create("question", RateType.YES_NO, "tenantId", 5);
+    verify(questionService).create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints());
+  }
+
+  @Test
+  void createCustomQuestion() {
+    Question savedQuestion = copyQuestionAndAddId(originalCustomQuestion, DEFAULT_ID);
+
+    // Prevent/Stub
+    doReturn(savedQuestion).when(questionRepository).save(any());
+
+    // When
+    Optional<Question> questionOptional = questionService.createCustomQuestion(originalCustomQuestion.getQuestion(), originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30));
+
+    // Then
+    assertTrue(questionOptional.isPresent());
+    assertEquals(savedQuestion, questionOptional.get());
+    verify(questionRepository).save(originalCustomQuestion);
+    verify(questionService).createCustomQuestion(originalCustomQuestion.getQuestion(), originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30));
   }
 
   @Test
   void create_NullQuestion() {
     // When
-    assertThrows(NullPointerException.class, () -> questionService.create(null, originalQuestion.getRateType(), originalQuestion.getTenantId(), originalQuestion.getPoints()));
+    assertThrows(NullPointerException.class, () -> questionService.create(null, originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints()));
   }
 
   @Test
   void create_NullPoints() {
+    Question savedQuestion = copyQuestionAndAddId(originalQuestion, DEFAULT_ID);
+
+    doReturn(savedQuestion).when(questionRepository).save(any());
     // When
-    assertThrows(NullPointerException.class, () -> questionService.create(originalQuestion.getQuestion(), originalQuestion.getRateType(), originalQuestion.getTenantId(), null));
+    questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), null);
   }
 
   @Override
