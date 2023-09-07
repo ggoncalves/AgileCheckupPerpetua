@@ -8,6 +8,7 @@ import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 import javax.inject.Inject;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,18 +25,18 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
-                                           Set<Pillar> pillars) {
-    return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillars));
+                                           Map<String, Pillar> pillarMap) {
+    return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap));
   }
 
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
-                                                  Set<Pillar> pillars) {
+                                                  Map<String, Pillar> pillarMap) {
     AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .performanceCycleId(getPerformanceCycle(performanceCycleId).orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId())
-        .pillars(pillars).build();
+        .pillarMap(pillarMap).build();
     return setFixedIdIfConfigured(assessmentMatrix);
   }
 

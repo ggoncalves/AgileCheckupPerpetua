@@ -14,6 +14,26 @@ import lombok.experimental.SuperBuilder;
 @DynamoDBTable(tableName = "Question")
 public class Question extends TenantableEntity {
 
+  @NonNull
+  @DynamoDBAttribute(attributeName = "assessmentMatrixId")
+  private String assessmentMatrixId;
+
+  @NonNull
+  @DynamoDBAttribute(attributeName = "pillarId")
+  private String pillarId;
+
+  @NonNull
+  @DynamoDBAttribute(attributeName = "pillarName")
+  private String pillarName;
+
+  @NonNull
+  @DynamoDBAttribute(attributeName = "categoryId")
+  private String categoryId;
+
+  @NonNull
+  @DynamoDBAttribute(attributeName = "categoryName")
+  private String categoryName;
+
   @DynamoDBAttribute(attributeName = "question")
   @NonNull
   private String question;

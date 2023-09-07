@@ -29,7 +29,7 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
   protected Collection<Supplier<Optional<EmployeeAssessment>>> getCreateSupplier() {
     Collection<Supplier<Optional<EmployeeAssessment>>> collection = new ArrayList<>();
     collection.add(() -> getEmployeeAssessmentService().create(
-        "cce53ec6-3253-4f8f-b842-c83d3631efbe",
+        "6413d36e-8716-4f97-ae87-7b4e9c2845ce",
         "9c4505d9-2241-45c0-9eda-ddb85d8c5608",
         "Josefa Santos de Souza",
         "josefa.santos@gmail.com",

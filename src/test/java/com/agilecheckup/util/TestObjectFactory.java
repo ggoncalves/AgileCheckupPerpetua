@@ -13,7 +13,9 @@ import lombok.NonNull;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -23,6 +25,11 @@ public class TestObjectFactory {
 
   public static Question createMockedQuestion() {
     return Question.builder()
+        .assessmentMatrixId(GENERIC_ID_1234)
+        .pillarId(GENERIC_ID_1234)
+        .pillarName("Pillar Name")
+        .categoryId(GENERIC_ID_1234)
+        .categoryName("Category Name")
         .question("question")
         .questionType(QuestionType.YES_NO)
         .tenantId("tenantId")
@@ -33,6 +40,11 @@ public class TestObjectFactory {
   public static Question createMockedQuestion(String id) {
     return Question.builder()
         .id(id)
+        .assessmentMatrixId(GENERIC_ID_1234)
+        .pillarId(GENERIC_ID_1234)
+        .pillarName("Pillar Name")
+        .categoryId(GENERIC_ID_1234)
+        .categoryName("Category Name")
         .question("question")
         .questionType(QuestionType.YES_NO)
         .tenantId("tenantId")
@@ -43,6 +55,11 @@ public class TestObjectFactory {
   public static Question createMockedCustomQuestion(String id) {
     return Question.builder()
         .id(id)
+        .assessmentMatrixId(GENERIC_ID_1234)
+        .pillarId(GENERIC_ID_1234)
+        .pillarName("Pillar Name")
+        .categoryId(GENERIC_ID_1234)
+        .categoryName("Category Name")
         .question("question")
         .questionType(QuestionType.CUSTOMIZED)
         .tenantId("tenantId")
@@ -73,13 +90,7 @@ public class TestObjectFactory {
   }
 
   public static Question copyQuestionAndAddId(Question question, String id) {
-    return Question.builder()
-        .id(id)
-        .question(question.getQuestion())
-        .questionType(question.getQuestionType())
-        .tenantId(question.getTenantId())
-        .points(question.getPoints())
-        .build();
+    return cloneWithId(question, id);
   }
 
   public static Company createMockedCompany() {
@@ -210,17 +221,17 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static AssessmentMatrix createMockedAssessmentMatrix(String dependenciesId, String id, Set<Pillar> pillars) {
-    return cloneWithId(createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillars), id);
+  public static AssessmentMatrix createMockedAssessmentMatrix(String dependenciesId, String id, Map<String, Pillar> pillarMap) {
+    return cloneWithId(createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillarMap), id);
   }
 
-  public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Set<Pillar> pillars) {
+  public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Map<String, Pillar> pillarMap) {
     return AssessmentMatrix.builder()
-        .name("AssessmentMatrixName")
+        .name("AsssessmentMatrixName")
         .description("AssessmentMatrix description")
         .tenantId("tenantId")
         .performanceCycleId(dependenciesId)
-        .pillars(pillars)
+        .pillarMap(pillarMap)
         .build();
   }
 
@@ -228,27 +239,25 @@ public class TestObjectFactory {
     return cloneWithId(createMockedPerformanceCycleWithDependenciesId(companyId), id);
   }
 
-  public static Pillar createMockedPillar(@NonNull String name, @NonNull String description, Set<Category> categories) {
+  public static Pillar createMockedPillar(@NonNull String name, @NonNull String description, Map<String, Category> categoryMap) {
     return Pillar.builder()
         .name(name)
         .description(description)
-        .categories(categories)
+        .categoryMap(categoryMap)
         .build();
   }
 
-  public static Set<Pillar> createMockedPillarSet(Integer pillarSize, Integer categorySize, String pillarPrefix, String categoryPrefix) {
+  public static Map<String, Pillar> createMockedPillarMap(Integer pillarSize, Integer categorySize, String pillarPrefix, String categoryPrefix) {
     return IntStream.range(1, pillarSize + 1)
         .mapToObj(i -> createMockedPillar(
-            strName(pillarPrefix, i),
+            "Pillar Name", // strName(pillarPrefix, i),
             strDescription(pillarPrefix, i),
             IntStream.range(1, categorySize + 1)
-                .mapToObj(ci -> createMockedCategory(strName(categoryPrefix + i, ci), strDescription(categoryPrefix + i, ci)))
-                .collect(Collectors.toSet())
-        )).collect(Collectors.toSet());
-  }
-
-  public static Set<Category> createMockedCategorySet(Integer size, String prefix) {
-    return IntStream.range(1, size + 1).mapToObj(i -> createMockedCategory(strName(prefix, i), strDescription(prefix, i))).collect(Collectors.toSet());
+                .mapToObj(ci -> createMockedCategory(
+                    "Category Name", //strName(categoryPrefix + i, ci),
+                    strDescription(categoryPrefix + i, ci)))
+                .collect(Collectors.toMap(Category::getId, Function.identity()))
+        )).collect(Collectors.toMap(Pillar::getId, Function.identity()));
   }
 
   private static String strName(String prefix, Integer i) {

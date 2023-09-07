@@ -22,6 +22,6 @@ class AssessmentMatrixRepositoryTest extends AbstractRepositoryTest<AssessmentMa
 
   @Override
   AssessmentMatrix createMockedT() {
-    return createMockedAssessmentMatrix(GENERIC_ID_1234, GENERIC_ID_1234, createMockedPillarSet(3, 4, "Pillar", "Category"));
+    return createMockedAssessmentMatrix(GENERIC_ID_1234, GENERIC_ID_1234, createMockedPillarMap(3, 4, "Pillar", "Category"));
   }
 }

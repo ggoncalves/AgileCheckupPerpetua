@@ -1,12 +1,11 @@
 package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -21,8 +20,7 @@ public class AssessmentMatrix extends TenantDescribableEntity {
   @DynamoDBAttribute(attributeName = "performanceCycle")
   private String performanceCycleId;
 
-  @DynamoDBAttribute(attributeName = "pillars")
-  @DynamoDBTypeConvertedJson
-  private Set<Pillar> pillars;
+  @DynamoDBAttribute(attributeName = "pillarMap")
+  private Map<String, Pillar> pillarMap;
 
 }

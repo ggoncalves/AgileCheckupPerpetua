@@ -40,7 +40,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void setUpBefore() {
     originalAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(
         DEFAULT_ID,
-        createMockedPillarSet(3, 4, "Pillar", "Category"));
+        createMockedPillarMap(3, 4, "Pillar", "Category"));
     originalAssessmentMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
   }
 
@@ -58,7 +58,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
         originalAssessmentMatrix.getPerformanceCycleId(),
-        originalAssessmentMatrix.getPillars()
+        originalAssessmentMatrix.getPillarMap()
     );
 
     // Then
@@ -70,7 +70,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
         originalAssessmentMatrix.getPerformanceCycleId(),
-        originalAssessmentMatrix.getPillars()
+        originalAssessmentMatrix.getPillarMap()
     );
     verify(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycleId());
   }
@@ -99,7 +99,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
         performanceCycleId,
-        originalAssessmentMatrix.getPillars()
+        originalAssessmentMatrix.getPillarMap()
     );
 
     // Then
@@ -111,7 +111,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
         originalAssessmentMatrix.getDescription(),
         originalAssessmentMatrix.getTenantId(),
         performanceCycleId,
-        originalAssessmentMatrix.getPillars()
+        originalAssessmentMatrix.getPillarMap()
     );
     if (performanceCycleId == null) {
       verify(mockPerformanceCycleService, never()).findById(performanceCycleId);
@@ -130,7 +130,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
           originalAssessmentMatrix.getDescription(),
           originalAssessmentMatrix.getTenantId(),
           originalAssessmentMatrix.getPerformanceCycleId(),
-          originalAssessmentMatrix.getPillars()
+          originalAssessmentMatrix.getPillarMap()
       );
     });
   }

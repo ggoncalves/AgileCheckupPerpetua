@@ -31,11 +31,11 @@ import java.util.stream.IntStream;
   protected Collection<Supplier<Optional<Question>>> getCreateSupplier() {
     Collection<Supplier<Optional<Question>>> collection = new ArrayList<>();
     collection.add(() -> getQuestionService().create("Pergunta oficial", QuestionType.STAR_THREE, "OrinnovaSuper",
-        15
-    ));
+        15,
+        "6413d36e-8716-4f97-ae87-7b4e9c2845ce", "1449ea3b-39b1-466c-bb54-f14ce984320f", "078ed4c3-abab-40c2-a237-e352b5172ee2"));
     collection.add(() -> getQuestionService().createCustomQuestion("Pergunta custom oficial", QuestionType.CUSTOMIZED, "OrinnovaSuper",
-        false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30)
-    ));
+        false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30),
+        "6413d36e-8716-4f97-ae87-7b4e9c2845ce", "39820ef9-7944-44d6-9c7e-8b5586fc0cb2", "60eb412a-00af-43cb-9f15-3308b7ff8a4c"));
     return collection;
   }
 

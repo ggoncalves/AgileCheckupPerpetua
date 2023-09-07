@@ -39,7 +39,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
 
   private EmployeeAssessment originalEmployeeAssessment;
 
-  private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID, createMockedPillarSet(1,2, "P", "C"));
+  private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID, createMockedPillarMap(1,2, "P", "C"));
 
   private final Team team = createMockedTeam(DEFAULT_ID);
 
