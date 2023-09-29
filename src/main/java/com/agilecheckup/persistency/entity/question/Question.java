@@ -18,6 +18,8 @@ public class Question extends TenantableEntity {
   @DynamoDBAttribute(attributeName = "assessmentMatrixId")
   private String assessmentMatrixId;
 
+  // TODO: Implement allowNullAnswer and check AnswerStrategyFactory
+
   @NonNull
   @DynamoDBAttribute(attributeName = "pillarId")
   private String pillarId;

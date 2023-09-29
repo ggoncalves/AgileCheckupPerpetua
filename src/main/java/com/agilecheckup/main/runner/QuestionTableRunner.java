@@ -59,17 +59,17 @@ import java.util.stream.IntStream;
     assert savedEntity.getQuestionType().equals(QuestionType.CUSTOMIZED);
     assert savedEntity.getOptionGroup().isMultipleChoice() == false;
     assert savedEntity.getOptionGroup().isShowFlushed() == true;
-    assert savedEntity.getOptionGroup().getOptions().size() == 5;
-    assert savedEntity.getOptionGroup().getOptions().get(0).getPoints().equals(Integer.valueOf(0));
-    assert savedEntity.getOptionGroup().getOptions().get(0).getText().equals("OptionPrefix1");
-    assert savedEntity.getOptionGroup().getOptions().get(1).getPoints().equals(Integer.valueOf(5));
-    assert savedEntity.getOptionGroup().getOptions().get(1).getText().equals("OptionPrefix2");
-    assert savedEntity.getOptionGroup().getOptions().get(2).getPoints().equals(Integer.valueOf(10));
-    assert savedEntity.getOptionGroup().getOptions().get(2).getText().equals("OptionPrefix3");
-    assert savedEntity.getOptionGroup().getOptions().get(3).getPoints().equals(Integer.valueOf(20));
-    assert savedEntity.getOptionGroup().getOptions().get(3).getText().equals("OptionPrefix4");
-    assert savedEntity.getOptionGroup().getOptions().get(4).getPoints().equals(Integer.valueOf(30));
-    assert savedEntity.getOptionGroup().getOptions().get(4).getText().equals("OptionPrefix5");
+    assert savedEntity.getOptionGroup().getOptionMap().size() == 5;
+    assert savedEntity.getOptionGroup().getOptionMap().get(1).getPoints().equals(Integer.valueOf(0));
+    assert savedEntity.getOptionGroup().getOptionMap().get(1).getText().equals("OptionPrefix1");
+    assert savedEntity.getOptionGroup().getOptionMap().get(2).getPoints().equals(Integer.valueOf(5));
+    assert savedEntity.getOptionGroup().getOptionMap().get(2).getText().equals("OptionPrefix2");
+    assert savedEntity.getOptionGroup().getOptionMap().get(3).getPoints().equals(Integer.valueOf(10));
+    assert savedEntity.getOptionGroup().getOptionMap().get(3).getText().equals("OptionPrefix3");
+    assert savedEntity.getOptionGroup().getOptionMap().get(4).getPoints().equals(Integer.valueOf(20));
+    assert savedEntity.getOptionGroup().getOptionMap().get(4).getText().equals("OptionPrefix4");
+    assert savedEntity.getOptionGroup().getOptionMap().get(5).getPoints().equals(Integer.valueOf(30));
+    assert savedEntity.getOptionGroup().getOptionMap().get(5).getText().equals("OptionPrefix5");
 
   }
 

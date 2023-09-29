@@ -6,15 +6,16 @@ import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import lombok.NonNull;
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +23,35 @@ import java.util.stream.IntStream;
 public class TestObjectFactory {
 
   public static final String GENERIC_ID_1234 = "1234";
+  public static final String EMPLOYEE_NAME_JOHN = "John";
+
+  public static Answer createMockedAnswer() {
+    return Answer.builder()
+        .employeeAssessmentId(GENERIC_ID_1234)
+        .pillarId(GENERIC_ID_1234)
+        .categoryId(GENERIC_ID_1234)
+        .questionId(GENERIC_ID_1234)
+        .questionType(QuestionType.CUSTOMIZED)
+        .answeredAt(LocalDateTime.now())
+        .value("3")
+        .tenantId("tenantId")
+        .build();
+  }
+
+  public static Answer createMockedAnswer(String id, @NonNull String dependenciesId, @NonNull QuestionType questionType,
+                                          @NonNull LocalDateTime answeredAt, @NonNull String value) {
+    return Answer.builder()
+        .id(id)
+        .employeeAssessmentId(dependenciesId)
+        .pillarId(dependenciesId)
+        .categoryId(dependenciesId)
+        .questionId(dependenciesId)
+        .questionType(questionType)
+        .answeredAt(answeredAt)
+        .value(value)
+        .tenantId("tenantId")
+        .build();
+  }
 
   public static Question createMockedQuestion() {
     return Question.builder()
@@ -52,6 +82,12 @@ public class TestObjectFactory {
         .build();
   }
 
+  public static Question createMockedQuestion(String id, QuestionType questionType) {
+    Question question = createMockedQuestion(id);
+    question.setQuestionType(questionType);
+    return question;
+  }
+
   public static Question createMockedCustomQuestion(String id) {
     return Question.builder()
         .id(id)
@@ -68,25 +104,40 @@ public class TestObjectFactory {
   }
 
   public static OptionGroup createMockedOptionGroup(Integer ... points) {
+    return createMockedOptionGroup("OptionPrefix", points);
+  }
+
+  public static OptionGroup createMockedOptionGroup(String prefix, Integer ... points) {
     return OptionGroup.builder()
         .isMultipleChoice(false)
         .showFlushed(true)
-        .options(createMockedQuestionOptionList("OptionPrefix", points))
+        .optionMap(createMockedQuestionOptionMap(prefix, points))
         .build();
   }
 
   public static List<QuestionOption> createMockedQuestionOptionList(String prefix, Integer... points) {
     return IntStream.range(0, points.length)
-        .mapToObj(index -> createQuestionOption(index, prefix, points[index]))
+        .mapToObj(index -> createQuestionOption(index+1, prefix, points[index]))
         .collect(Collectors.toList());
   }
 
-  private static QuestionOption createQuestionOption(Integer id, String prefix, int points) {
+  public static Map<Integer, QuestionOption> createMockedQuestionOptionMap(String prefix, Integer... points) {
+    return IntStream.range(0, points.length)
+        .mapToObj(index -> createQuestionOption(index+1, prefix, points[index]))
+        .collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
+  }
+
+  public static QuestionOption createQuestionOption(Integer id, String prefix, int points) {
     return QuestionOption.builder()
         .id(id)
-        .text(prefix + "" + id)
+        .text(buildPrefix(prefix, id))
         .points(points)
         .build();
+  }
+
+  // Returns empty if prefix is empty. Otherwise will return "prefix" + id.
+  private static String buildPrefix(String prefix, Integer id) {
+    return prefix.isEmpty() ? "" : prefix + id;
   }
 
   public static Question copyQuestionAndAddId(Question question, String id) {

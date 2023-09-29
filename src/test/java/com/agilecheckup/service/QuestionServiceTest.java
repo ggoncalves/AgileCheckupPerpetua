@@ -4,8 +4,10 @@ import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
+import com.agilecheckup.service.exception.InvalidCustomOptionListException;
 import com.agilecheckup.util.TestObjectFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,9 +17,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,7 +63,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
 
   private AssessmentMatrix setPillarAndCategoryToAssessmentMatrix(AssessmentMatrix assessmentMatrix) {
     int index = 0;
-    String[] categoryIds = { CATEGORY_ID_1, CATEGORY_ID_2};
+    String[] categoryIds = {CATEGORY_ID_1, CATEGORY_ID_2};
     Map<String, Pillar> newPillarMap = new HashMap<>();
     Map<String, Category> newCategoryMap = new HashMap<>();
     for (Map.Entry<String, Pillar> pillarEntry : assessmentMatrix.getPillarMap().entrySet()) {
@@ -98,6 +100,129 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   }
 
   @Test
+  void createCustomQuestionWithEmptyText() {
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(), originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true, createMockedQuestionOptionList("", 0, 5, 10, 20, 30), originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list text is empty.", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionWithEmptyList() {
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            new ArrayList<QuestionOption>(), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list is empty. There should be at least 2 options.", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionTooShort() {
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createMockedQuestionOptionList("Prefix", 0), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list too small. There should be at least 2 options.", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionTooBig() {
+    Integer[] options = IntStream
+        .rangeClosed(1, 65)
+        .boxed()
+        .toArray(Integer[]::new);
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createMockedQuestionOptionList("Prefix", options), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list too big. There should be at max 64 options.", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionInvalidIdsDuplicated() {
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createQuestionOption(1, 1, 2), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 1, 1, 2", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionInvalidIdsDuplicated2() {
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createQuestionOption(2, 1, 3, 5, 7, 6, 4, 6), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 1, 2, 3, 4, 5, 6, 6, 7", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionInvalidIdsWithZero() {
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createQuestionOption(0, 1, 2), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 0, 1, 2", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionInvalidIdsMissing() {
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createQuestionOption(1, 3, 4), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids" +
+        ". The ids in the sorted order: 1, 3, 4", exception.getMessage());
+  }
+
+  @Test
+  void createCustomQuestionInvalidIdsMissing2() {
+
+    // When
+    Exception exception = assertThrows(InvalidCustomOptionListException.class,
+        () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
+            originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
+            createQuestionOption(2, 3, 4, 1, 6), originalCustomQuestion.getAssessmentMatrixId(),
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+
+    assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids" +
+        ". The ids in the sorted order: 1, 2, 3, 4, 6", exception.getMessage());
+  }
+
+  private List<QuestionOption> createQuestionOption(Integer ... ids) {
+    return IntStream.range(0, ids.length)
+        .mapToObj(index -> TestObjectFactory.createQuestionOption(ids[index], "Text", 5))
+        .collect(Collectors.toList());
+  }
+
+  @Test
   void createCustomQuestion() {
     Question savedQuestion = copyQuestionAndAddId(originalCustomQuestion, DEFAULT_ID);
 
@@ -130,6 +255,23 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalQuestion.getAssessmentMatrixId());
     // When
     questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), null, originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId());
+  }
+
+  @Test
+  void toOptionMap() {
+    List<QuestionOption> options = createMockedQuestionOptionList("Option", 5, 10, 15, 20);
+    assertEquals(1, options.get(0).getId());
+    assertEquals(2, options.get(1).getId());
+    assertEquals(3, options.get(2).getId());
+    assertEquals(4, options.get(3).getId());
+
+    Map<Integer, QuestionOption> map = questionService.toOptionMap(options);
+
+    assertEquals(4, map.size());
+    assertEquals(5, map.get(1).getPoints());
+    assertEquals(10, map.get(2).getPoints());
+    assertEquals(15, map.get(3).getPoints());
+    assertEquals(20, map.get(4).getPoints());
   }
 
   @Override

@@ -1,12 +1,12 @@
 package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.DescribableEntity;
-import com.amazonaws.services.dynamodbv2.datamodeling.*;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Map;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

@@ -9,13 +9,26 @@ import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
+import com.agilecheckup.service.exception.InvalidCustomOptionListException;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.google.common.annotations.VisibleForTesting;
+import lombok.NonNull;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.*;
 
 public class QuestionService extends AbstractCrudService<Question, AbstractCrudRepository<Question>> {
+
+  // TODO: Refactor to add this in a config file.
+  private static final Integer MIN_CUSTOM_OPTIONS_SIZE = 2;
+  private static final Integer MAX_CUSTOM_OPTIONS_SIZE = 64;
 
   private QuestionRepository questionRepository;
 
@@ -53,7 +66,11 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     return setFixedIdIfConfigured(question);
   }
 
-  private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId) {
+  private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId,
+                                                boolean isMultipleChoice, boolean showFlushed,
+                                                @NonNull List<QuestionOption> options, String assessmentMatrixId,
+                                                String pillarId, String categoryId) {
+    validateQuestionOptions(options);
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
@@ -71,13 +88,79 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     return setFixedIdIfConfigured(question);
   }
 
+  private void validateQuestionOptions(List<QuestionOption> options) {
+    validateOptionListSize(options);
+    options = sortOptionsById(options);
+    validateOptions(options);
+  }
+
+  private List<QuestionOption> sortOptionsById(List<QuestionOption> options) {
+    return options.stream()
+        .sorted(Comparator.comparing(QuestionOption::getId))
+        .collect(Collectors.toList());
+  }
+
+  private void validateOptions(List<QuestionOption> options) {
+    Integer expectedId = 1;
+    for (QuestionOption option : options) {
+      validateOptionText(option);
+      validateOptionId(option, expectedId, options);
+      expectedId++;
+    }
+  }
+
+  private void validateOptionText(QuestionOption option) {
+    if (option.getText().isEmpty()) {
+      throw new InvalidCustomOptionListException(OPTION_LIST_TEXT_EMPTY.getReason());
+    }
+  }
+
+  private void validateOptionId(QuestionOption option, Integer expectedId, List<QuestionOption> options) {
+    if (!option.getId().equals(expectedId)) {
+      Integer[] optionIds = options.stream()
+          .map(QuestionOption::getId)
+          .toArray(Integer[]::new);
+      throw new InvalidCustomOptionListException(INVALID_OPTIONS_IDS, optionIds);
+    }
+  }
+
+  private void validateOptionListSize(List<QuestionOption> options) {
+    if (isOptionListEmpty(options)) {
+      throw new InvalidCustomOptionListException(OPTION_LIST_EMPTY, MIN_CUSTOM_OPTIONS_SIZE, MAX_CUSTOM_OPTIONS_SIZE);
+    }
+    if (isOptionListTooShort(options)) {
+      throw new InvalidCustomOptionListException(OPTION_LIST_TOO_SHORT, MIN_CUSTOM_OPTIONS_SIZE, MAX_CUSTOM_OPTIONS_SIZE);
+    }
+    if (isOptionListTooBig(options)) {
+      throw new InvalidCustomOptionListException(OPTION_LIST_TOO_BIG, MIN_CUSTOM_OPTIONS_SIZE, MAX_CUSTOM_OPTIONS_SIZE);
+    }
+  }
+
+  private boolean isOptionListEmpty(List<QuestionOption> options) {
+    return options.isEmpty();
+  }
+
+  private boolean isOptionListTooShort(List<QuestionOption> options) {
+    return options.size() < MIN_CUSTOM_OPTIONS_SIZE;
+  }
+
+  private boolean isOptionListTooBig(List<QuestionOption> options) {
+    return options.size() > MAX_CUSTOM_OPTIONS_SIZE;
+  }
+
+
   private OptionGroup createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
     OptionGroup optionGroup = OptionGroup.builder()
         .isMultipleChoice(isMultipleChoice)
         .showFlushed(showFlushed)
-        .options(options)
+        .optionMap(toOptionMap(options))
         .build();
     return optionGroup;
+  }
+
+  @VisibleForTesting
+  Map<Integer, QuestionOption> toOptionMap(List<QuestionOption> options) {
+    return options.stream().collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
   }
 
   private AssessmentMatrix getAssessmentMatrixById(String assessmentMatrixId) {

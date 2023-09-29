@@ -10,7 +10,6 @@ import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import javax.inject.Inject;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
