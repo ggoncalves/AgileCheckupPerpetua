@@ -19,6 +19,7 @@ public class E2EAllTablesInvoker {
 
   void initTableRunnerSet() {
     tableRunnerSet = ImmutableSet.of(
+        new AnswerTableRunner(true),
         new QuestionTableRunner(true),
         new CompanyTableRunner(true),
         new DepartmentTableRunner(true),

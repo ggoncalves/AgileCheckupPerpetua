@@ -30,9 +30,9 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   private static final Integer MIN_CUSTOM_OPTIONS_SIZE = 2;
   private static final Integer MAX_CUSTOM_OPTIONS_SIZE = 64;
 
-  private QuestionRepository questionRepository;
+  private final QuestionRepository questionRepository;
 
-  private AssessmentMatrixService assessmentMatrixService;
+  private final AssessmentMatrixService assessmentMatrixService;
 
   @Inject
   public QuestionService(QuestionRepository questionRepository, AssessmentMatrixService assessmentMatrixService) {
@@ -41,11 +41,23 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   }
 
   public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Integer points, String assessmentMatrixId, String pillarId, String categoryId) {
-    return super.create(internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId));
+    Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId);
+    return createQuestion(question);
   }
 
   public Optional<Question> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId) {
-    return super.create(internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId));
+    Question question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId);
+    return createQuestion(question);
+  }
+
+  private Optional<Question> createQuestion(Question question) {
+    Optional<Question> savedQuestion = super.create(question);
+    postCreate(savedQuestion);
+    return savedQuestion;
+  }
+
+  private void postCreate(Optional<Question> question) {
+    question.ifPresent(q -> assessmentMatrixService.incrementQuestionCount(q.getAssessmentMatrixId()));
   }
 
   private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Integer points, String assessmentMatrixId, String pillarId, String categoryId) {
@@ -150,12 +162,11 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
 
 
   private OptionGroup createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
-    OptionGroup optionGroup = OptionGroup.builder()
+    return OptionGroup.builder()
         .isMultipleChoice(isMultipleChoice)
         .showFlushed(showFlushed)
         .optionMap(toOptionMap(options))
         .build();
-    return optionGroup;
   }
 
   @VisibleForTesting

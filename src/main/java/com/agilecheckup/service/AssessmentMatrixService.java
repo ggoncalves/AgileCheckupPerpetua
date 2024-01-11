@@ -28,6 +28,15 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap));
   }
 
+  public AssessmentMatrix incrementQuestionCount(String matrixId) {
+    AssessmentMatrix matrix = getRepository().findById(matrixId);
+    if (matrix != null) {
+      matrix.setQuestionCount(matrix.getQuestionCount() + 1);
+      getRepository().save(matrix);
+    }
+    return matrix;
+  }
+
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
                                                   Map<String, Pillar> pillarMap) {
     AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()

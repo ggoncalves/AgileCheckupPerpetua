@@ -135,6 +135,27 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     });
   }
 
+  @Test
+  void shouldIncrementQuestionCount() {
+    String assessmentMatrixId = "matrixId";
+    doReturn(originalAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
+    assertEquals(0, originalAssessmentMatrix.getQuestionCount());
+
+    assessmentMatrixService.incrementQuestionCount(assessmentMatrixId);
+
+    assertEquals(1, originalAssessmentMatrix.getQuestionCount());
+    verify(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
+    verify(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
+  }
+
+  @Test
+  void shouldNotIncrementQuestionCount() {
+    String assessmentMatrixId = "matrixId";
+    doReturn(null).when(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
+    assessmentMatrixService.incrementQuestionCount(assessmentMatrixId);
+    verify(mockAssessmentMatrixRepository, never()).save(any());
+  }
+
   @Override
   AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> getCrudServiceSpy() {
     return assessmentMatrixService;

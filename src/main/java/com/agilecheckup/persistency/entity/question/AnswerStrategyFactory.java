@@ -2,7 +2,7 @@ package com.agilecheckup.persistency.entity.question;
 
 public class AnswerStrategyFactory {
 
-  public static AnswerStrategy createStrategy(Question question, boolean allowNullValue) {
+  public static AnswerStrategy<?> createStrategy(Question question, boolean allowNullValue) {
     switch (question.getQuestionType()) {
       case STAR_THREE:
         return StarThreeAnswerStrategy.builder().question(question).allowNullValue(allowNullValue).build();

@@ -46,6 +46,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
   @BeforeEach
   void setUpBefore() {
     originalEmployeeAssessment = createMockedEmployeeAssessment(DEFAULT_ID, "Fernando", assessmentMatrix.getId());
+    System.out.println("=====> " + originalEmployeeAssessment.getAnsweredQuestionCount());
     originalEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
   }
 
@@ -193,5 +194,18 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     else {
       verify(teamService).findById(teamId);
     }
+  }
+
+  @Test
+  void shouldIncrementQuestionCount() {
+    String employeeAssessmentId = "employeeAssessmentId";
+    doReturn(originalEmployeeAssessment).when(employeeAssessmentRepository).findById(employeeAssessmentId);
+    assertEquals(0, originalEmployeeAssessment.getAnsweredQuestionCount());
+
+    employeeAssessmentService.incrementAnsweredQuestionCount(employeeAssessmentId);
+
+    assertEquals(1, originalEmployeeAssessment.getAnsweredQuestionCount());
+    verify(employeeAssessmentRepository).findById(employeeAssessmentId);
+    verify(employeeAssessmentRepository).save(originalEmployeeAssessment);
   }
 }

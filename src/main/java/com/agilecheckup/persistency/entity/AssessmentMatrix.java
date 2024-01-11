@@ -23,4 +23,8 @@ public class AssessmentMatrix extends TenantDescribableEntity {
   @DynamoDBAttribute(attributeName = "pillarMap")
   private Map<String, Pillar> pillarMap;
 
+  @DynamoDBAttribute(attributeName = "questionCount")
+  @Builder.Default
+  private Integer questionCount = 0;
+
 }

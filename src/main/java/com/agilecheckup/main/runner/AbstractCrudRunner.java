@@ -13,14 +13,14 @@ import java.util.function.Supplier;
 @Log4j2
 public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRunner {
 
-  private final boolean mustDelete;
+  private final boolean shouldCleanAfterComplete;
 
-  protected AbstractCrudRunner(boolean mustDelete) {
-    this.mustDelete = mustDelete;
+  protected AbstractCrudRunner(boolean shouldCleanAfterComplete) {
+    this.shouldCleanAfterComplete = shouldCleanAfterComplete;
   }
 
   protected AbstractCrudRunner() {
-    this.mustDelete = true;
+    this.shouldCleanAfterComplete = true;
   }
 
   @Override
@@ -28,7 +28,7 @@ public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRu
     Collection<T> entities = create();
     fetch(entities);
     invokeListAll();
-    if (mustDelete) delete(entities);
+    if (shouldCleanAfterComplete) delete(entities);
   }
 
   protected void invokeListAll() {

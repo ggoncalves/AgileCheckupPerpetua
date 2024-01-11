@@ -17,8 +17,17 @@ public abstract class AbstractCrudService<T extends BaseEntity, V extends Abstra
 
   public Optional<T> create(T t) {
     T saved = getRepository().save(t);
-    log.debug("Saved " + saved);
+    internalPostCreate(saved);
     return Optional.of(saved);
+  }
+
+  public void internalPostCreate(T saved) {
+    log.info("Entity created successfully: " + saved);
+    postCreate(saved);
+  }
+
+  public void postCreate(T saved) {
+    // Do nothing, must be override
   }
 
   public PaginatedScanList<T> findAll() {

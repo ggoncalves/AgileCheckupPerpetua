@@ -34,30 +34,10 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId));
   }
 
-  // Test Cases
-  // createWithEmployeeAssessmentId_Invalid
-  // createWithEmployeeAssessmentId_Null
-  // createWithQuestionId_Invalid
-  // createWithQuestionId_Null
-  // createWithAnsweredAt_Invalid(?)
-  // createWithAnsweredAt_Null
-  // createWithTenantId_Invalid
-  // createWithTenantId_Null
-
-  // WrongValidation By Question Type
-  // createStarThreeWithValue_Invalid
-  // createStarThreeWithValue_Null
-  // ..
-  // all options
-  // createCustomizedWithValue_Invalid
-  // createCustomizedWithValue_Null
-
-  // createAnswerStarThree
-  // createAnswerStarThree_Boundary
-  // ...
-  // all options
-  // createAnswerCustomized_Boundary
-
+  @Override
+  public void postCreate(Answer saved) {
+    employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+  }
 
   private Answer internalCreateAnswer(@NonNull String employeeAssessmentId, @NonNull String questionId, @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId) {
     validateAnsweredAt(answeredAt);

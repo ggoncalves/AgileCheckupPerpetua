@@ -13,6 +13,6 @@ public class OpenAnswerStrategy extends AnswerStringStrategy {
 
   @Override
   boolean isValidValue(String value) {
-    return value.length() > 0 && value.length() <= MAX_CHARACTERS;
+    return !value.isEmpty() && value.length() <= MAX_CHARACTERS;
   }
 }

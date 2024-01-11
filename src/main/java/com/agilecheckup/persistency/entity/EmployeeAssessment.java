@@ -29,4 +29,11 @@ public class EmployeeAssessment extends BaseEntity {
   @DynamoDBAttribute(attributeName = "team")
   @DynamoDBTypeConvertedJson
   private Team team;
+
+  @DynamoDBAttribute(attributeName = "answeredQuestionCount")
+  private Integer answeredQuestionCount;
+
+  {
+    answeredQuestionCount = 0;
+  }
 }

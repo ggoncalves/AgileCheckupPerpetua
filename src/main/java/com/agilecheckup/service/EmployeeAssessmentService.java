@@ -41,6 +41,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         .assessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId())
         .team(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")))
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, personId))
+        .answeredQuestionCount(0)
         .build();
     return setFixedIdIfConfigured(employeeAssessment);
   }
@@ -55,6 +56,14 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         .gender(gender)
         .genderPronoun(genderPronoun)
         .build();
+  }
+
+  public void incrementAnsweredQuestionCount(String employeeAssessmentId) {
+    EmployeeAssessment employeeAssessment = getRepository().findById(employeeAssessmentId);
+    if (employeeAssessment != null) {
+      employeeAssessment.setAnsweredQuestionCount(employeeAssessment.getAnsweredQuestionCount() + 1);
+      getRepository().save(employeeAssessment);
+    }
   }
 
   @Override

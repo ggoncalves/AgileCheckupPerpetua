@@ -22,4 +22,6 @@ public interface ServiceComponent {
   AssessmentMatrixService buildAssessmentMatrixService();
 
   EmployeeAssessmentService buildEmployeeAssessmentService();
+
+  AnswerService buildAnswerService();
 }

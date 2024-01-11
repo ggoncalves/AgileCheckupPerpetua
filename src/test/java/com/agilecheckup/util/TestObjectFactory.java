@@ -189,6 +189,7 @@ public class TestObjectFactory {
         .assessmentMatrixId(assessmentMatrixId)
         .team(createMockedTeam(id))
         .employee(createMockedNaturalPerson(name))
+        .answeredQuestionCount(0)
         .build();
   }
 

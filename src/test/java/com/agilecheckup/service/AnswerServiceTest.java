@@ -280,6 +280,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getValue(),
         answer.getTenantId());
     verify(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(answer.getEmployeeAssessmentId());
     verify(questionService).findById(answer.getQuestionId());
   }
 
