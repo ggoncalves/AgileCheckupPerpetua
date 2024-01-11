@@ -18,8 +18,8 @@ public class PerformanceCycleTableRunner extends AbstractEntityCrudRunner<Perfor
 
   private PerformanceCycleService performanceCycleService;
 
-  public PerformanceCycleTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public PerformanceCycleTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

@@ -11,7 +11,7 @@ import java.util.Optional;
 @Log4j2
 public abstract class AbstractEntityCrudRunner<T extends BaseEntity> extends AbstractCrudRunner<T> {
 
-  protected AbstractEntityCrudRunner(boolean shouldCleanAfterComplete) {
+  public AbstractEntityCrudRunner(boolean shouldCleanAfterComplete) {
     super(shouldCleanAfterComplete);
   }
 

@@ -21,8 +21,8 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
 
   private EmployeeAssessmentService employeeAssessmentService;
 
-  public EmployeeAssessmentTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public EmployeeAssessmentTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

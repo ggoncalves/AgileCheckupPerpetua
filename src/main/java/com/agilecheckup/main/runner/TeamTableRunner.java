@@ -18,8 +18,8 @@ public class TeamTableRunner extends AbstractEntityCrudRunner<Team> {
 
   private TeamService teamService;
 
-  public TeamTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public TeamTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

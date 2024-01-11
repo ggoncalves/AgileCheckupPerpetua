@@ -18,8 +18,8 @@ public class DepartmentTableRunner extends AbstractEntityCrudRunner<Department> 
 
   private DepartmentService departmentService;
 
-  public DepartmentTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public DepartmentTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

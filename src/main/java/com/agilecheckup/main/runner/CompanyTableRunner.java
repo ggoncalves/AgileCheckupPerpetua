@@ -18,8 +18,8 @@ public class CompanyTableRunner extends AbstractEntityCrudRunner<Company> {
 
   private CompanyService companyService;
 
-  public CompanyTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public CompanyTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

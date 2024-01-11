@@ -20,8 +20,8 @@ public class AssessmentMatrixTableRunner extends AbstractEntityCrudRunner<Assess
 
   private AssessmentMatrixService assessmentMatrixService;
 
-  public AssessmentMatrixTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public AssessmentMatrixTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
 
   @Override

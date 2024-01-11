@@ -19,13 +19,28 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Log4j2
- public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
+public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
+
+  // Using assessmentMatrixId "6413d36e-8716-4f97-ae87-7b4e9c2845ce"
+  String assessmentMatrixId1 = "6413d36e-8716-4f97-ae87-7b4e9c2845ce";
+  String pillarId1 = "1449ea3b-39b1-466c-bb54-f14ce984320f";
+  String categoryId1 = "078ed4c3-abab-40c2-a237-e352b5172ee2";
+
+  // Using assessmentMatrixId "6413d36e-8716-4f97-ae87-7b4e9c2845ce"
+  String assessmentMatrixId2 = "6413d36e-8716-4f97-ae87-7b4e9c2845ce";
+  String pillarId2 = "39820ef9-7944-44d6-9c7e-8b5586fc0cb2";
+  String categoryId2 = "60eb412a-00af-43cb-9f15-3308b7ff8a4c";
 
   private QuestionService questionService;
 
-  public QuestionTableRunner(boolean mustDelete) {
-    super(mustDelete);
+  public QuestionTableRunner(boolean shouldCleanAfterComplete) {
+    super(shouldCleanAfterComplete);
   }
+
+
+  // Define the question types
+  QuestionType[] questionTypes = QuestionType.values();
+
 
   @Override
   protected Collection<Supplier<Optional<Question>>> getCreateSupplier() {
@@ -36,6 +51,30 @@ import java.util.stream.IntStream;
     collection.add(() -> getQuestionService().createCustomQuestion("Pergunta custom oficial", QuestionType.CUSTOMIZED, "OrinnovaSuper",
         false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30),
         "6413d36e-8716-4f97-ae87-7b4e9c2845ce", "39820ef9-7944-44d6-9c7e-8b5586fc0cb2", "60eb412a-00af-43cb-9f15-3308b7ff8a4c"));
+
+    collection.add(() -> getQuestionService().createCustomQuestion("Pergunta custom oficial 2",
+        QuestionType.CUSTOMIZED, "OrinnovaSuper",
+        false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30),
+        assessmentMatrixId2, pillarId2, categoryId2));
+
+//    // Iterate over the question types
+//    for (QuestionType questionType : questionTypes) {
+//      if (questionType.equals(QuestionType.CUSTOMIZED)) continue;
+//      // Create two questions for each question type
+//      for (int i = 1; i <= 2; i++) {
+//        String questionDescription = "Pergunta " + questionType.toString().toLowerCase()
+//            + " " + i;
+//
+//        collection.add(() -> getQuestionService().create(questionDescription, questionType, "OrinnovaSuper",
+//            15,
+//            assessmentMatrixId1, pillarId1, categoryId1));
+//
+//        collection.add(() -> getQuestionService().create(questionDescription, questionType, "OrinnovaSuper",
+//            15,
+//            assessmentMatrixId2, pillarId2, categoryId2));
+//      }
+//    }
+
     return collection;
   }
 
