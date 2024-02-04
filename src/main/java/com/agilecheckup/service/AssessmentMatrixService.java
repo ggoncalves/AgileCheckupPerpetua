@@ -29,12 +29,14 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   public AssessmentMatrix incrementQuestionCount(String matrixId) {
-    AssessmentMatrix matrix = getRepository().findById(matrixId);
-    if (matrix != null) {
-      matrix.setQuestionCount(matrix.getQuestionCount() + 1);
-      getRepository().save(matrix);
-    }
-    return matrix;
+    assessmentMatrixRepository.performLocked(matrixId, () -> {
+      AssessmentMatrix matrix = getRepository().findById(matrixId);
+      if (matrix != null) {
+        matrix.setQuestionCount(matrix.getQuestionCount() + 1);
+        getRepository().save(matrix);
+      }
+    });
+    return getRepository().findById(matrixId);
   }
 
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,

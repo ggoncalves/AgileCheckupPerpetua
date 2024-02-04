@@ -138,14 +138,13 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void shouldIncrementQuestionCount() {
     String assessmentMatrixId = "matrixId";
-    doReturn(originalAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
-    assertEquals(0, originalAssessmentMatrix.getQuestionCount());
+    mockFindById(assessmentMatrixId, originalAssessmentMatrix);
+    mockPerformLockedAsSynchronous();
 
     assessmentMatrixService.incrementQuestionCount(assessmentMatrixId);
 
-    assertEquals(1, originalAssessmentMatrix.getQuestionCount());
-    verify(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
-    verify(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
+    assertQuestionCountIncremented();
+    verifyRepositoryInteractions(assessmentMatrixId);
   }
 
   @Test
@@ -159,5 +158,26 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Override
   AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> getCrudServiceSpy() {
     return assessmentMatrixService;
+  }
+
+  private void mockFindById(String matrixId, AssessmentMatrix assessmentMatrix) {
+    when(mockAssessmentMatrixRepository.findById(matrixId)).thenReturn(assessmentMatrix);
+  }
+
+  private void mockPerformLockedAsSynchronous() {
+    doAnswer(invocation -> {
+      Runnable runnable = invocation.getArgument(1);
+      runnable.run();
+      return null;
+    }).when(mockAssessmentMatrixRepository).performLocked(anyString(), any(Runnable.class));
+  }
+
+  private void assertQuestionCountIncremented() {
+    assertEquals(1, originalAssessmentMatrix.getQuestionCount());
+  }
+
+  private void verifyRepositoryInteractions(String matrixId) {
+    verify(mockAssessmentMatrixRepository, times(2)).findById(matrixId);
+    verify(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
   }
 }
