@@ -26,9 +26,10 @@ public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRu
   @Override
   public void run() {
     Collection<T> entities = create();
+    postCreate(entities);
     fetch(entities);
     invokeListAll();
-    if (shouldCleanAfterComplete) delete(entities);
+    if (shouldCleanAfterComplete) internalDelete(entities);
   }
 
   protected void invokeListAll() {
@@ -37,6 +38,12 @@ public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRu
     list.forEach(log::info);
   }
 
+  private void internalDelete(Collection<T> entities) {
+    delete(entities);
+    deleteDependencies();
+  }
+
+  protected abstract void postCreate(Collection<T> entities);
   protected abstract Collection<Supplier<Optional<T>>> getCreateSupplier();
 
   protected abstract AbstractCrudService<T, AbstractCrudRepository<T>> getCrudService();
@@ -48,5 +55,7 @@ public abstract class AbstractCrudRunner<T extends BaseEntity> implements CrudRu
   protected abstract void fetch(Collection<T> entities);
 
   protected abstract void delete(Collection<T> entities);
+
+  protected abstract void deleteDependencies();
 
 }

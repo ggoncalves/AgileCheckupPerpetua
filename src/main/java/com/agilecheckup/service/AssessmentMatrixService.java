@@ -3,13 +3,22 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.score.CategoryScore;
+import com.agilecheckup.persistency.entity.score.PillarScore;
+import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.google.common.annotations.VisibleForTesting;
+import dagger.Lazy;
+import lombok.Getter;
 
 import javax.inject.Inject;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
@@ -17,10 +26,20 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private final PerformanceCycleService performanceCycleService;
 
+  private final Lazy<QuestionService> questionService;
+
   @Inject
-  public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository, PerformanceCycleService performanceCycleService) {
+  public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository,
+                                 PerformanceCycleService performanceCycleService,
+                                 Lazy<QuestionService> questionService) {
     this.assessmentMatrixRepository = assessmentMatrixRepository;
     this.performanceCycleService = performanceCycleService;
+    this.questionService = questionService;
+  }
+
+  @VisibleForTesting
+  protected QuestionService getQuestionService() {
+    return questionService.get();
   }
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
@@ -58,5 +77,94 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   @Override
   AbstractCrudRepository<AssessmentMatrix> getRepository() {
     return assessmentMatrixRepository;
+  }
+
+  public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
+    List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrixId, tenantId);
+
+    // Map pillarId -> PillarScore
+    Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
+
+    // 2. Calcule a pontuacao total possivelmente máxima das questões recuperadas
+    int totalPoints = questions.stream()
+        .mapToInt(question -> {
+          // Recupera ou cria o PillarScore
+          PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
+              PillarScore.builder()
+                  .pillarId(id)
+                  .pillarName(question.getPillarName())
+                  .categoryIdToCategoryScoreMap(new HashMap<>())
+                  .build()
+          );
+
+          // Roda lógica suposta para atualizar PillarScore e se necessario CategoryScore com base na questão
+          updatePillarScoreWithQuestion(pillarScore, question);
+
+          return computeQuestionMaxScore(question);
+        })
+        .sum();
+
+    // 3.1 Recupere o AssessmentMatrix
+    AssessmentMatrix assessmentMatrix = assessmentMatrixRepository.findById(matrixId);
+
+    // 3.2 Atualize o PotentialScore do AssessmentMatrix
+    PotentialScore potentialScore =  assessmentMatrix.getPotentialScore();
+    if (potentialScore == null) {
+      potentialScore = PotentialScore.builder().build();
+      assessmentMatrix.setPotentialScore(potentialScore);
+    }
+    potentialScore.setPillarIdToPillarScoreMap(pillarIdToPillarScoreMap);
+    potentialScore.setMaxTotalScore(totalPoints);
+
+    // 4. Salve o AssessmentMatrix atualizado
+    assessmentMatrixRepository.save(assessmentMatrix);
+
+    return assessmentMatrix;
+  }
+
+  private void updatePillarScoreWithQuestion(PillarScore pillarScore, Question question) {
+    // Supondo que cada CategoryScore pode ser identificado pelo ID da categoria na questão
+    String categoryId = question.getCategoryId();
+    CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id ->
+        CategoryScore.builder()
+            .categoryId(id)
+            .categoryName(question.getCategoryName())
+            .questionScores(new ArrayList<>())
+            .build()
+    );
+
+    // Crie e adicione QuestionScore à lista de questionScores na CategoryScore
+    QuestionScore questionScore = QuestionScore.builder()
+        .questionId(question.getId())
+        .maxScore(computeQuestionMaxScore(question))
+        .build();
+    categoryScore.getQuestionScores().add(questionScore);
+
+    // Atualiza o maxCategoryScore na CategoryScore
+    categoryScore.setMaxCategoryScore(categoryScore.getQuestionScores().stream()
+        .mapToInt(QuestionScore::getMaxScore)
+        .sum());
+
+    // Atualiza o maxPillarScore no PillarScore
+    pillarScore.setMaxPillarScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
+        .mapToInt(CategoryScore::getMaxCategoryScore)
+        .sum());
+  }
+
+  @VisibleForTesting
+  Integer computeQuestionMaxScore(Question question) {
+    if (QuestionType.CUSTOMIZED.equals(question.getQuestionType())) {
+      if (question.getOptionGroup().isMultipleChoice()) {
+        return question.getOptionGroup().getOptionMap().values().stream()
+            .mapToInt(QuestionOption::getPoints)
+            .sum();
+      } else {
+        return question.getOptionGroup().getOptionMap().values().stream()
+            .mapToInt(QuestionOption::getPoints)
+            .max().orElse(0);
+      }
+    } else {
+      return question.getPoints();
+    }
   }
 }

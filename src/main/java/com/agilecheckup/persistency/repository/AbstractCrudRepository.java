@@ -5,9 +5,11 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.google.common.annotations.VisibleForTesting;
+import lombok.Getter;
 
 public abstract class AbstractCrudRepository<T>{
 
+  @Getter
   protected final DynamoDBMapper dynamoDBMapper;
 
   private final Class<T> clazz;

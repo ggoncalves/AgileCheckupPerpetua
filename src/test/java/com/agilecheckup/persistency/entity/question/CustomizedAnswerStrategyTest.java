@@ -1,8 +1,6 @@
 package com.agilecheckup.persistency.entity.question;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
 import static org.junit.jupiter.api.Assertions.*;

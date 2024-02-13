@@ -50,6 +50,10 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     return createQuestion(question);
   }
 
+  public List<Question> findByAssessmentMatrixId(String matrixId, String tenantId) {
+    return questionRepository.findByAssessmentMatrixId(matrixId, tenantId);
+  }
+
   private Optional<Question> createQuestion(Question question) {
     Optional<Question> savedQuestion = super.create(question);
     postCreate(savedQuestion);

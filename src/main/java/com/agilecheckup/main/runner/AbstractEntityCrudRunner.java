@@ -54,4 +54,13 @@ public abstract class AbstractEntityCrudRunner<T extends BaseEntity> extends Abs
     });
   }
 
+  @Override
+  protected void postCreate(Collection<T> entities) {
+
+  }
+
+  @Override
+  protected void deleteDependencies() {
+
+  }
 }

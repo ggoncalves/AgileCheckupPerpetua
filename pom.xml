@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>31.1-jre</version>
+			<version>32.0.0-android</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -96,6 +96,12 @@
 			<groupId>com.amazonaws</groupId>
 			<artifactId>dynamodb-lock-client</artifactId>
 			<version>1.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.11.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

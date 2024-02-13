@@ -2,6 +2,7 @@ package com.agilecheckup.persistency.entity.score;
 
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -11,11 +12,12 @@ import lombok.experimental.SuperBuilder;
 import java.util.Map;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+@EqualsAndHashCode
+@ToString
 @NoArgsConstructor
 @SuperBuilder
-public class PotentialScore extends BaseEntity {
+@DynamoDBDocument
+public class PotentialScore {
 
   @DynamoDBAttribute
   private Map<String, PillarScore> pillarIdToPillarScoreMap;
