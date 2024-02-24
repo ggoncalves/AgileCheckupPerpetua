@@ -46,7 +46,6 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
   @BeforeEach
   void setUpBefore() {
     originalEmployeeAssessment = createMockedEmployeeAssessment(DEFAULT_ID, "Fernando", assessmentMatrix.getId());
-    System.out.println("=====> " + originalEmployeeAssessment.getAnsweredQuestionCount());
     originalEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
   }
 

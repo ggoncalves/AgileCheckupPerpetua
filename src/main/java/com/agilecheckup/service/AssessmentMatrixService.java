@@ -15,7 +15,6 @@ import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
-import lombok.Getter;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -114,7 +113,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
       assessmentMatrix.setPotentialScore(potentialScore);
     }
     potentialScore.setPillarIdToPillarScoreMap(pillarIdToPillarScoreMap);
-    potentialScore.setMaxTotalScore(totalPoints);
+    potentialScore.setScore(totalPoints);
 
     // 4. Salve o AssessmentMatrix atualizado
     assessmentMatrixRepository.save(assessmentMatrix);
@@ -136,18 +135,18 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     // Crie e adicione QuestionScore à lista de questionScores na CategoryScore
     QuestionScore questionScore = QuestionScore.builder()
         .questionId(question.getId())
-        .maxScore(computeQuestionMaxScore(question))
+        .score(computeQuestionMaxScore(question))
         .build();
     categoryScore.getQuestionScores().add(questionScore);
 
     // Atualiza o maxCategoryScore na CategoryScore
-    categoryScore.setMaxCategoryScore(categoryScore.getQuestionScores().stream()
-        .mapToInt(QuestionScore::getMaxScore)
+    categoryScore.setScore(categoryScore.getQuestionScores().stream()
+        .mapToInt(QuestionScore::getScore)
         .sum());
 
     // Atualiza o maxPillarScore no PillarScore
-    pillarScore.setMaxPillarScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
-        .mapToInt(CategoryScore::getMaxCategoryScore)
+    pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
+        .mapToInt(CategoryScore::getScore)
         .sum());
   }
 

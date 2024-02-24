@@ -1,6 +1,5 @@
 package com.agilecheckup.persistency.entity.score;
 
-import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.Data;
@@ -17,7 +16,7 @@ import java.util.Map;
 @NoArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class PillarScore {
+public class PillarScore implements Scorable {
 
   @DynamoDBAttribute
   private String pillarId;
@@ -29,6 +28,6 @@ public class PillarScore {
   private Map<String, CategoryScore> categoryIdToCategoryScoreMap;
 
   @DynamoDBAttribute
-  private Integer maxPillarScore;
+  private Integer score;
 
 }

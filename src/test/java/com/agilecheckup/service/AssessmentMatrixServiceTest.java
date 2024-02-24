@@ -11,7 +11,6 @@ import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import dagger.Lazy;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -243,7 +242,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     assertNotNull(assessmentMatrix);
     assertNotNull(assessmentMatrix.getPotentialScore());
     assertTrue(assessmentMatrix.getPotentialScore().getPillarIdToPillarScoreMap().isEmpty());
-    assertEquals(0, assessmentMatrix.getPotentialScore().getMaxTotalScore());
+    assertEquals(0, assessmentMatrix.getPotentialScore().getScore());
   }
 
   @Test
@@ -371,7 +370,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   private void assertPotentialScores(AssessmentMatrix assessmentMatrix){
     assertNotNull(assessmentMatrix);
     assertNotNull(assessmentMatrix.getPotentialScore());
-    assertEquals(160, assessmentMatrix.getPotentialScore().getMaxTotalScore());
+    assertEquals(160, assessmentMatrix.getPotentialScore().getScore());
 
     PotentialScore ps = assessmentMatrix.getPotentialScore();
 
@@ -379,59 +378,59 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     Map<String, PillarScore> pillarScoreMap = ps.getPillarIdToPillarScoreMap();
 
     PillarScore pillar1Score = pillarScoreMap.get("p1");
-    assertEquals(75, pillar1Score.getMaxPillarScore());
+    assertEquals(75, pillar1Score.getScore());
     assertEquals("p1", pillar1Score.getPillarId());
     assertEquals("Pillar1", pillar1Score.getPillarName());
 
     PillarScore pillar2Score = pillarScoreMap.get("p2");
-    assertEquals(85, pillar2Score.getMaxPillarScore());
+    assertEquals(85, pillar2Score.getScore());
     assertEquals("p2", pillar2Score.getPillarId());
     assertEquals("Pillar2", pillar2Score.getPillarName());
 
     // Category Points
     Map<String, CategoryScore> categoryScoreMap1 = pillar1Score.getCategoryIdToCategoryScoreMap();
-    assertEquals(20, categoryScoreMap1.get("c11").getMaxCategoryScore());
+    assertEquals(20, categoryScoreMap1.get("c11").getScore());
     assertEquals("c11", categoryScoreMap1.get("c11").getCategoryId());
     assertEquals("Category11", categoryScoreMap1.get("c11").getCategoryName());
-    assertEquals(55, categoryScoreMap1.get("c12").getMaxCategoryScore());
+    assertEquals(55, categoryScoreMap1.get("c12").getScore());
     assertEquals("c12", categoryScoreMap1.get("c12").getCategoryId());
     assertEquals("Category12", categoryScoreMap1.get("c12").getCategoryName());
 
     Map<String, CategoryScore> categoryScoreMap2 = pillar2Score.getCategoryIdToCategoryScoreMap();
-    assertEquals(30, categoryScoreMap2.get("c21").getMaxCategoryScore());
+    assertEquals(30, categoryScoreMap2.get("c21").getScore());
     assertEquals("c21", categoryScoreMap2.get("c21").getCategoryId());
     assertEquals("Category21", categoryScoreMap2.get("c21").getCategoryName());
-    assertEquals(55, categoryScoreMap2.get("c22").getMaxCategoryScore());
+    assertEquals(55, categoryScoreMap2.get("c22").getScore());
     assertEquals("c22", categoryScoreMap2.get("c22").getCategoryId());
     assertEquals("Category22", categoryScoreMap2.get("c22").getCategoryName());
 
     // Question Points
     List<QuestionScore> questionScores = categoryScoreMap1.get("c11").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q111 = QuestionScore.builder().questionId("q111").maxScore(5).build();
-    QuestionScore q112 = QuestionScore.builder().questionId("q112").maxScore(15).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q111 = QuestionScore.builder().questionId("q111").score(5).build();
+    QuestionScore q112 = QuestionScore.builder().questionId("q112").score(15).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q111, q112);
 
     questionScores = categoryScoreMap1.get("c12").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q121 = QuestionScore.builder().questionId("q121").maxScore(15).build();
-    QuestionScore q122 = QuestionScore.builder().questionId("q122").maxScore(40).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q121 = QuestionScore.builder().questionId("q121").score(15).build();
+    QuestionScore q122 = QuestionScore.builder().questionId("q122").score(40).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q121, q122);
 
     questionScores = categoryScoreMap2.get("c21").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q211 = QuestionScore.builder().questionId("q211").maxScore(20).build();
-    QuestionScore q212 = QuestionScore.builder().questionId("q212").maxScore(10).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q211 = QuestionScore.builder().questionId("q211").score(20).build();
+    QuestionScore q212 = QuestionScore.builder().questionId("q212").score(10).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q211, q212);
 
     questionScores = categoryScoreMap2.get("c22").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q221 = QuestionScore.builder().questionId("q221").maxScore(30).build();
-    QuestionScore q222 = QuestionScore.builder().questionId("q222").maxScore(25).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q221 = QuestionScore.builder().questionId("q221").score(30).build();
+    QuestionScore q222 = QuestionScore.builder().questionId("q222").score(25).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 
   }
@@ -439,7 +438,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){
     assertNotNull(assessmentMatrix);
     assertNotNull(assessmentMatrix.getPotentialScore());
-    assertEquals(190, assessmentMatrix.getPotentialScore().getMaxTotalScore());
+    assertEquals(190, assessmentMatrix.getPotentialScore().getScore());
 
     PotentialScore ps = assessmentMatrix.getPotentialScore();
 
@@ -447,59 +446,59 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     Map<String, PillarScore> pillarScoreMap = ps.getPillarIdToPillarScoreMap();
 
     PillarScore pillar1Score = pillarScoreMap.get("pu1");
-    assertEquals(100, pillar1Score.getMaxPillarScore());
+    assertEquals(100, pillar1Score.getScore());
     assertEquals("pu1", pillar1Score.getPillarId());
     assertEquals("PUillar1", pillar1Score.getPillarName());
 
     PillarScore pillar2Score = pillarScoreMap.get("pu2");
-    assertEquals(90, pillar2Score.getMaxPillarScore());
+    assertEquals(90, pillar2Score.getScore());
     assertEquals("pu2", pillar2Score.getPillarId());
     assertEquals("PUillar2", pillar2Score.getPillarName());
 
     // Category Points
     Map<String, CategoryScore> categoryScoreMap1 = pillar1Score.getCategoryIdToCategoryScoreMap();
-    assertEquals(20, categoryScoreMap1.get("cu11").getMaxCategoryScore());
+    assertEquals(20, categoryScoreMap1.get("cu11").getScore());
     assertEquals("cu11", categoryScoreMap1.get("cu11").getCategoryId());
     assertEquals("CUategory11", categoryScoreMap1.get("cu11").getCategoryName());
-    assertEquals(80, categoryScoreMap1.get("cu12").getMaxCategoryScore());
+    assertEquals(80, categoryScoreMap1.get("cu12").getScore());
     assertEquals("cu12", categoryScoreMap1.get("cu12").getCategoryId());
     assertEquals("CUategory12", categoryScoreMap1.get("cu12").getCategoryName());
 
     Map<String, CategoryScore> categoryScoreMap2 = pillar2Score.getCategoryIdToCategoryScoreMap();
-    assertEquals(15, categoryScoreMap2.get("cu21").getMaxCategoryScore());
+    assertEquals(15, categoryScoreMap2.get("cu21").getScore());
     assertEquals("cu21", categoryScoreMap2.get("cu21").getCategoryId());
     assertEquals("CUategory21", categoryScoreMap2.get("cu21").getCategoryName());
-    assertEquals(75, categoryScoreMap2.get("cu22").getMaxCategoryScore());
+    assertEquals(75, categoryScoreMap2.get("cu22").getScore());
     assertEquals("cu22", categoryScoreMap2.get("cu22").getCategoryId());
     assertEquals("CUategory22", categoryScoreMap2.get("cu22").getCategoryName());
 
     // Question Points
     List<QuestionScore> questionScores = categoryScoreMap1.get("cu11").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q111 = QuestionScore.builder().questionId("qu111").maxScore(5).build();
-    QuestionScore q112 = QuestionScore.builder().questionId("qu112").maxScore(15).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q111 = QuestionScore.builder().questionId("qu111").score(5).build();
+    QuestionScore q112 = QuestionScore.builder().questionId("qu112").score(15).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q111, q112);
 
     questionScores = categoryScoreMap1.get("cu12").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q121 = QuestionScore.builder().questionId("qu121").maxScore(45).build();
-    QuestionScore q122 = QuestionScore.builder().questionId("qu122").maxScore(35).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q121 = QuestionScore.builder().questionId("qu121").score(45).build();
+    QuestionScore q122 = QuestionScore.builder().questionId("qu122").score(35).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q121, q122);
 
     questionScores = categoryScoreMap2.get("cu21").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q211 = QuestionScore.builder().questionId("qu211").maxScore(10).build();
-    QuestionScore q212 = QuestionScore.builder().questionId("qu212").maxScore(5).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q211 = QuestionScore.builder().questionId("qu211").score(10).build();
+    QuestionScore q212 = QuestionScore.builder().questionId("qu212").score(5).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q211, q212);
 
     questionScores = categoryScoreMap2.get("cu22").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q221 = QuestionScore.builder().questionId("qu221").maxScore(40).build();
-    QuestionScore q222 = QuestionScore.builder().questionId("qu222").maxScore(35).build();
-    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "maxScore").containsExactlyInAnyOrder(
+    QuestionScore q221 = QuestionScore.builder().questionId("qu221").score(40).build();
+    QuestionScore q222 = QuestionScore.builder().questionId("qu222").score(35).build();
+    org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 
   }

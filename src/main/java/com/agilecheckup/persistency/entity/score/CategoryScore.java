@@ -1,6 +1,5 @@
 package com.agilecheckup.persistency.entity.score;
 
-import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.Data;
@@ -10,7 +9,6 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @EqualsAndHashCode
@@ -18,7 +16,7 @@ import java.util.Map;
 @NoArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class CategoryScore {
+public class CategoryScore implements Scorable {
 
   @DynamoDBAttribute
   private String categoryId;
@@ -30,5 +28,54 @@ public class CategoryScore {
   private List<QuestionScore> questionScores;
 
   @DynamoDBAttribute
-  private Integer maxCategoryScore;
+  private Integer score;
+
+//  {
+//    "id": "assessmentMatrix1",
+//      "performanceCycleId": "cycle1",
+//      "questionCount": 10,
+//      "pillarMap": { ... },
+//    "employeeResults": [
+//    {
+//      "employeeId": "employee1",
+//        "totalScore": 80,
+//        "scoresByPillar": {
+//      "pillar1": {
+//        "totalScore": 40,
+//            "scoresByCategory": {
+//          "category1": 20,
+//              "category2": 20
+//        }
+//      },
+//      "pillar2": {
+//        "totalScore": 40,
+//            "scoresByCategory": {
+//          "category3": 20,
+//              "category4": 20
+//        }
+//      }
+//    }
+//    },
+//    {
+//      "employeeId": "employee2",
+//        "totalScore": 85,
+//        "scoresByPillar": {
+//      "pillar1": {
+//        "totalScore": 45,
+//            "scoresByCategory": {
+//          "category1": 25,
+//              "category2": 20
+//        }
+//      },
+//      "pillar2": {
+//        "totalScore": 40,
+//            "scoresByCategory": {
+//          "category3": 20,
+//              "category4": 20
+//        }
+//      }
+//    }
+//    }
+//  ]
+//  }
 }
