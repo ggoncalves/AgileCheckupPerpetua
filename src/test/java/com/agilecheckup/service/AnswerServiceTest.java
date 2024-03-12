@@ -3,9 +3,9 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.AnswerStrategy;
-import com.agilecheckup.persistency.entity.question.AnswerStrategyFactory;
 import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.score.AbstractScoreCalculator;
+import com.agilecheckup.persistency.entity.score.ScoreCalculationStrategyFactory;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
@@ -49,9 +49,9 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   private static final LocalDateTime FUTURE_DATE_TIME_59_MINUTES = LocalDateTime.now().plusMinutes(59);
   private static final LocalDateTime FUTURE_DATE_TIME_61_MINUTES = LocalDateTime.now().plusMinutes(61);
 
-  private Question mockedStarFiveQuestion = createMockedQuestion(GENERIC_ID_1234, QuestionType.STAR_FIVE);
+  private final Question mockedStarFiveQuestion = createMockedQuestion(GENERIC_ID_1234, QuestionType.STAR_FIVE);
 
-  private EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(GENERIC_ID_1234, EMPLOYEE_NAME_JOHN, GENERIC_ID_1234);
+  private final EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(GENERIC_ID_1234, EMPLOYEE_NAME_JOHN, GENERIC_ID_1234);
 
   @BeforeEach
   void setUpBefore() {
@@ -62,30 +62,6 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   void afterEach() {
     Mockito.reset(questionService, answerService, questionService, employeeAssessmentService);
   }
-
-  // Test Cases
-  // OK createWithEmployeeAssessmentId_Invalid
-  // OK createWithEmployeeAssessmentId_Null
-  // OK createWithQuestionId_Invalid
-  // OK createWithQuestionId_Null
-  // OK createWithAnsweredAt_Invalid(?)
-  // OK createWithAnsweredAt_Null
-  // OK createWithTenantId_Invalid - No, it will be validated in the future
-  // OK createWithTenantId_Null - No, it will be validated in the future
-
-  // WrongValidation By Question Type
-  // createStarThreeWithValue_Invalid
-  // createStarThreeWithValue_Null
-  // ..
-  // all options
-  // createCustomizedWithValue_Invalid
-  // createCustomizedWithValue_Null
-
-  // createAnswerStarThree
-  // createAnswerStarThree_Boundary
-  // ...
-  // all options
-  // createAnswerCustomized_Boundary
 
   @Test
   void createWithEmployeeAssessmentId_Invalid() {
@@ -124,7 +100,11 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   }
 
   void assertCreateAnswerWithEmployeeAssessmentId(String employeeAssessmentId) {
-    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, QuestionType.STAR_FIVE, NOW_DATE_TIME, "3");
+    String value = "3";
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(mockedStarFiveQuestion,
+        value);
+    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, mockedStarFiveQuestion, QuestionType.STAR_FIVE,
+        NOW_DATE_TIME, value, scoreCalculator.getCalculatedScore());
     if (employeeAssessmentId != null) {
       doReturn(Optional.empty()).when(employeeAssessmentService).findById(employeeAssessmentId);
     }
@@ -139,7 +119,11 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   }
 
   void assertCreateAnswerWithQuestionId(String questionId) {
-    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, QuestionType.STAR_FIVE, NOW_DATE_TIME, "3");
+    String value = "3";
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(mockedStarFiveQuestion,
+        value);
+    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, mockedStarFiveQuestion, QuestionType.STAR_FIVE,
+        NOW_DATE_TIME, value, scoreCalculator.getCalculatedScore());
     if (questionId != null) {
       doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
       doReturn(Optional.empty()).when(employeeAssessmentService).findById(questionId);
@@ -154,7 +138,11 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   }
 
   void assertCreateAnswerWithAnsweredAt(LocalDateTime answeredAt) {
-    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, QuestionType.STAR_FIVE, NOW_DATE_TIME, "3");
+    String value = "3";
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(mockedStarFiveQuestion,
+        value);
+    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, mockedStarFiveQuestion, QuestionType.STAR_FIVE,
+        NOW_DATE_TIME, value, scoreCalculator.getCalculatedScore());
     // When
     answerService.create(
         answer.getEmployeeAssessmentId(),
@@ -182,7 +170,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   @Test
   void createStarThree_Invalid() {
     Question question = createMockedQuestion(GENERIC_ID_1234, QuestionType.STAR_THREE);
-    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(NOW_DATE_TIME, question, "4"));
+    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(question, "4"));
   }
 
   @Test
@@ -194,7 +182,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   @Test
   void createStarFive_Invalid() {
     Question question = createMockedQuestion(GENERIC_ID_1234, QuestionType.STAR_FIVE);
-    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(NOW_DATE_TIME, question, "6"));
+    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(question, "6"));
   }
 
   @Test
@@ -206,7 +194,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   @Test
   void createOneToTen_Invalid() {
     Question question = createMockedQuestion(GENERIC_ID_1234, QuestionType.ONE_TO_TEN);
-    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(NOW_DATE_TIME, question, "11"));
+    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(question, "11"));
   }
 
   @Test
@@ -236,7 +224,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   @Test
   void createOpenAnswer() {
     Question question = createMockedQuestion(GENERIC_ID_1234, QuestionType.OPEN_ANSWER);
-    assertCreateWithValidValue(NOW_DATE_TIME, question, "This is an open Answer");
+    assertCreateWithValidValue(NOW_DATE_TIME, question, "This is an open Answer", true);
   }
 
   @Test
@@ -248,12 +236,20 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   @Test
   void createCustomizedAnswer_Invalid() {
     Question question = createMockedCustomQuestion(GENERIC_ID_1234);
-    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(NOW_DATE_TIME, question, "6"));
+    assertThrows(IllegalArgumentException.class, () -> assertCreateWithInvalidValue(question, "6"));
   }
 
   void assertCreateWithValidValue(LocalDateTime answeredAt, Question question, String valueString) {
-    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, question.getQuestionType(), answeredAt,
+    assertCreateWithValidValue(answeredAt, question, valueString, false);
+  }
+
+  void assertCreateWithValidValue(LocalDateTime answeredAt, Question question, String valueString,
+                                  boolean pendingReview) {
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question,
         valueString);
+    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, question, question.getQuestionType(), answeredAt,
+        valueString, scoreCalculator.getCalculatedScore());
+    answer.setPendingReview(pendingReview);
     Answer savedAnswer = cloneWithId(answer, DEFAULT_ID);
 
     // Prevent/Stub
@@ -284,9 +280,9 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     verify(questionService).findById(answer.getQuestionId());
   }
 
-  void assertCreateWithInvalidValue(LocalDateTime answeredAt, Question question, String valueString) {
-    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, question.getQuestionType(), answeredAt,
-        valueString);
+  void assertCreateWithInvalidValue(Question question, String valueString) {
+    Answer answer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, question, question.getQuestionType(), AnswerServiceTest.NOW_DATE_TIME,
+        valueString, 0d);
     Answer savedAnswer = cloneWithId(answer, DEFAULT_ID);
 
     // Prevent/Stub

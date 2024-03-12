@@ -1,10 +1,13 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.AnswerStrategy;
 import com.agilecheckup.persistency.entity.question.AnswerStrategyFactory;
 import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.score.AbstractScoreCalculator;
+import com.agilecheckup.persistency.entity.score.ScoreCalculationStrategyFactory;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
@@ -43,8 +46,9 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     validateAnsweredAt(answeredAt);
     Question question = getQuestionById(questionId);
     // TODO allowNullValue must be fetched from Question
-    AnswerStrategy answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
+    AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
     answerStrategy.assignValue(value);
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
     EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
     Answer answer = Answer.builder()
         .employeeAssessmentId(employeeAssessment.getId())
@@ -52,8 +56,11 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
         .categoryId(question.getCategoryId())
         .questionId(question.getId())
         .questionType(question.getQuestionType())
+        .question(question)
+        .pendingReview(QuestionType.OPEN_ANSWER.equals(question.getQuestionType()))
         .answeredAt(answeredAt)
         .value(answerStrategy.valueToString())
+        .score(scoreCalculator.getCalculatedScore())
         .tenantId(tenantId)
         .build();
     return setFixedIdIfConfigured(answer);

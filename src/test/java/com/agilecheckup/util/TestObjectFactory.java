@@ -25,31 +25,36 @@ public class TestObjectFactory {
   public static final String GENERIC_ID_1234 = "1234";
   public static final String EMPLOYEE_NAME_JOHN = "John";
 
-  public static Answer createMockedAnswer() {
+  public static Answer createMockedAnswer(@NonNull Double score) {
     return Answer.builder()
         .employeeAssessmentId(GENERIC_ID_1234)
         .pillarId(GENERIC_ID_1234)
         .categoryId(GENERIC_ID_1234)
         .questionId(GENERIC_ID_1234)
         .questionType(QuestionType.CUSTOMIZED)
+        .question(createMockedQuestion(GENERIC_ID_1234))
         .answeredAt(LocalDateTime.now())
         .value("3")
         .tenantId("tenantId")
+        .score(score)
         .build();
   }
 
-  public static Answer createMockedAnswer(String id, @NonNull String dependenciesId, @NonNull QuestionType questionType,
-                                          @NonNull LocalDateTime answeredAt, @NonNull String value) {
+  public static Answer createMockedAnswer(String id, @NonNull String dependenciesId,
+                                          @NonNull Question question, @NonNull QuestionType questionType,
+                                          @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull Double score) {
     return Answer.builder()
         .id(id)
         .employeeAssessmentId(dependenciesId)
         .pillarId(dependenciesId)
         .categoryId(dependenciesId)
         .questionId(dependenciesId)
+        .question(question)
         .questionType(questionType)
         .answeredAt(answeredAt)
         .value(value)
         .tenantId("tenantId")
+        .score(score)
         .build();
   }
 
@@ -67,6 +72,11 @@ public class TestObjectFactory {
 
   public static Question createMockedQuestion(String id, Integer points) {
     return createMockedQuestion(id, QuestionType.YES_NO, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, "Category " +
+        "Name", points);
+  }
+
+  public static Question createMockedQuestion(Integer points, QuestionType questionType) {
+    return createMockedQuestion(GENERIC_ID_1234, questionType, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, "Category " +
         "Name", points);
   }
 

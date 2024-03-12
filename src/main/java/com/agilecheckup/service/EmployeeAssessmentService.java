@@ -7,12 +7,18 @@ import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
+import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import lombok.NonNull;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAssessment, AbstractCrudRepository<EmployeeAssessment>> {
@@ -23,11 +29,14 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
 
   private final EmployeeAssessmentRepository employeeAssessmentRepository;
 
+  private final AnswerRepository answerRepository;
+
   @Inject
-  public EmployeeAssessmentService(EmployeeAssessmentRepository employeeAssessmentRepository, AssessmentMatrixService assessmentMatrixService, TeamService teamService) {
+  public EmployeeAssessmentService(EmployeeAssessmentRepository employeeAssessmentRepository, AssessmentMatrixService assessmentMatrixService, TeamService teamService, AnswerRepository answerRepository) {
     this.employeeAssessmentRepository = employeeAssessmentRepository;
     this.assessmentMatrixService = assessmentMatrixService;
     this.teamService = teamService;
+    this.answerRepository = answerRepository;
   }
 
   public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
@@ -64,6 +73,15 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       employeeAssessment.setAnsweredQuestionCount(employeeAssessment.getAnsweredQuestionCount() + 1);
       getRepository().save(employeeAssessment);
     }
+  }
+
+  public EmployeeAssessment updateEmployeeAssessmentScore(String employeeAssessmentId, String tenantId) {
+    List<Answer> answers = answerRepository.findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
+
+    // Map pillarId -> PillarScore
+    Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
+
+    return null;
   }
 
   @Override
