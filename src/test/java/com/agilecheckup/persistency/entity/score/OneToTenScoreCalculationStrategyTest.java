@@ -12,28 +12,28 @@ class OneToTenScoreCalculationStrategyTest {
   @Test
   void shouldReturn1WhenCalculate10PointsForValue1() {
     OneToTenScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("1",
-        createMockedQuestion(10, QuestionType.ONE_TO_TEN));
+        createMockedQuestion(10d, QuestionType.ONE_TO_TEN));
     assertEquals(1d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn5WhenCalculate10PointsForValue5() {
     OneToTenScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("5",
-        createMockedQuestion(10, QuestionType.ONE_TO_TEN));
+        createMockedQuestion(10d, QuestionType.ONE_TO_TEN));
     assertEquals(5d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn10WhenCalculate10PointsForValue10() {
     OneToTenScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("10",
-        createMockedQuestion(10, QuestionType.ONE_TO_TEN));
+        createMockedQuestion(10d, QuestionType.ONE_TO_TEN));
     assertEquals(10d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn35WhenCalculate50PointsForValue7() {
     OneToTenScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("7",
-        createMockedQuestion(50, QuestionType.ONE_TO_TEN));
+        createMockedQuestion(50d, QuestionType.ONE_TO_TEN));
     assertEquals(35d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 

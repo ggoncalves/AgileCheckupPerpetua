@@ -28,7 +28,7 @@ public class CategoryScore implements Scorable {
   private List<QuestionScore> questionScores;
 
   @DynamoDBAttribute
-  private Integer score;
+  private Double score;
 
 //  {
 //    "id": "assessmentMatrix1",

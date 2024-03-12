@@ -3,12 +3,14 @@ package com.agilecheckup.persistency.entity.question;
 import org.junit.jupiter.api.Test;
 
 import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CustomizedAnswerStrategyTest {
 
-  private final Question singleChoiceQuestion = createMockedCustomQuestion("MockedQuestion", false, 0, 5, 6, 7, 10);
-  private final Question multipleChoiceQuestion = createMockedCustomQuestion("MockedQuestion", true, 0, 5, 6, 7, 10);
+  private final Question singleChoiceQuestion = createMockedCustomQuestion("MockedQuestion", false, 0d, 5d, 6d, 7d,
+      10d);
+  private final Question multipleChoiceQuestion = createMockedCustomQuestion("MockedQuestion", true, 0d, 5d, 6d, 7d,
+      10d);
 
   private void assertIsValidValue(boolean expected, AnswerStrategy<String> answerStrategy, String values) {
     assertEquals(expected, answerStrategy.isValidValue(values));

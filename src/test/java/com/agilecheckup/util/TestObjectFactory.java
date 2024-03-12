@@ -59,30 +59,30 @@ public class TestObjectFactory {
   }
 
   public static Question createMockedQuestion() {
-    return createMockedQuestion(5);
+    return createMockedQuestion(5d);
   }
 
-  public static Question createMockedQuestion(int points) {
+  public static Question createMockedQuestion(Double points) {
     return createMockedQuestion(GENERIC_ID_1234, points);
   }
 
   public static Question createMockedQuestion(String id) {
-    return createMockedQuestion(id, 5);
+    return createMockedQuestion(id, 5d);
   }
 
-  public static Question createMockedQuestion(String id, Integer points) {
+  public static Question createMockedQuestion(String id, Double points) {
     return createMockedQuestion(id, QuestionType.YES_NO, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, "Category " +
         "Name", points);
   }
 
-  public static Question createMockedQuestion(Integer points, QuestionType questionType) {
+  public static Question createMockedQuestion(Double points, QuestionType questionType) {
     return createMockedQuestion(GENERIC_ID_1234, questionType, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, "Category " +
         "Name", points);
   }
 
   public static Question createMockedQuestion(String id, QuestionType questionType, @NonNull String pillarId,
                                               @NonNull String pillarName, @NonNull String categoryId,
-                                              @NonNull String categoryName, Integer points) {
+                                              @NonNull String categoryName, Double points) {
     return Question.builder()
         .id(id)
         .assessmentMatrixId(GENERIC_ID_1234)
@@ -108,10 +108,10 @@ public class TestObjectFactory {
   }
 
   public static Question createMockedCustomQuestion(String id, boolean isMultipleChoice) {
-    return createMockedCustomQuestion(id, isMultipleChoice, 0, 5, 10, 20, 30);
+    return createMockedCustomQuestion(id, isMultipleChoice, 0d, 5d, 10d, 20d, 30d);
   }
 
-  public static Question createMockedCustomQuestion(String id, boolean isMultipleChoice, Integer... points) {
+  public static Question createMockedCustomQuestion(String id, boolean isMultipleChoice, Double... points) {
     return createMockedCustomQuestion(id, isMultipleChoice, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234,
         "Category Name", points);
   }
@@ -119,7 +119,7 @@ public class TestObjectFactory {
   public static Question createMockedCustomQuestion(String id, boolean isMultipleChoice, @NonNull String pillarId,
                                                     @NonNull String pillarName, @NonNull String categoryId,
                                                     @NonNull String categoryName,
-                                                    Integer... points) {
+                                                    Double... points) {
     return Question.builder()
         .id(id)
         .assessmentMatrixId(GENERIC_ID_1234)
@@ -134,31 +134,31 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static OptionGroup createMockedOptionGroup(boolean isMultipleChoice, Integer... points) {
+  public static OptionGroup createMockedOptionGroup(boolean isMultipleChoice, Double... points) {
     return createMockedOptionGroup(isMultipleChoice, "OptionPrefix", points);
   }
 
-  public static OptionGroup createMockedOptionGroup(boolean isMultipleChpice, String prefix, Integer... points) {
+  public static OptionGroup createMockedOptionGroup(boolean isMultipleChoice, String prefix, Double... points) {
     return OptionGroup.builder()
-        .isMultipleChoice(isMultipleChpice)
+        .isMultipleChoice(isMultipleChoice)
         .showFlushed(true)
         .optionMap(createMockedQuestionOptionMap(prefix, points))
         .build();
   }
 
-  public static List<QuestionOption> createMockedQuestionOptionList(String prefix, Integer... points) {
+  public static List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
     return IntStream.range(0, points.length)
         .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
         .collect(Collectors.toList());
   }
 
-  public static Map<Integer, QuestionOption> createMockedQuestionOptionMap(String prefix, Integer... points) {
+  public static Map<Integer, QuestionOption> createMockedQuestionOptionMap(String prefix, Double... points) {
     return IntStream.range(0, points.length)
         .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
         .collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
   }
 
-  public static QuestionOption createQuestionOption(Integer id, String prefix, int points) {
+  public static QuestionOption createQuestionOption(Integer id, String prefix, Double points) {
     return QuestionOption.builder()
         .id(id)
         .text(buildPrefix(prefix, id))

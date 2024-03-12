@@ -23,5 +23,5 @@ public class QuestionOption implements Serializable {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "points")
-  private Integer points;
+  private Double points;
 }

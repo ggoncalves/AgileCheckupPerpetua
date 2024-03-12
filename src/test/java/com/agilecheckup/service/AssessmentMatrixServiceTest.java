@@ -176,32 +176,32 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void shouldSumAllOptionsOnMultipleChoiceCustomQuestion() {
     // sum is 70
-    Question question = createMockedCustomQuestion("questionId1", true, 10, 10, 20, 10, 20);
+    Question question = createMockedCustomQuestion("questionId1", true, 10d, 10d, 20d, 10d, 20d);
     assertEquals(70, assessmentMatrixService.computeQuestionMaxScore(question));
   }
 
   @Test
   void shouldSumAllOptionsOnMultipleChoiceCustomQuestionIncludingNegativePoints() {
     // sum is 30
-    Question question = createMockedCustomQuestion("questionId1", true, 10, 10, -20, 10, 20);
+    Question question = createMockedCustomQuestion("questionId1", true, 10d, 10d, -20d, 10d, 20d);
     assertEquals(30, assessmentMatrixService.computeQuestionMaxScore(question));
   }
 
   @Test
   void shouldReturnMaxPossibleOptionOnCustomQuestion() {
-    Question question = createMockedCustomQuestion("questionId1", false, 10, 30, -20, 10, 20);
+    Question question = createMockedCustomQuestion("questionId1", false, 10d, 30d, -20d, 10d, 20d);
     assertEquals(30, assessmentMatrixService.computeQuestionMaxScore(question));
   }
 
   @Test
   void shouldReturnMaxPossibleOptionOnCustomQuestionOnlyNegatives() {
-    Question question = createMockedCustomQuestion("questionId1", false, -10, 0, -20);
+    Question question = createMockedCustomQuestion("questionId1", false, -10d, 0d, -20d);
     assertEquals(0, assessmentMatrixService.computeQuestionMaxScore(question));
   }
 
   @Test
   void shouldReturnPointsOnNonCustomQuestion() {
-    Question question = createMockedQuestion(10);
+    Question question = createMockedQuestion(10d);
     assertEquals(10, assessmentMatrixService.computeQuestionMaxScore(question));
   }
 
@@ -300,32 +300,32 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     //   Category 11 - Pt 20
     //     Question 111 Pt 5 - (Rating 5)
     questionList.add(createMockedQuestion("q111", QuestionType.STAR_FIVE, "p1", "Pillar1", "c11", "Category11",
-        5));
+        5d));
     //     Question 112 Pt Max 15 (Custom Regular)
-    questionList.add(createMockedCustomQuestion("q112", false, "p1", "Pillar1", "c11", "Category11", 10, 10, 15
-        , 10));
+    questionList.add(createMockedCustomQuestion("q112", false, "p1", "Pillar1", "c11", "Category11", 10d, 10d, 15d
+        , 10d));
     //   Category 12 - Pt 55
     //     Question 121 Pt 15 (Rating 3)
     questionList.add(createMockedQuestion("q121", QuestionType.STAR_THREE, "p1", "Pillar1", "c12", "Category12",
-        15));
+        15d));
     //     Question 122 Pt Sum 40(Custom Multiple Choice)
-    questionList.add(createMockedCustomQuestion("q122", true, "p1", "Pillar1", "c12", "Category12", 5, 10, 10
-        , 5, 10));
+    questionList.add(createMockedCustomQuestion("q122", true, "p1", "Pillar1", "c12", "Category12", 5d, 10d, 10d
+        , 5d, 10d));
     // Pillar 2 - 85
     //   Category 21 - Pt 30
     //     Question 211 Pt 20 (Good Bad)
     questionList.add(createMockedQuestion("q211", QuestionType.GOOD_BAD, "p2", "Pillar2", "c21", "Category21",
-        20));
+        20d));
     //     Question 212 Pt 10 (Yes No)
     questionList.add(createMockedQuestion("q212", QuestionType.YES_NO, "p2", "Pillar2", "c21", "Category21",
-        10));
+        10d));
     //   Category 22 - Pt 55
     //     Question 221 Pt Sum 30 (Custom Multiple Choice)
-    questionList.add(createMockedCustomQuestion("q221", true, "p2", "Pillar2", "c22", "Category22", 5, 10, 10
-        , 5));
+    questionList.add(createMockedCustomQuestion("q221", true, "p2", "Pillar2", "c22", "Category22", 5d, 10d, 10d
+        , 5d));
     //     Question 222 Pt Max 25(Custom Regular)
-    questionList.add(createMockedCustomQuestion("q222", false, "p2", "Pillar2", "c22", "Category22", 10, 25, 15
-        , 10));
+    questionList.add(createMockedCustomQuestion("q222", false, "p2", "Pillar2", "c22", "Category22", 10d, 25d, 15d
+        , 10d));
 
     return questionList;
   }
@@ -337,32 +337,32 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     //   Category 11 - Pt 20
     //     Question 111 Pt 5 - (Rating 5)
     questionList.add(createMockedQuestion("qu111", QuestionType.STAR_FIVE, "pu1", "PUillar1", "cu11", "CUategory11",
-        5));
+        5d));
     //     Question 112 Pt Max 15 (Custom Regular)
-    questionList.add(createMockedCustomQuestion("qu112", false, "pu1", "PUillar1", "cu11", "CUategory11", 10, 10, 15
-        , 10));
+    questionList.add(createMockedCustomQuestion("qu112", false, "pu1", "PUillar1", "cu11", "CUategory11", 10d, 10d, 15d
+        , 10d));
     //   Category 12 - Pt 80
     //     Question 121 Pt 45 (Rating 3)
     questionList.add(createMockedQuestion("qu121", QuestionType.STAR_THREE, "pu1", "PUillar1", "cu12", "CUategory12",
-        45));
+        45d));
     //     Question 122 Pt Sum 35(Custom Multiple Choice)
-    questionList.add(createMockedCustomQuestion("qu122", true, "pu1", "PUillar1", "cu12", "CUategory12", 5, 10, 10
-        , 5, 5));
+    questionList.add(createMockedCustomQuestion("qu122", true, "pu1", "PUillar1", "cu12", "CUategory12", 5d, 10d, 10d
+        , 5d, 5d));
     // Pillar 2 - 90
     //   Category 21 - Pt 15
     //     Question 211 Pt 10 (Good Bad)
     questionList.add(createMockedQuestion("qu211", QuestionType.GOOD_BAD, "pu2", "PUillar2", "cu21", "CUategory21",
-        10));
+        10d));
     //     Question 212 Pt 5 (Yes No)
     questionList.add(createMockedQuestion("qu212", QuestionType.YES_NO, "pu2", "PUillar2", "cu21", "CUategory21",
-        5));
+        5d));
     //   Category 22 - Pt 75
     //     Question 221 Pt Sum 40 (Custom Multiple Choice)
-    questionList.add(createMockedCustomQuestion("qu221", true, "pu2", "PUillar2", "cu22", "CUategory22", 5, 10, 10
-        , 15));
+    questionList.add(createMockedCustomQuestion("qu221", true, "pu2", "PUillar2", "cu22", "CUategory22", 5d, 10d, 10d
+        , 15d));
     //     Question 222 Pt Max 35(Custom Regular)
-    questionList.add(createMockedCustomQuestion("qu222", false, "pu2", "PUillar2", "cu22", "CUategory22", 10, 25, 15
-        , 35));
+    questionList.add(createMockedCustomQuestion("qu222", false, "pu2", "PUillar2", "cu22", "CUategory22", 10d, 25d, 15d
+        , 35d));
 
     return questionList;
   }
@@ -407,29 +407,29 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     // Question Points
     List<QuestionScore> questionScores = categoryScoreMap1.get("c11").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q111 = QuestionScore.builder().questionId("q111").score(5).build();
-    QuestionScore q112 = QuestionScore.builder().questionId("q112").score(15).build();
+    QuestionScore q111 = QuestionScore.builder().questionId("q111").score(5d).build();
+    QuestionScore q112 = QuestionScore.builder().questionId("q112").score(15d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q111, q112);
 
     questionScores = categoryScoreMap1.get("c12").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q121 = QuestionScore.builder().questionId("q121").score(15).build();
-    QuestionScore q122 = QuestionScore.builder().questionId("q122").score(40).build();
+    QuestionScore q121 = QuestionScore.builder().questionId("q121").score(15d).build();
+    QuestionScore q122 = QuestionScore.builder().questionId("q122").score(40d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q121, q122);
 
     questionScores = categoryScoreMap2.get("c21").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q211 = QuestionScore.builder().questionId("q211").score(20).build();
-    QuestionScore q212 = QuestionScore.builder().questionId("q212").score(10).build();
+    QuestionScore q211 = QuestionScore.builder().questionId("q211").score(20d).build();
+    QuestionScore q212 = QuestionScore.builder().questionId("q212").score(10d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q211, q212);
 
     questionScores = categoryScoreMap2.get("c22").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q221 = QuestionScore.builder().questionId("q221").score(30).build();
-    QuestionScore q222 = QuestionScore.builder().questionId("q222").score(25).build();
+    QuestionScore q221 = QuestionScore.builder().questionId("q221").score(30d).build();
+    QuestionScore q222 = QuestionScore.builder().questionId("q222").score(25d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 
@@ -475,29 +475,29 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     // Question Points
     List<QuestionScore> questionScores = categoryScoreMap1.get("cu11").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q111 = QuestionScore.builder().questionId("qu111").score(5).build();
-    QuestionScore q112 = QuestionScore.builder().questionId("qu112").score(15).build();
+    QuestionScore q111 = QuestionScore.builder().questionId("qu111").score(5d).build();
+    QuestionScore q112 = QuestionScore.builder().questionId("qu112").score(15d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q111, q112);
 
     questionScores = categoryScoreMap1.get("cu12").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q121 = QuestionScore.builder().questionId("qu121").score(45).build();
-    QuestionScore q122 = QuestionScore.builder().questionId("qu122").score(35).build();
+    QuestionScore q121 = QuestionScore.builder().questionId("qu121").score(45d).build();
+    QuestionScore q122 = QuestionScore.builder().questionId("qu122").score(35d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q121, q122);
 
     questionScores = categoryScoreMap2.get("cu21").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q211 = QuestionScore.builder().questionId("qu211").score(10).build();
-    QuestionScore q212 = QuestionScore.builder().questionId("qu212").score(5).build();
+    QuestionScore q211 = QuestionScore.builder().questionId("qu211").score(10d).build();
+    QuestionScore q212 = QuestionScore.builder().questionId("qu212").score(5d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q211, q212);
 
     questionScores = categoryScoreMap2.get("cu22").getQuestionScores();
     assertEquals(2, questionScores.size());
-    QuestionScore q221 = QuestionScore.builder().questionId("qu221").score(40).build();
-    QuestionScore q222 = QuestionScore.builder().questionId("qu222").score(35).build();
+    QuestionScore q221 = QuestionScore.builder().questionId("qu221").score(40d).build();
+    QuestionScore q222 = QuestionScore.builder().questionId("qu222").score(35d).build();
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 

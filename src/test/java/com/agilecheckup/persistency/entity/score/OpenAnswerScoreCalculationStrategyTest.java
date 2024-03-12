@@ -12,11 +12,11 @@ class OpenAnswerScoreCalculationStrategyTest {
   @Test
   void shouldReturn0Always() {
     OpenAnswerScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("1",
-        createMockedQuestion(10, QuestionType.OPEN_ANSWER));
+        createMockedQuestion(10d, QuestionType.OPEN_ANSWER));
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
 
     scoreCalculationStrategy = scoreCalculationStrategyFor("1",
-        createMockedQuestion(100, QuestionType.OPEN_ANSWER));
+        createMockedQuestion(100d, QuestionType.OPEN_ANSWER));
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 

@@ -22,5 +22,5 @@ public class PotentialScore implements Scorable {
   private Map<String, PillarScore> pillarIdToPillarScoreMap;
 
   @DynamoDBAttribute
-  private Integer score;
+  private Double score;
 }

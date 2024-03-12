@@ -40,7 +40,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     this.assessmentMatrixService = assessmentMatrixService;
   }
 
-  public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Integer points, String assessmentMatrixId, String pillarId, String categoryId) {
+  public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Double points,
+                                   String assessmentMatrixId, String pillarId, String categoryId) {
     Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId);
     return createQuestion(question);
   }
@@ -64,7 +65,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     question.ifPresent(q -> assessmentMatrixService.incrementQuestionCount(q.getAssessmentMatrixId()));
   }
 
-  private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Integer points, String assessmentMatrixId, String pillarId, String categoryId) {
+  private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points,
+                                          String assessmentMatrixId, String pillarId, String categoryId) {
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);

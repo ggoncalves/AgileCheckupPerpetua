@@ -85,8 +85,8 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
 
     // 2. Calcule a pontuacao total possivelmente máxima das questões recuperadas
-    int totalPoints = questions.stream()
-        .mapToInt(question -> {
+    double totalPoints = questions.stream()
+        .mapToDouble(question -> {
           // Recupera ou cria o PillarScore
           PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
               PillarScore.builder()
@@ -141,25 +141,25 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
     // Atualiza o maxCategoryScore na CategoryScore
     categoryScore.setScore(categoryScore.getQuestionScores().stream()
-        .mapToInt(QuestionScore::getScore)
+        .mapToDouble(QuestionScore::getScore)
         .sum());
 
     // Atualiza o maxPillarScore no PillarScore
     pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
-        .mapToInt(CategoryScore::getScore)
+        .mapToDouble(CategoryScore::getScore)
         .sum());
   }
 
   @VisibleForTesting
-  Integer computeQuestionMaxScore(Question question) {
+  Double computeQuestionMaxScore(Question question) {
     if (QuestionType.CUSTOMIZED.equals(question.getQuestionType())) {
       if (question.getOptionGroup().isMultipleChoice()) {
         return question.getOptionGroup().getOptionMap().values().stream()
-            .mapToInt(QuestionOption::getPoints)
+            .mapToDouble(QuestionOption::getPoints)
             .sum();
       } else {
         return question.getOptionGroup().getOptionMap().values().stream()
-            .mapToInt(QuestionOption::getPoints)
+            .mapToDouble(QuestionOption::getPoints)
             .max().orElse(0);
       }
     } else {

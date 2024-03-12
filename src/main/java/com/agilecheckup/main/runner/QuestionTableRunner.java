@@ -46,7 +46,7 @@ public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
   protected Collection<Supplier<Optional<Question>>> getCreateSupplier() {
     Collection<Supplier<Optional<Question>>> collection = new ArrayList<>();
     collection.add(() -> getQuestionService().create("Pergunta oficial", QuestionType.STAR_THREE, "OrinnovaSuper",
-        15,
+        15d,
         "6413d36e-8716-4f97-ae87-7b4e9c2845ce", "1449ea3b-39b1-466c-bb54-f14ce984320f", "078ed4c3-abab-40c2-a237-e352b5172ee2"));
     collection.add(() -> getQuestionService().createCustomQuestion("Pergunta custom oficial", QuestionType.CUSTOMIZED, "OrinnovaSuper",
         false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30),
@@ -99,15 +99,15 @@ public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
     assert savedEntity.getOptionGroup().isMultipleChoice() == false;
     assert savedEntity.getOptionGroup().isShowFlushed() == true;
     assert savedEntity.getOptionGroup().getOptionMap().size() == 5;
-    assert savedEntity.getOptionGroup().getOptionMap().get(1).getPoints().equals(Integer.valueOf(0));
+    assert savedEntity.getOptionGroup().getOptionMap().get(1).getPoints().equals(Double.valueOf(0));
     assert savedEntity.getOptionGroup().getOptionMap().get(1).getText().equals("OptionPrefix1");
-    assert savedEntity.getOptionGroup().getOptionMap().get(2).getPoints().equals(Integer.valueOf(5));
+    assert savedEntity.getOptionGroup().getOptionMap().get(2).getPoints().equals(Double.valueOf(5));
     assert savedEntity.getOptionGroup().getOptionMap().get(2).getText().equals("OptionPrefix2");
-    assert savedEntity.getOptionGroup().getOptionMap().get(3).getPoints().equals(Integer.valueOf(10));
+    assert savedEntity.getOptionGroup().getOptionMap().get(3).getPoints().equals(Double.valueOf(10));
     assert savedEntity.getOptionGroup().getOptionMap().get(3).getText().equals("OptionPrefix3");
-    assert savedEntity.getOptionGroup().getOptionMap().get(4).getPoints().equals(Integer.valueOf(20));
+    assert savedEntity.getOptionGroup().getOptionMap().get(4).getPoints().equals(Double.valueOf(20));
     assert savedEntity.getOptionGroup().getOptionMap().get(4).getText().equals("OptionPrefix4");
-    assert savedEntity.getOptionGroup().getOptionMap().get(5).getPoints().equals(Integer.valueOf(30));
+    assert savedEntity.getOptionGroup().getOptionMap().get(5).getPoints().equals(Double.valueOf(30));
     assert savedEntity.getOptionGroup().getOptionMap().get(5).getText().equals("OptionPrefix5");
 
   }
@@ -122,7 +122,7 @@ public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
         .collect(Collectors.toList());
   }
 
-  private QuestionOption createQuestionOption(Integer id, String prefix, int points) {
+  private QuestionOption createQuestionOption(Integer id, String prefix, double points) {
     return QuestionOption.builder()
         .id(++id)
         .text(prefix + "" + id)

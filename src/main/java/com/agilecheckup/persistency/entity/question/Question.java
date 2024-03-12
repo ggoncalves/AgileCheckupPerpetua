@@ -44,7 +44,7 @@ public class Question extends TenantableEntity {
   private String extraDescription;
 
   @DynamoDBAttribute(attributeName = "points")
-  private Integer points;
+  private Double points;
 
   @NonNull
   @DynamoDBAttribute(attributeName = "type")

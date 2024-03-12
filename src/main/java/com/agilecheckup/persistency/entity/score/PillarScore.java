@@ -28,6 +28,6 @@ public class PillarScore implements Scorable {
   private Map<String, CategoryScore> categoryIdToCategoryScoreMap;
 
   @DynamoDBAttribute
-  private Integer score;
+  private Double score;
 
 }

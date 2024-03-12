@@ -20,5 +20,5 @@ public class QuestionScore implements Scorable {
   private String questionId;
 
   @DynamoDBAttribute
-  private Integer score;
+  private Double score;
 }

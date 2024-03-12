@@ -12,36 +12,36 @@ class YesNoScoreCalculationStrategyTest {
   @Test
   void shouldReturn10WhenCalculate10PointsForTrue() {
     YesNoScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("true",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(10d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn10WhenCalculate10PointsForTrueAnyCase() {
     YesNoScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("TRUE",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(10d, scoreCalculationStrategy.getCalculatedScore(), 0d);
 
     scoreCalculationStrategy = scoreCalculationStrategyFor("True",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(10d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn0WhenCalculate10PointsForFalse() {
     YesNoScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("false",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
   @Test
   void shouldReturn10WhenCalculate10PointsForFalseAnyCase() {
     YesNoScoreCalculationStrategy scoreCalculationStrategy = scoreCalculationStrategyFor("FALSE",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
 
     scoreCalculationStrategy = scoreCalculationStrategyFor("0",
-        createMockedQuestion(10, QuestionType.YES_NO));
+        createMockedQuestion(10d, QuestionType.YES_NO));
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 

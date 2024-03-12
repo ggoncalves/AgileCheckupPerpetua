@@ -130,7 +130,7 @@ public class AssessmentMatrixTableRunner extends AbstractEntityCrudRunner<Assess
         "Pergunta oficial",
         QuestionType.STAR_THREE,
         entity.getTenantId(),
-        15,
+        15d,
         entity.getId(),
         pillar.getId(),
         category.getId()

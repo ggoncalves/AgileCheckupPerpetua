@@ -11,7 +11,7 @@ class CustomizedScoreCalculationStrategyTest {
 
   @Test
   void shouldReturnValueForSingleOption() {
-    Question singleChoiceQuestion = createCustomQuestion(false, 0, 5, 10, 15, 20);
+    Question singleChoiceQuestion = createCustomQuestion(false, 0d, 5d, 10d, 15d, 20d);
     AbstractScoreCalculator scoreCalculationStrategy = scoreCalculationStrategyFor("1", singleChoiceQuestion);
     assertEquals(0d, scoreCalculationStrategy.getCalculatedScore(), 0d);
     scoreCalculationStrategy = scoreCalculationStrategyFor("3", singleChoiceQuestion);
@@ -22,7 +22,7 @@ class CustomizedScoreCalculationStrategyTest {
 
   @Test
   void shouldReturnSumOfValuesForMultipleOption() {
-    Question singleChoiceQuestion = createCustomQuestion(true, 0, 5, 10, 15, 20);
+    Question singleChoiceQuestion = createCustomQuestion(true, 0d, 5d, 10d, 15d, 20d);
     AbstractScoreCalculator scoreCalculationStrategy = scoreCalculationStrategyFor("1,2", singleChoiceQuestion);
     assertEquals(5d, scoreCalculationStrategy.getCalculatedScore(), 0d);
     scoreCalculationStrategy = scoreCalculationStrategyFor("2,3", singleChoiceQuestion);
@@ -33,8 +33,8 @@ class CustomizedScoreCalculationStrategyTest {
     assertEquals(50d, scoreCalculationStrategy.getCalculatedScore(), 0d);
   }
 
-  private Question createCustomQuestion(boolean isMultipleChoice, Integer ... values) {
-    return createMockedCustomQuestion(GENERIC_ID_1234, isMultipleChoice, values);
+  private Question createCustomQuestion(boolean isMultipleChoice, Double ... points) {
+    return createMockedCustomQuestion(GENERIC_ID_1234, isMultipleChoice, points);
   }
 
   private AbstractScoreCalculator scoreCalculationStrategyFor(String value, Question question) {
