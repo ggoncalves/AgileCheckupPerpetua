@@ -40,6 +40,23 @@ public class TestObjectFactory {
         .build();
   }
 
+  public static Answer createMockedAnswer(@NonNull String employeeAssessmentId,
+                                          @NonNull String tenantId, @NonNull Double score,
+                                          @NonNull Question question) {
+    return Answer.builder()
+        .employeeAssessmentId(employeeAssessmentId)
+        .pillarId(question.getPillarId())
+        .categoryId(question.getCategoryId())
+        .questionId(question.getId())
+        .questionType(question.getQuestionType())
+        .question(question)
+        .answeredAt(LocalDateTime.now())
+        .value("3")
+        .tenantId(tenantId)
+        .score(score)
+        .build();
+  }
+
   public static Answer createMockedAnswer(String id, @NonNull String dependenciesId,
                                           @NonNull Question question, @NonNull QuestionType questionType,
                                           @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull Double score) {

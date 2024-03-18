@@ -57,24 +57,6 @@ public class QuestionTableRunner extends AbstractEntityCrudRunner<Question> {
         false, true, createMockedQuestionOptionList("OptionPrefix", 0, 5, 10, 20, 30),
         assessmentMatrixId2, pillarId2, categoryId2));
 
-//    // Iterate over the question types
-//    for (QuestionType questionType : questionTypes) {
-//      if (questionType.equals(QuestionType.CUSTOMIZED)) continue;
-//      // Create two questions for each question type
-//      for (int i = 1; i <= 2; i++) {
-//        String questionDescription = "Pergunta " + questionType.toString().toLowerCase()
-//            + " " + i;
-//
-//        collection.add(() -> getQuestionService().create(questionDescription, questionType, "OrinnovaSuper",
-//            15,
-//            assessmentMatrixId1, pillarId1, categoryId1));
-//
-//        collection.add(() -> getQuestionService().create(questionDescription, questionType, "OrinnovaSuper",
-//            15,
-//            assessmentMatrixId2, pillarId2, categoryId2));
-//      }
-//    }
-
     return collection;
   }
 

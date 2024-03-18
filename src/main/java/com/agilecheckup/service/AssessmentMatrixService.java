@@ -78,7 +78,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return assessmentMatrixRepository;
   }
 
-  public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
+    public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
     List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrixId, tenantId);
 
     // Map pillarId -> PillarScore
