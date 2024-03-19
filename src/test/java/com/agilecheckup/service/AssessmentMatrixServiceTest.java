@@ -10,7 +10,6 @@ import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
-import dagger.Lazy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,9 +42,6 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Mock
   private PerformanceCycleService mockPerformanceCycleService;
 
-  @Mock
-  private Lazy<QuestionService> lazyQuestionService;
-
   private QuestionService mockQuestionService;
 
   private AssessmentMatrix originalAssessmentMatrix;
@@ -67,7 +63,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     AssessmentMatrix savedAssessmentMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedAssessmentMatrix).when(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
+    doAnswerForSaveWithRandomEntityId(savedAssessmentMatrix, mockAssessmentMatrixRepository);
     doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycleId());
 
     // When
@@ -82,7 +78,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     // Then
     assertTrue(assessmentMatrixOptional.isPresent());
     assertEquals(savedAssessmentMatrix, assessmentMatrixOptional.get());
-    verify(mockAssessmentMatrixRepository).save(originalAssessmentMatrix);
+    verify(mockAssessmentMatrixRepository).save(savedAssessmentMatrix);
     verify(assessmentMatrixService).create(
         originalAssessmentMatrix.getName(),
         originalAssessmentMatrix.getDescription(),
@@ -265,11 +261,6 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
 
     // Then
     assertUpdatedPotentialScores(assessmentMatrix);
-  }
-
-  @Override
-  AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> getCrudServiceSpy() {
-    return assessmentMatrixService;
   }
 
   private void mockFindById(String matrixId, AssessmentMatrix assessmentMatrix) {

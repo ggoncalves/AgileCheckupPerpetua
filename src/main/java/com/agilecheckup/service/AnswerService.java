@@ -54,7 +54,7 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     answerStrategy.assignValue(value);
     AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
     EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
-    Answer answer = Answer.builder()
+    return Answer.builder()
         .employeeAssessmentId(employeeAssessment.getId())
         .pillarId(question.getPillarId())
         .categoryId(question.getCategoryId())
@@ -68,7 +68,6 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
         .tenantId(tenantId)
         .notes(notes)
         .build();
-    return setFixedIdIfConfigured(answer);
   }
 
   private void validateAnsweredAt(LocalDateTime answeredAt) {

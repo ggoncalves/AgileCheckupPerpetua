@@ -59,17 +59,16 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
                                                   Map<String, Pillar> pillarMap) {
-    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+    return AssessmentMatrix.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
         .performanceCycleId(getPerformanceCycle(performanceCycleId).orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId())
         .pillarMap(pillarMap).build();
-    return setFixedIdIfConfigured(assessmentMatrix);
   }
 
   private Optional<PerformanceCycle> getPerformanceCycle(String performanceCycleId) {
-    if (performanceCycleId == null) return null;
+    if (performanceCycleId == null) return Optional.empty();
     return performanceCycleService.findById(performanceCycleId);
   }
 

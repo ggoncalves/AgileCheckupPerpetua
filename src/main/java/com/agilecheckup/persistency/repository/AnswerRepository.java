@@ -3,7 +3,6 @@ package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.service.AnswerService;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;

@@ -14,6 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@ToString(callSuper = true)
 @DynamoDBTable(tableName = "AssessmentMatrix")
 public class AssessmentMatrix extends TenantDescribableEntity {
 

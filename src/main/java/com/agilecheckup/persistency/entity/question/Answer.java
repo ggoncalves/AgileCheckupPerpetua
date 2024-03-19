@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@ToString(callSuper = true)
 @DynamoDBTable(tableName = "Answer")
 public class Answer extends TenantableEntity {
 

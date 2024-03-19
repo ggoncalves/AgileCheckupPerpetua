@@ -70,7 +70,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    Question question = Question.builder()
+    return Question.builder()
         .assessmentMatrixId(assessmentMatrix.getId())
         .pillarId(pillar.getId())
         .pillarName(pillar.getName())
@@ -81,7 +81,6 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
         .tenantId(tenantId)
         .points(points)
         .build();
-    return setFixedIdIfConfigured(question);
   }
 
   private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId,
@@ -92,7 +91,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    Question question = Question.builder()
+    return Question.builder()
         .assessmentMatrixId(assessmentMatrix.getId())
         .pillarId(pillar.getId())
         .pillarName(pillar.getName())
@@ -103,7 +102,6 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
         .optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options))
         .tenantId(tenantId)
         .build();
-    return setFixedIdIfConfigured(question);
   }
 
   private void validateQuestionOptions(List<QuestionOption> options) {

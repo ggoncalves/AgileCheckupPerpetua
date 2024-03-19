@@ -66,7 +66,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     EmployeeAssessment savedEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedEmployeeAssessment).when(employeeAssessmentRepository).save(any());
+    doAnswerForSaveWithRandomEntityId(savedEmployeeAssessment, employeeAssessmentRepository);
     doReturn(Optional.of(team)).when(teamService).findById(originalEmployeeAssessment.getTeam().getId());
     doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
 
@@ -95,11 +95,6 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getGender(),
         originalEmployeeAssessment.getEmployee().getGenderPronoun());
     verify(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
-  }
-
-  @Override
-  AbstractCrudService<EmployeeAssessment, AbstractCrudRepository<EmployeeAssessment>> getCrudServiceSpy() {
-    return employeeAssessmentService;
   }
 
   @Test

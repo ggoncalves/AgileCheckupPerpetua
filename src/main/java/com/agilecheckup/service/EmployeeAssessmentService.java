@@ -47,13 +47,12 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun, String personId) {
     Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
     Optional<Team> team = teamService.findById(teamId);
-    EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+    return EmployeeAssessment.builder()
         .assessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId())
         .team(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")))
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, personId))
         .answeredQuestionCount(0)
         .build();
-    return setFixedIdIfConfigured(employeeAssessment);
   }
 
   public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun, String personId) {

@@ -8,7 +8,6 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.google.common.annotations.VisibleForTesting;
 
 import javax.inject.Inject;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

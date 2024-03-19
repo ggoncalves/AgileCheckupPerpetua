@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -49,7 +48,7 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
     Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedDepartment).when(mockDepartmentRepository).save(any());
+    doAnswerForSaveWithRandomEntityId(savedDepartment, mockDepartmentRepository);
     doReturn(Optional.of(company)).when(mockCompanyService).findById(originalDepartment.getCompanyId());
 
     // When
@@ -63,44 +62,33 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Abstract
     // Then
     assertTrue(departmentOptional.isPresent());
     assertEquals(savedDepartment, departmentOptional.get());
-    verify(mockDepartmentRepository).save(originalDepartment);
+    verify(mockDepartmentRepository).save(savedDepartment);
     verify(departmentService).create(originalDepartment.getName(), originalDepartment.getDescription(), originalDepartment.getTenantId(), originalDepartment.getCompanyId());
     verify(mockCompanyService).findById(originalDepartment.getCompanyId());
   }
 
   @Test
   void createInvalidCompanyId() {
-    Department savedDepartment = copyDepartmentAndAddId(originalDepartment, DEFAULT_ID);
-
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockCompanyService).findById(originalDepartment.getCompanyId());
 
     // When
-    assertThrows(InvalidIdReferenceException.class, () -> {
-      departmentService.create(
-          originalDepartment.getName(),
-          originalDepartment.getDescription(),
-          originalDepartment.getTenantId(),
-          originalDepartment.getCompanyId()
-      );
-    });
+    assertThrows(InvalidIdReferenceException.class, () -> departmentService.create(
+        originalDepartment.getName(),
+        originalDepartment.getDescription(),
+        originalDepartment.getTenantId(),
+        originalDepartment.getCompanyId()
+    ));
   }
 
   @Test
   void create_NullDepartmentName() {
     // When
-    assertThrows(NullPointerException.class, () -> {
-      departmentService.create(
-          null,
-          originalDepartment.getDescription(),
-          originalDepartment.getTenantId(),
-          originalDepartment.getCompanyId()
-      );
-    });
-  }
-
-  @Override
-  AbstractCrudService<Department, AbstractCrudRepository<Department>> getCrudServiceSpy() {
-    return departmentService;
+    assertThrows(NullPointerException.class, () -> departmentService.create(
+        null,
+        originalDepartment.getDescription(),
+        originalDepartment.getTenantId(),
+        originalDepartment.getCompanyId()
+    ));
   }
 }

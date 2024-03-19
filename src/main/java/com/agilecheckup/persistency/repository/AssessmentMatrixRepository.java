@@ -8,7 +8,6 @@ import com.amazonaws.services.dynamodbv2.LockItem;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.LockNotGrantedException;
 import com.google.common.annotations.VisibleForTesting;
-import lombok.NoArgsConstructor;
 
 import javax.inject.Inject;
 import java.util.Optional;

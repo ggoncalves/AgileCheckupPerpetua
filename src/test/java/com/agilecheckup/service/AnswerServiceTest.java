@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -257,7 +256,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     Answer savedAnswer = cloneWithId(answer, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedAnswer).when(answerRepository).save(any());
+//    doReturn(savedAnswer).when(answerRepository).save(any());
+    doAnswerForSaveWithRandomEntityId(savedAnswer, answerRepository);
     doReturn(Optional.of(question)).when(questionService).findById(answer.getQuestionId());
     doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
 
@@ -316,9 +316,4 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getNotes());
     verify(questionService).findById(answer.getQuestionId());
   }
-  @Override
-  AbstractCrudService<Answer, AbstractCrudRepository<Answer>> getCrudServiceSpy() {
-    return answerService;
-  }
-
 }

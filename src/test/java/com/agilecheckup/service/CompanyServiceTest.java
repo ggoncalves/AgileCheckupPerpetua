@@ -15,8 +15,6 @@ import java.util.Optional;
 import static com.agilecheckup.util.TestObjectFactory.copyCompanyAndAddId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,14 +27,14 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
   @Mock
   private CompanyRepository companyRepository;
 
-  private Company originalCompany = createMockedCompany(DEFAULT_ID);
+  private final Company originalCompany = createMockedCompany(DEFAULT_ID);
 
   @Test
   void create() {
     Company savedCompany = copyCompanyAndAddId(originalCompany, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedCompany).when(companyRepository).save(any());
+    doAnswerForSaveWithRandomEntityId(savedCompany, companyRepository);
 
     // When
     Optional<Company> companyOptional = companyService.create(
@@ -50,25 +48,18 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
     // Then
     assertTrue(companyOptional.isPresent());
     assertEquals(savedCompany, companyOptional.get());
-    verify(companyRepository).save(originalCompany);
+    verify(companyRepository).save(savedCompany);
     verify(companyService).create("0001", "Company Name", "company@email.com", "Company description", "Random Tenant Id");
   }
 
   @Test
   void create_NullCompany() {
     // When
-    assertThrows(NullPointerException.class, () -> {
-      companyService.create(
-          originalCompany.getDocumentNumber(),
-          null,
-          originalCompany.getEmail(),
-          originalCompany.getDescription(),
-          originalCompany.getTenantId());
-    });
-  }
-
-  @Override
-  AbstractCrudService<Company, AbstractCrudRepository<Company>> getCrudServiceSpy() {
-    return companyService;
+    assertThrows(NullPointerException.class, () -> companyService.create(
+        originalCompany.getDocumentNumber(),
+        null,
+        originalCompany.getEmail(),
+        originalCompany.getDescription(),
+        originalCompany.getTenantId()));
   }
 }

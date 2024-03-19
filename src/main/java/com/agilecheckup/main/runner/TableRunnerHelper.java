@@ -4,7 +4,6 @@ import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.Pillar;
-import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.EmployeeAssessmentService;
@@ -12,8 +11,6 @@ import com.agilecheckup.service.QuestionService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

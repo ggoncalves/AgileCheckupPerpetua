@@ -2,24 +2,21 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
+
+import static org.mockito.Mockito.doAnswer;
 
 abstract class AbstractCrudServiceTest<T extends BaseEntity, V extends AbstractCrudRepository<T>> {
 
   static final String DEFAULT_ID = "1234";
 
+  void doAnswerForSaveWithRandomEntityId(T returnBaseEntity, V repository) {
+    @SuppressWarnings("unchecked") final ArgumentCaptor<T> argumentCaptor = ArgumentCaptor.forClass((Class<T>) returnBaseEntity.getClass());
 
-  @BeforeEach
-  void setUp() {
-    getCrudServiceSpy().setFixedId(DEFAULT_ID);
+    doAnswer(invocation -> {
+      T arg = invocation.getArgument(0);
+      returnBaseEntity.setId(arg.getId());
+      return returnBaseEntity;
+    }).when(repository).save(argumentCaptor.capture());
   }
-
-  @AfterEach
-  void tearDown() {
-    getCrudServiceSpy().unsetFixedId();
-  }
-
-  abstract AbstractCrudService<T, V> getCrudServiceSpy();
-
 }

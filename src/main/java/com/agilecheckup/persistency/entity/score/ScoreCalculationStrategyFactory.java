@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity.score;
 
-import com.agilecheckup.persistency.entity.question.*;
+import com.agilecheckup.persistency.entity.question.Question;
 
 public class ScoreCalculationStrategyFactory {
 

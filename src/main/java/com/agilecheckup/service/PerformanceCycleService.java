@@ -29,7 +29,7 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
   private PerformanceCycle createPerformanceCycle(String name, String description, String tenantId, String companyId,
                                                   Boolean isActive, Boolean isTimeSensitive) {
     Optional<Company> company = companyService.findById(companyId);
-    PerformanceCycle performanceCycle = PerformanceCycle.builder()
+    return PerformanceCycle.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
@@ -37,7 +37,6 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
         .isActive(isActive)
         .isTimeSensitive(isTimeSensitive)
         .build();
-    return setFixedIdIfConfigured(performanceCycle);
   }
 
   @Override

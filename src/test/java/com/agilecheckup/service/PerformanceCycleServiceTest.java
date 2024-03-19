@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -49,7 +48,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
     PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
 
     // Prevent/Stub
-    doReturn(savedPerformanceCycle).when(mockPerformanceCycleRepository).save(any());
+    doAnswerForSaveWithRandomEntityId(savedPerformanceCycle, mockPerformanceCycleRepository);
     doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
 
     // When
@@ -65,7 +64,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
     // Then
     assertTrue(performanceCycleOptional.isPresent());
     assertEquals(savedPerformanceCycle, performanceCycleOptional.get());
-    verify(mockPerformanceCycleRepository).save(originalPerformanceCycle);
+    verify(mockPerformanceCycleRepository).save(savedPerformanceCycle);
     verify(performanceCycleService).create(
         originalPerformanceCycle.getName(),
         originalPerformanceCycle.getDescription(),
@@ -79,8 +78,6 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
 
   @Test
   void createInvalidCompanyId() {
-    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
-
     // Prevent/Stub
     doReturn(Optional.empty()).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
 
@@ -110,10 +107,5 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
           originalPerformanceCycle.getIsTimeSensitive()
       );
     });
-  }
-
-  @Override
-  AbstractCrudService<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> getCrudServiceSpy() {
-    return performanceCycleService;
   }
 }

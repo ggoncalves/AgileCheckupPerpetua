@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class CompanyService extends AbstractCrudService<Company, AbstractCrudRepository<Company>> {
 
-  private CompanyRepository companyRepository;
+  private final CompanyRepository companyRepository;
 
   @Inject
   public CompanyService(CompanyRepository companyRepository) {
@@ -22,14 +22,13 @@ public class CompanyService extends AbstractCrudService<Company, AbstractCrudRep
   }
 
   private Company createCompany(String documentNumber, String name, String email, String description, String tenantId) {
-    Company company = Company.builder()
+    return Company.builder()
         .personDocumentType(PersonDocumentType.CNPJ)
         .documentNumber(documentNumber)
         .name(name)
         .email(email)
         .description(description)
         .tenantId(tenantId).build();
-    return setFixedIdIfConfigured(company);
   }
 
   @Override
