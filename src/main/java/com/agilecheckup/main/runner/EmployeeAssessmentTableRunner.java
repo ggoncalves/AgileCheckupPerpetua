@@ -38,8 +38,7 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
     assessmentMatrices.add(assessmentMatrix);
     Collection<Supplier<Optional<EmployeeAssessment>>> collection = new ArrayList<>();
 
-      assessmentMatrix.ifPresent(am -> {
-      collection.add(() -> tableRunnerHelper.getEmployeeAssessmentService().create(
+      assessmentMatrix.ifPresent(am -> collection.add(() -> tableRunnerHelper.getEmployeeAssessmentService().create(
           am.getId(),
           am.getTenantId(),
           "Josefa Santos de Souza",
@@ -48,9 +47,7 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
           PersonDocumentType.CPF,
           Gender.MALE,
           GenderPronoun.HE)
-      );
-
-    });
+      ));
 
     return collection;
   }
@@ -80,14 +77,10 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
 
   private void createDependencies(EmployeeAssessment entity) {
 
-    getPillarMap().forEach((pillarId, pillar) -> {
-      pillar.getCategoryMap().forEach((categoryId, category) -> {
-        Optional<Question> question = createQuestion(entity, pillar, category);
-        question.ifPresent(q -> {
-          Optional<Answer> answer = createAnswer(entity, q, "2", TENANT_ID);
-        });
-      });
-    });
+    getPillarMap().forEach((pillarId, pillar) -> pillar.getCategoryMap().forEach((categoryId, category) -> {
+      Optional<Question> question = createQuestion(entity, pillar, category);
+      question.ifPresent(q -> createAnswer(entity, q));
+    }));
   }
 
   private Map<String, Pillar> getPillarMap() {
@@ -111,12 +104,11 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
     return question;
   }
 
-  private Optional<Answer> createAnswer(EmployeeAssessment entity, Question question, String value, String tenantId) {
+  private void createAnswer(EmployeeAssessment entity, Question question) {
     Optional<Answer> answer = tableRunnerHelper.getAnswerService().create(entity.getId(), question.getId(),
-        LocalDateTime.now(), value
-        , tenantId);
+        LocalDateTime.now(), "2"
+        , EmployeeAssessmentTableRunner.TENANT_ID, "");
     answers.add(answer);
-    return answer;
   }
 
   @Override

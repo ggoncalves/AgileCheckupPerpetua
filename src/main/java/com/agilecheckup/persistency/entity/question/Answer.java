@@ -3,10 +3,8 @@ package com.agilecheckup.persistency.entity.question;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.base.TenantableEntity;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
-import com.agilecheckup.persistency.entity.score.Scorable;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
-import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
@@ -66,6 +64,9 @@ public class Answer extends TenantableEntity {
 
   @DynamoDBAttribute(attributeName = "score")
   private Double score;
+
+  @DynamoDBAttribute(attributeName = "notes")
+  private String notes;
 
   public static class LocalDateTimeConverter implements DynamoDBTypeConverter<String, LocalDateTime> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;

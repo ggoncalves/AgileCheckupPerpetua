@@ -115,7 +115,9 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes())
+      ;
   }
 
   void assertCreateAnswerWithQuestionId(String questionId) {
@@ -134,7 +136,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         questionId,
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
   }
 
   void assertCreateAnswerWithAnsweredAt(LocalDateTime answeredAt) {
@@ -149,7 +152,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answeredAt,
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
   }
 
   @Test
@@ -263,7 +267,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
 
     // Then
     assertTrue(optionalAnswer.isPresent());
@@ -274,7 +279,9 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
+
     verify(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(answer.getEmployeeAssessmentId());
     verify(questionService).findById(answer.getQuestionId());
@@ -294,7 +301,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
 
     // Then
     assertTrue(optionalAnswer.isPresent());
@@ -304,7 +312,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getQuestionId(),
         answer.getAnsweredAt(),
         answer.getValue(),
-        answer.getTenantId());
+        answer.getTenantId(),
+        answer.getNotes());
     verify(questionService).findById(answer.getQuestionId());
   }
   @Override

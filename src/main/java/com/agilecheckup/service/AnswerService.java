@@ -33,8 +33,10 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     this.questionService = questionService;
   }
 
-  public Optional<Answer> create(@NonNull String employeeAssessmentId, @NonNull String questionId, @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId) {
-    return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId));
+  public Optional<Answer> create(@NonNull String employeeAssessmentId, @NonNull String questionId,
+                                 @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId,
+                                 String notes) {
+    return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes));
   }
 
   @Override
@@ -42,7 +44,9 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
   }
 
-  private Answer internalCreateAnswer(@NonNull String employeeAssessmentId, @NonNull String questionId, @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId) {
+  private Answer internalCreateAnswer(@NonNull String employeeAssessmentId, @NonNull String questionId,
+                                      @NonNull LocalDateTime answeredAt, @NonNull String value,
+                                      @NonNull String tenantId, String notes) {
     validateAnsweredAt(answeredAt);
     Question question = getQuestionById(questionId);
     // TODO allowNullValue must be fetched from Question
@@ -62,6 +66,7 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
         .value(answerStrategy.valueToString())
         .score(scoreCalculator.getCalculatedScore())
         .tenantId(tenantId)
+        .notes(notes)
         .build();
     return setFixedIdIfConfigured(answer);
   }
