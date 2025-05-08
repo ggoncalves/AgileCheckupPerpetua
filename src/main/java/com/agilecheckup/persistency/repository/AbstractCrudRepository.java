@@ -35,6 +35,7 @@ public abstract class AbstractCrudRepository<T>{
     dynamoDBMapper.delete(t);
   }
 
+  // TODO: it should return an Optional here?
   public T findById(String id) {
     return dynamoDBMapper.load(clazz, id);
   }

@@ -77,13 +77,13 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return assessmentMatrixRepository;
   }
 
-    public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
+  public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
     List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrixId, tenantId);
 
     // Map pillarId -> PillarScore
     Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
 
-    // 2. Calcule a pontuacao total possivelmente máxima das questões recuperadas
+    // 2. Calcula a pontuacao total possivelmente máxima das questões recuperadas
     double totalPoints = questions.stream()
         .mapToDouble(question -> {
           // Recupera ou cria o PillarScore
