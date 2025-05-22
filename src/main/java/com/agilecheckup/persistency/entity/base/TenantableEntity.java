@@ -2,7 +2,13 @@ package com.agilecheckup.persistency.entity.base;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
-import lombok.*;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
@@ -14,8 +20,8 @@ import lombok.experimental.SuperBuilder;
 @ToString(callSuper=true, includeFieldNames=true)
 public class TenantableEntity extends AuditableEntity implements Tenantable {
 
-  @DynamoDBAttribute(attributeName = "tenantId")
   @NonNull
+  @DynamoDBAttribute(attributeName = "tenantId")
+  @DynamoDBIndexHashKey(globalSecondaryIndexName = "tenantId-index", attributeName = "tenantId")
   private String tenantId;
-
 }

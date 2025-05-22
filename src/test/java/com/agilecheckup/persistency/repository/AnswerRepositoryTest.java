@@ -24,4 +24,9 @@ class AnswerRepositoryTest extends AbstractRepositoryTest<Answer> {
   Answer createMockedT() {
     return createMockedAnswer(10d);
   }
+
+  @Override
+  Class getMockedClass() {
+    return Answer.class;
+  }
 }

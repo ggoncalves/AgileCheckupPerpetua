@@ -25,4 +25,9 @@ class EmployeeAssessmentRepositoryTest extends AbstractRepositoryTest<EmployeeAs
   EmployeeAssessment createMockedT() {
     return createMockedEmployeeAssessment(GENERIC_ID_1234, "Josivaldo", GENERIC_ID_1234);
   }
+
+  @Override
+  Class getMockedClass() {
+    return EmployeeAssessment.class;
+  }
 }

@@ -6,7 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrix;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
 
 @ExtendWith(MockitoExtension.class)
 class AssessmentMatrixRepositoryTest extends AbstractRepositoryTest<AssessmentMatrix> {
@@ -23,5 +25,10 @@ class AssessmentMatrixRepositoryTest extends AbstractRepositoryTest<AssessmentMa
   @Override
   AssessmentMatrix createMockedT() {
     return createMockedAssessmentMatrix(GENERIC_ID_1234, GENERIC_ID_1234, createMockedPillarMap(3, 4, "Pillar", "Category"));
+  }
+
+  @Override
+  Class getMockedClass() {
+    return AssessmentMatrix.class;
   }
 }

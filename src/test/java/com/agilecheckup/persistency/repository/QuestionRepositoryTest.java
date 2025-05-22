@@ -24,4 +24,9 @@ class QuestionRepositoryTest extends AbstractRepositoryTest<Question> {
   Question createMockedT() {
     return createMockedQuestion();
   }
+
+  @Override
+  Class getMockedClass() {
+    return Question.class;
+  }
 }

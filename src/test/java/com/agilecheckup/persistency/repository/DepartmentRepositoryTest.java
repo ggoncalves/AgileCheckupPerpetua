@@ -24,4 +24,9 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
   Department createMockedT() {
     return createMockedDepartment();
   }
+
+  @Override
+  Class getMockedClass() {
+    return Department.class;
+  }
 }
