@@ -2,9 +2,14 @@ package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.dagger.component.DaggerAwsConfigComponent;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.google.common.annotations.VisibleForTesting;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Getter;
 
 public abstract class AbstractCrudRepository<T>{
@@ -42,5 +47,18 @@ public abstract class AbstractCrudRepository<T>{
 
   public PaginatedScanList<T> findAll() {
     return dynamoDBMapper.scan(clazz, new DynamoDBScanExpression());
+  }
+
+  public PaginatedQueryList<T> findAllByTenantId(String tenantId) {
+    Map<String, AttributeValue> eav = new HashMap<>();
+    eav.put(":tenantId", new AttributeValue().withS(tenantId));
+
+    DynamoDBQueryExpression<T> queryExpression = new DynamoDBQueryExpression<T>()
+        .withIndexName("tenantId-index")
+        .withConsistentRead(false)
+        .withKeyConditionExpression("tenantId = :tenantId")
+        .withExpressionAttributeValues(eav);
+
+    return dynamoDBMapper.query(clazz, queryExpression);
   }
 }
