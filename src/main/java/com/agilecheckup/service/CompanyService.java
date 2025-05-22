@@ -21,6 +21,21 @@ public class CompanyService extends AbstractCrudService<Company, AbstractCrudRep
     return super.create(createCompany(documentNumber, name, email, description, tenantId));
   }
 
+  public Optional<Company> update(String id, String documentNumber, String name, String email, String description, String tenantId) {
+    Optional<Company> optionalCompany = findById(id);
+    if (optionalCompany.isPresent()) {
+      Company company = optionalCompany.get();
+      company.setDocumentNumber(documentNumber);
+      company.setName(name);
+      company.setEmail(email);
+      company.setDescription(description);
+      company.setTenantId(tenantId);
+      return super.update(company);
+    } else {
+      return Optional.empty();
+    }
+  }
+
   private Company createCompany(String documentNumber, String name, String email, String description, String tenantId) {
     return Company.builder()
         .personDocumentType(PersonDocumentType.CNPJ)

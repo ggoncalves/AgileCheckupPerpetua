@@ -19,4 +19,14 @@ abstract class AbstractCrudServiceTest<T extends BaseEntity, V extends AbstractC
       return returnBaseEntity;
     }).when(repository).save(argumentCaptor.capture());
   }
+
+  protected void doAnswerForUpdate(T returnBaseEntity, V repository) {
+    @SuppressWarnings("unchecked") final ArgumentCaptor<T> argumentCaptor = ArgumentCaptor.forClass((Class<T>) returnBaseEntity.getClass());
+
+    doAnswer(invocation -> {
+      T arg = invocation.getArgument(0);
+      returnBaseEntity.setId(arg.getId()); // Ensure ID is preserved for updates
+      return returnBaseEntity;
+    }).when(repository).save(argumentCaptor.capture());
+  }
 }

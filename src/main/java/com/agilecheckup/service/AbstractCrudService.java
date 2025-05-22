@@ -27,6 +27,21 @@ public abstract class AbstractCrudService<T extends BaseEntity, V extends Abstra
     // Do nothing, must be override
   }
 
+  public Optional<T> update(T t) {
+    T saved = getRepository().save(t);
+    internalPostUpdate(saved);
+    return Optional.of(saved);
+  }
+
+  public void internalPostUpdate(T saved) {
+    log.info("Entity updated successfully: " + saved);
+    postUpdate(saved);
+  }
+
+  protected void postUpdate(T saved) {
+    // Do nothing, must be override
+  }
+
   public PaginatedScanList<T> findAll() {
     return getRepository().findAll();
   }
