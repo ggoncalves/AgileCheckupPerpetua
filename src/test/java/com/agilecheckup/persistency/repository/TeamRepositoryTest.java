@@ -24,4 +24,9 @@ class TeamRepositoryTest extends AbstractRepositoryTest<Team> {
   Team createMockedT() {
     return createMockedTeam();
   }
+
+  @Override
+  Class getMockedClass() {
+    return Team.class;
+  }
 }

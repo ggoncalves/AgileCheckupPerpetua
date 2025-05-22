@@ -25,4 +25,9 @@ class CustomQuestionRepositoryTest extends AbstractRepositoryTest<Question> {
   Question createMockedT() {
     return createMockedCustomQuestion(GENERIC_ID_1234);
   }
+
+  @Override
+  Class getMockedClass() {
+    return Question.class;
+  }
 }

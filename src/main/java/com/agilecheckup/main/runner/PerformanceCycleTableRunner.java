@@ -29,7 +29,7 @@ public class PerformanceCycleTableRunner extends AbstractEntityCrudRunner<Perfor
         "PerformanceCycleName",
         "PerformanceCycle Description",
         "Another TenantId",
-        "19bcdfcb-9162-4a0b-a5c3-c034702d0961",
+        "ca93d066-62af-4a49-aa46-0dd7f33ba9bc",
         true,
         false
     ));

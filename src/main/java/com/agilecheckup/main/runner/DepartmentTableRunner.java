@@ -25,7 +25,7 @@ public class DepartmentTableRunner extends AbstractEntityCrudRunner<Department> 
   @Override
   protected Collection<Supplier<Optional<Department>>> getCreateSupplier() {
     Collection<Supplier<Optional<Department>>> collection = new ArrayList<>();
-    collection.add(() -> getDepartmentService().create("DepartmentName", "Department Description", "Another TenantId", "19bcdfcb-9162-4a0b-a5c3-c034702d0961"));
+    collection.add(() -> getDepartmentService().create("DepartmentName", "Department Description", "Another TenantId", "ca93d066-62af-4a49-aa46-0dd7f33ba9bc"));
     return collection;
   }
 

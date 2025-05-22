@@ -25,4 +25,9 @@ class PerformanceCycleRepositoryTest extends AbstractRepositoryTest<PerformanceC
   PerformanceCycle createMockedT() {
     return createMockedPerformanceCycle(GENERIC_ID_1234, GENERIC_ID_1234);
   }
+
+  @Override
+  Class getMockedClass() {
+    return PerformanceCycle.class;
+  }
 }
