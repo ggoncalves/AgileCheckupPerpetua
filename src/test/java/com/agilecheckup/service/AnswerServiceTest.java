@@ -23,8 +23,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.agilecheckup.util.TestObjectFactory.EMPLOYEE_NAME_JOHN;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAnswer;
+import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
+import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -315,5 +323,69 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getTenantId(),
         answer.getNotes());
     verify(questionService).findById(answer.getQuestionId());
+  }
+
+  @Test
+  void update_existingAnswer_shouldSucceed() {
+    // Prepare
+    Question question = createMockedQuestion(GENERIC_ID_1234, QuestionType.STAR_FIVE);
+    Answer existingAnswer = createMockedAnswer(DEFAULT_ID, GENERIC_ID_1234, question, QuestionType.STAR_FIVE,
+        NOW_DATE_TIME, "3", 3.0);
+    Answer updatedAnswer = cloneWithId(existingAnswer, DEFAULT_ID);
+    updatedAnswer.setAnsweredAt(FUTURE_DATE_TIME_59_MINUTES);
+    updatedAnswer.setValue("5");
+    updatedAnswer.setScore(5.0);
+    updatedAnswer.setNotes("Updated notes");
+
+    // Mock repository calls
+    doReturn(existingAnswer).when(answerRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedAnswer, answerRepository);
+    doReturn(Optional.of(question)).when(questionService).findById(question.getId());
+
+    // When
+    Optional<Answer> resultOptional = answerService.update(DEFAULT_ID,
+        FUTURE_DATE_TIME_59_MINUTES,
+        "5",
+        "Updated notes"
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedAnswer, resultOptional.get());
+    verify(answerRepository).findById(DEFAULT_ID);
+    verify(answerRepository).save(updatedAnswer);
+    verify(questionService).findById(question.getId());
+    verify(answerService).update(DEFAULT_ID,
+        FUTURE_DATE_TIME_59_MINUTES,
+        "5",
+        "Updated notes"
+    );
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(updatedAnswer.getEmployeeAssessmentId());
+  }
+
+  @Test
+  void update_nonExistingAnswer_shouldReturnEmpty() {
+    // Prepare
+    String nonExistingId = "nonExistingId";
+
+    // Mock repository calls
+    doReturn(null).when(answerRepository).findById(nonExistingId);
+
+    // When
+    Optional<Answer> resultOptional = answerService.update(
+        nonExistingId,
+        FUTURE_DATE_TIME_59_MINUTES,
+        "5",
+        "Updated notes"
+                                                          );
+
+    // Then
+    assertTrue(resultOptional.isEmpty());
+    verify(answerRepository).findById(nonExistingId);
+    verify(answerService).update(nonExistingId,
+        FUTURE_DATE_TIME_59_MINUTES,
+        "5",
+        "Updated notes"
+    );
   }
 }

@@ -39,8 +39,35 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes));
   }
 
+  public Optional<Answer> update(@NonNull String id, @NonNull LocalDateTime answeredAt, @NonNull String value,
+                                 String notes) {
+    Optional<Answer> optionalAnswer = findById(id);
+    if (optionalAnswer.isPresent()) {
+      Answer answer = optionalAnswer.get();
+      validateAnsweredAt(answeredAt);
+      Question question = getQuestionById(answer.getQuestionId());
+      AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
+      answerStrategy.assignValue(value);
+      AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
+      answer.setAnsweredAt(answeredAt);
+      answer.setValue(answerStrategy.valueToString());
+      answer.setScore(scoreCalculator.getCalculatedScore());
+      answer.setNotes(notes);
+      return super.update(answer);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  // TODO: It can also trigger an event to start another lambda to actually update and notify HR
   @Override
   public void postCreate(Answer saved) {
+    employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+  }
+
+  // TODO: It can also trigger an event to start another lambda to actually update and notify HR
+  @Override
+  public void postUpdate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
   }
 

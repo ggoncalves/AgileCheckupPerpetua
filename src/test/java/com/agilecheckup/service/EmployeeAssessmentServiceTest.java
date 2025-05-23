@@ -1,6 +1,13 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.*;
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.Team;
+import com.agilecheckup.persistency.entity.person.Gender;
+import com.agilecheckup.persistency.entity.person.GenderPronoun;
+import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -22,10 +29,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.agilecheckup.util.TestObjectFactory.EMPLOYEE_NAME_JOHN;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAnswer;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrix;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithDependenciesId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
+import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static com.agilecheckup.util.TestObjectFactory.createMockedTeam;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAssessment, AbstractCrudRepository<EmployeeAssessment>> {
@@ -385,6 +407,82 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
 
   private Answer createAnswer(Double score, Question question) {
     return createMockedAnswer(EMPLOYEE_ASSESSMENT_ID, TENANT_ID, score, question);
+  }
+
+  @Test
+  void update_existingEmployeeAssessment_shouldSucceed() {
+    // Prepare
+    EmployeeAssessment existingEmployeeAssessment = createMockedEmployeeAssessment(DEFAULT_ID, EMPLOYEE_NAME_JOHN, GENERIC_ID_1234);
+    EmployeeAssessment updatedEmployeeAssessmentDetails = createMockedEmployeeAssessment("updatedMatrixId", "Updated Employee Name", "updatedMatrixId");
+    updatedEmployeeAssessmentDetails.setId(DEFAULT_ID);
+    updatedEmployeeAssessmentDetails.setTeam(createMockedTeam("updatedTeamId"));
+
+    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMap(1, 1, "pillar", "category"));
+    Team team1 = createMockedTeam("updatedTeamId");
+
+    // Mock repository calls
+    doReturn(existingEmployeeAssessment).when(employeeAssessmentRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedEmployeeAssessmentDetails, employeeAssessmentRepository);
+    doReturn(Optional.of(assessmentMatrix1)).when(assessmentMatrixService).findById("updatedMatrixId");
+    doReturn(Optional.of(team1)).when(teamService).findById("updatedTeamId");
+
+    // When
+    Optional<EmployeeAssessment> resultOptional = employeeAssessmentService.update(
+        DEFAULT_ID,
+        "updatedMatrixId",
+        "updatedTeamId",
+        "Updated Employee Name",
+        "name@company.com",
+        "1234",
+        PersonDocumentType.CPF,
+        Gender.MALE,
+        GenderPronoun.HE
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedEmployeeAssessmentDetails, resultOptional.get());
+    verify(employeeAssessmentRepository).findById(DEFAULT_ID);
+    verify(employeeAssessmentRepository).save(updatedEmployeeAssessmentDetails);
+    verify(assessmentMatrixService).findById("updatedMatrixId");
+    verify(teamService).findById("updatedTeamId");
+    verify(employeeAssessmentService).update(DEFAULT_ID,
+        "updatedMatrixId",
+        "updatedTeamId",
+        "Updated Employee Name",
+        "name@company.com",
+        "1234",
+        PersonDocumentType.CPF,
+        Gender.MALE,
+        GenderPronoun.HE);
+  }
+
+  @Test
+  void update_nonExistingEmployeeAssessment_shouldReturnEmpty() {
+    // Prepare
+    String nonExistingId = "nonExistingId";
+
+    // Mock repository calls
+    doReturn(null).when(employeeAssessmentRepository).findById(nonExistingId);
+
+    // When
+    Optional<EmployeeAssessment> resultOptional = employeeAssessmentService.update(
+        nonExistingId,
+        "matrixId",
+        "teamId",
+        "name",
+        "email",
+        "doc",
+        PersonDocumentType.CPF,
+        Gender.MALE,
+        GenderPronoun.HE
+    );
+
+    // Then
+    assertTrue(resultOptional.isEmpty());
+    verify(employeeAssessmentRepository).findById(nonExistingId);
+    verify(employeeAssessmentService).update(nonExistingId, "matrixId", "teamId", "name", "email", "doc",
+        PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE);
   }
 
 }

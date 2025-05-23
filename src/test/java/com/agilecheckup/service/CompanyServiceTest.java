@@ -14,8 +14,13 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.copyCompanyAndAddId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRepository<Company>> {
@@ -49,7 +54,11 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
     assertTrue(companyOptional.isPresent());
     assertEquals(savedCompany, companyOptional.get());
     verify(companyRepository).save(savedCompany);
-    verify(companyService).create("0001", "Company Name", "company@email.com", "Company description", "Random Tenant Id");
+    verify(companyService).create("0001",
+        "Company Name",
+        "company@email.com",
+        "Company description",
+        "Random Tenant Id");
   }
 
   @Test
@@ -76,8 +85,8 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
 
 
     // Mock repository calls
-    when(companyRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(existingCompany));
-    doAnswerForUpdate(updatedCompanyDetails, companyRepository); // This mocks save indirectly
+    when(companyRepository.findById(DEFAULT_ID)).thenReturn(existingCompany);
+    doAnswerForUpdate(updatedCompanyDetails, companyRepository);
 
     // When
     Optional<Company> resultOptional = companyService.update(
@@ -94,7 +103,12 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
     assertEquals(updatedCompanyDetails, resultOptional.get());
     verify(companyRepository).findById(DEFAULT_ID);
     verify(companyRepository).save(updatedCompanyDetails); // or any(Company.class)
-    verify(companyService).update(DEFAULT_ID, "0002", "Updated Company Name", "updated.email@example.com", "Updated Description", "Updated Tenant Id");
+    verify(companyService).update(DEFAULT_ID,
+        "0002",
+        "Updated Company Name",
+        "updated.email@example.com",
+        "Updated Description",
+        "Updated Tenant Id");
   }
 
   @Test
@@ -103,7 +117,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, AbstractCrudRe
     String nonExistingId = "nonExistingId";
 
     // Mock repository calls
-    when(companyRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+    when(companyRepository.findById(nonExistingId)).thenReturn(null);
 
     // When
     Optional<Company> resultOptional = companyService.update(

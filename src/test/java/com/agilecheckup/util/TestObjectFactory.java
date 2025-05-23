@@ -1,6 +1,14 @@
 package com.agilecheckup.util;
 
-import com.agilecheckup.persistency.entity.*;
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.Category;
+import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.Department;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.PerformanceCycle;
+import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
@@ -326,6 +334,7 @@ public class TestObjectFactory {
 
   public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Map<String, Pillar> pillarMap) {
     return AssessmentMatrix.builder()
+        .id(dependenciesId)
         .name("AsssessmentMatrixName")
         .description("AssessmentMatrix description")
         .tenantId("tenantId")
@@ -359,6 +368,7 @@ public class TestObjectFactory {
         )).collect(Collectors.toMap(Pillar::getId, Function.identity()));
   }
 
+  @SuppressWarnings("unused")
   private static String strName(String prefix, Integer i) {
     return str(prefix + " Name - ", i);
   }
@@ -368,7 +378,7 @@ public class TestObjectFactory {
   }
 
   private static String str(String prefix, Integer i) {
-    return new StringBuilder().append(prefix).append(" ").append(i).toString();
+    return prefix + " " + i;
   }
 
   public static Category createMockedCategory(@NonNull String name, @NonNull String description) {

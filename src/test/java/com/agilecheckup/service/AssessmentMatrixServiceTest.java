@@ -24,10 +24,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithDependenciesId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPerformanceCycle;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
@@ -138,15 +154,13 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void create_NullAssessmentMatrixName() {
     // When
-    assertThrows(NullPointerException.class, () -> {
-      assessmentMatrixService.create(
-          null,
-          originalAssessmentMatrix.getDescription(),
-          originalAssessmentMatrix.getTenantId(),
-          originalAssessmentMatrix.getPerformanceCycleId(),
-          originalAssessmentMatrix.getPillarMap()
-      );
-    });
+    assertThrows(NullPointerException.class, () -> assessmentMatrixService.create(
+        null,
+        originalAssessmentMatrix.getDescription(),
+        originalAssessmentMatrix.getTenantId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
+        originalAssessmentMatrix.getPillarMap()
+                                                                               ));
   }
 
   @Test
@@ -424,6 +438,73 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 
+  }
+
+  @Test
+  void update_existingAssessmentMatrix_shouldSucceed() {
+    // Prepare
+    Map mockedPillarMap = mock(Map.class);
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+    AssessmentMatrix updatedAssessmentMatrixDetails = createMockedAssessmentMatrixWithDependenciesId("updatedCycleId", mockedPillarMap);
+    updatedAssessmentMatrixDetails.setName("Updated Matrix Name");
+    updatedAssessmentMatrixDetails.setDescription("Updated Description");
+    updatedAssessmentMatrixDetails.setTenantId("Updated Tenant Id");
+
+    PerformanceCycle updatedPerformanceCycle = createMockedPerformanceCycle("companyId", "updatedCycleId");
+
+    // Mock repository calls
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedAssessmentMatrixDetails, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(updatedPerformanceCycle)).when(mockPerformanceCycleService).findById("updatedCycleId");
+
+    // When
+    Optional<AssessmentMatrix> resultOptional = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Matrix Name",
+        "Updated Description",
+        "Updated Tenant Id",
+        "updatedCycleId",
+        mockedPillarMap
+                                                                              );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedAssessmentMatrixDetails, resultOptional.get());
+    verify(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    verify(mockAssessmentMatrixRepository).save(updatedAssessmentMatrixDetails);
+    verify(mockPerformanceCycleService).findById("updatedCycleId");
+    verify(assessmentMatrixService).update(DEFAULT_ID,
+        "Updated Matrix Name",
+        "Updated Description",
+        "Updated Tenant Id",
+        "updatedCycleId",
+        mockedPillarMap);
+  }
+
+  @Test
+  void update_nonExistingAssessmentMatrix_shouldReturnEmpty() {
+    // Prepare
+    String nonExistingId = "nonExistingId";
+    Map mockedPillarMap = mock(Map.class);
+
+    // Mock repository calls
+    doReturn(null).when(mockAssessmentMatrixRepository).findById(nonExistingId);
+
+    // When
+    Optional<AssessmentMatrix> resultOptional = assessmentMatrixService.update(
+        nonExistingId,
+        "name",
+        "desc",
+        "tenant",
+        "cycleId",
+        mockedPillarMap
+                                                                              );
+
+    // Then
+    assertTrue(resultOptional.isEmpty());
+    verify(mockAssessmentMatrixRepository).findById(nonExistingId);
+    verify(assessmentMatrixService).update(nonExistingId, "name", "desc", "tenant", "cycleId", mockedPillarMap);
   }
 
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){

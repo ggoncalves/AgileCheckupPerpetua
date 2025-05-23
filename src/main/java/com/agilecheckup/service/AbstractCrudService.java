@@ -23,10 +23,6 @@ public abstract class AbstractCrudService<T extends BaseEntity, V extends Abstra
     postCreate(saved);
   }
 
-  public void postCreate(T saved) {
-    // Do nothing, must be override
-  }
-
   public Optional<T> update(T t) {
     T saved = getRepository().save(t);
     internalPostUpdate(saved);
@@ -38,10 +34,6 @@ public abstract class AbstractCrudService<T extends BaseEntity, V extends Abstra
     postUpdate(saved);
   }
 
-  protected void postUpdate(T saved) {
-    // Do nothing, must be override
-  }
-
   public PaginatedScanList<T> findAll() {
     return getRepository().findAll();
   }
@@ -50,14 +42,23 @@ public abstract class AbstractCrudService<T extends BaseEntity, V extends Abstra
     return Optional.ofNullable(getRepository().findById(id));
   }
 
+  @SuppressWarnings("unused")
   public Optional<T> fetchAndCompare(String id, T t) {
-    log.debug("Fetching " + id);
+    log.debug("Fetching {}", id);
     Optional<T> fetched = findById(id);
-    assert t.equals(fetched);
+    if (!t.equals(fetched)) throw new AssertionError();
     return fetched;
   }
 
   public void delete(T t) {
     getRepository().delete(t);
+  }
+
+  public void postCreate(T saved) {
+    // Do nothing, must be override
+  }
+
+  protected void postUpdate(T saved) {
+    // Do nothing, must be override
   }
 }
