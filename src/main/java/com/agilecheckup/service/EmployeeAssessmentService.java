@@ -19,7 +19,11 @@ import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import lombok.NonNull;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAssessment, AbstractCrudRepository<EmployeeAssessment>> {
@@ -41,16 +45,32 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   }
 
   public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
-    return super.create(createEmployeeAssessment(assessmentMatrixId, teamId, name, email, documentNumber, documentType, gender, genderPronoun, null));
+    return super.create(createEmployeeAssessment(assessmentMatrixId, teamId, name, email, documentNumber, documentType, gender, genderPronoun));
   }
 
-  private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun, String personId) {
+  public Optional<EmployeeAssessment> update(@NonNull String id, @NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
+    Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(id);
+    if (optionalEmployeeAssessment.isPresent()) {
+      EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
+      Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
+      Optional<Team> team = teamService.findById(teamId);
+      
+      employeeAssessment.setAssessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId());
+      employeeAssessment.setTeam(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")));
+      employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
+      return super.update(employeeAssessment);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
     Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
     Optional<Team> team = teamService.findById(teamId);
     return EmployeeAssessment.builder()
         .assessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId())
         .team(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")))
-        .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, personId))
+        .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
         .answeredQuestionCount(0)
         .build();
   }

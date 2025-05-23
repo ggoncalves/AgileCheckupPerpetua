@@ -17,7 +17,11 @@ import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
@@ -44,6 +48,24 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
                                            Map<String, Pillar> pillarMap) {
     return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap));
+  }
+
+  public Optional<AssessmentMatrix> update(String id, String name, String description, String tenantId, String performanceCycleId,
+                                           Map<String, Pillar> pillarMap) {
+    Optional<AssessmentMatrix> optionalAssessmentMatrix = findById(id);
+    if (optionalAssessmentMatrix.isPresent()) {
+      AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.get();
+      Optional<PerformanceCycle> performanceCycle = getPerformanceCycle(performanceCycleId);
+      
+      assessmentMatrix.setName(name);
+      assessmentMatrix.setDescription(description);
+      assessmentMatrix.setTenantId(tenantId);
+      assessmentMatrix.setPerformanceCycleId(performanceCycle.orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId());
+      assessmentMatrix.setPillarMap(pillarMap);
+      return super.update(assessmentMatrix);
+    } else {
+      return Optional.empty();
+    }
   }
 
   public AssessmentMatrix incrementQuestionCount(String matrixId) {

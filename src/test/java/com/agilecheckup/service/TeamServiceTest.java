@@ -15,8 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
+import static com.agilecheckup.util.TestObjectFactory.copyTeamAndAddId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedDepartment;
+import static com.agilecheckup.util.TestObjectFactory.createMockedTeamWithDependenciesId;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -104,5 +110,67 @@ class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudReposito
         originalTeam.getTenantId(),
         originalTeam.getDepartment().getId()
     ));
+  }
+
+  @Test
+  void update_existingTeam_shouldSucceed() {
+    // Prepare
+    Team existingTeam = createMockedTeamWithDependenciesId(GENERIC_ID_1234);
+    existingTeam = cloneWithId(existingTeam, DEFAULT_ID);
+    Team updatedTeamDetails = createMockedTeamWithDependenciesId("updatedDepartmentId");
+    updatedTeamDetails.setName("Updated Team Name");
+    updatedTeamDetails.setDescription("Updated Description");
+    updatedTeamDetails.setTenantId("Updated Tenant Id");
+
+    Department updatedDepartment = createMockedDepartment("updatedDepartmentId");
+
+    // Mock repository calls
+    doReturn(existingTeam).when(mockedTeamRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedTeamDetails, mockedTeamRepository);
+    doReturn(Optional.of(updatedDepartment)).when(mockDepartmentService).findById("updatedDepartmentId");
+
+    // When
+    Optional<Team> resultOptional = teamService.update(
+        DEFAULT_ID,
+        updatedTeamDetails.getName(),
+        updatedTeamDetails.getDescription(),
+        updatedTeamDetails.getTenantId(),
+        "updatedDepartmentId"
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedTeamDetails, resultOptional.get());
+    verify(mockedTeamRepository).findById(DEFAULT_ID);
+    verify(mockedTeamRepository).save(updatedTeamDetails);
+    verify(mockDepartmentService).findById("updatedDepartmentId");
+    verify(teamService).update(DEFAULT_ID,
+        "Updated Team Name",
+        "Updated Description",
+        "Updated Tenant Id",
+        "updatedDepartmentId");
+  }
+
+  @Test
+  void update_nonExistingTeam_shouldReturnEmpty() {
+    // Prepare
+    String nonExistingId = "nonExistingId";
+
+    // Mock repository calls
+    doReturn(null).when(mockedTeamRepository).findById(nonExistingId);
+
+    // When
+    Optional<Team> resultOptional = teamService.update(
+        nonExistingId,
+        "name",
+        "desc",
+        "tenant",
+        "departmentId"
+    );
+
+    // Then
+    assertTrue(resultOptional.isEmpty());
+    verify(mockedTeamRepository).findById(nonExistingId);
+    verify(teamService).update(nonExistingId, "name", "desc", "tenant", "departmentId");
   }
 }

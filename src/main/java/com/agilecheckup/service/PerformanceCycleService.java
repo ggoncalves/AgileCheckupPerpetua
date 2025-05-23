@@ -26,6 +26,25 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
     return super.create(createPerformanceCycle(name, description, tenantId, companyId, isActive, isTimeSensitive));
   }
 
+  public Optional<PerformanceCycle> update(String id, String name, String description, String tenantId, String companyId,
+                                           Boolean isActive, Boolean isTimeSensitive) {
+    Optional<PerformanceCycle> optionalPerformanceCycle = findById(id);
+    if (optionalPerformanceCycle.isPresent()) {
+      PerformanceCycle performanceCycle = optionalPerformanceCycle.get();
+      Optional<Company> company = companyService.findById(companyId);
+      
+      performanceCycle.setName(name);
+      performanceCycle.setDescription(description);
+      performanceCycle.setTenantId(tenantId);
+      performanceCycle.setCompanyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId());
+      performanceCycle.setIsActive(isActive);
+      performanceCycle.setIsTimeSensitive(isTimeSensitive);
+      return super.update(performanceCycle);
+    } else {
+      return Optional.empty();
+    }
+  }
+
   private PerformanceCycle createPerformanceCycle(String name, String description, String tenantId, String companyId,
                                                   Boolean isActive, Boolean isTimeSensitive) {
     Optional<Company> company = companyService.findById(companyId);

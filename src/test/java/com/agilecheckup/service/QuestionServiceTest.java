@@ -3,6 +3,8 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
@@ -17,12 +19,23 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.agilecheckup.util.TestObjectFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
+import static com.agilecheckup.util.TestObjectFactory.copyQuestionAndAddId;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrix;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionOptionList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -49,19 +62,20 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   @Mock
   private AssessmentMatrixService assessmentMatrixService;
 
-  private AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID, createMockedPillarMap(1, 2, PILLAR_PREFIX, CATEGORY_PREFIX));
+  private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID,
+      createMockedPillarMap(1, 2, PILLAR_PREFIX, CATEGORY_PREFIX));
 
   private Question originalQuestion;
   private Question originalCustomQuestion;
 
   @BeforeEach
   void setUpBefore() {
-    originalQuestion = createMockedQuestion(PILLAR_ID_1, CATEGORY_ID_1);
-    originalCustomQuestion = createMockedCustomQuestion(PILLAR_ID_1, CATEGORY_ID_2);
+    originalQuestion = createMockedQuestion();
+    originalCustomQuestion = createMockedCustomQuestion(CATEGORY_ID_2);
     setPillarAndCategoryToAssessmentMatrix(assessmentMatrix);
   }
 
-  private AssessmentMatrix setPillarAndCategoryToAssessmentMatrix(AssessmentMatrix assessmentMatrix) {
+  private void setPillarAndCategoryToAssessmentMatrix(AssessmentMatrix assessmentMatrix) {
     int index = 0;
     String[] categoryIds = {CATEGORY_ID_1, CATEGORY_ID_2};
     Map<String, Pillar> newPillarMap = new HashMap<>();
@@ -78,7 +92,6 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
       newPillarMap.put(pillar.getId(), pillar);
     }
     assessmentMatrix.setPillarMap(newPillarMap);
-    return assessmentMatrix;
   }
 
   @Test
@@ -99,7 +112,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     Exception exception = assertThrows(InvalidCustomOptionListException.class,
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
-            new ArrayList<QuestionOption>(), originalCustomQuestion.getAssessmentMatrixId(),
+            new ArrayList<>(), originalCustomQuestion.getAssessmentMatrixId(),
             originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
 
     assertEquals("Question option list is empty. There should be at least 2 options.", exception.getMessage());
@@ -203,8 +216,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   }
 
   private List<QuestionOption> createQuestionOption(Integer ... ids) {
-    return IntStream.range(0, ids.length)
-        .mapToObj(index -> TestObjectFactory.createQuestionOption(ids[index], "Text", 5d))
+    return Arrays.stream(ids).map(id -> TestObjectFactory.createQuestionOption(id, "Text", 5d))
         .collect(Collectors.toList());
   }
 
@@ -286,17 +298,144 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     assertEquals(20, map.get(4).getPoints());
   }
 
-  private Question createMockedQuestion(String pillarId, String categoryId) {
+  private Question createMockedQuestion() {
     Question q = TestObjectFactory.createMockedQuestion(DEFAULT_ID);
-    q.setPillarId(pillarId);
+    q.setPillarId(QuestionServiceTest.PILLAR_ID_1);
+    q.setCategoryId(QuestionServiceTest.CATEGORY_ID_1);
+    return q;
+  }
+
+  private Question createMockedCustomQuestion(String categoryId) {
+    Question q = TestObjectFactory.createMockedCustomQuestion(DEFAULT_ID);
+    q.setPillarId(QuestionServiceTest.PILLAR_ID_1);
     q.setCategoryId(categoryId);
     return q;
   }
 
-  private Question createMockedCustomQuestion(String pillarId, String categoryId) {
-    Question q = TestObjectFactory.createMockedCustomQuestion(DEFAULT_ID);
-    q.setPillarId(pillarId);
-    q.setCategoryId(categoryId);
-    return q;
+  @Test
+  void update_existingQuestion_shouldSucceed() {
+    // Prepare
+    Question existingQuestion = createMockedQuestion();
+    Question updatedQuestionDetails = createMockedQuestion();
+    updatedQuestionDetails.setQuestion("Updated Question Text");
+    updatedQuestionDetails.setQuestionType(QuestionType.ONE_TO_TEN);
+    updatedQuestionDetails.setTenantId("Updated Tenant Id");
+    updatedQuestionDetails.setPoints(10.0);
+
+    // Mock repository calls
+    doReturn(existingQuestion).when(questionRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedQuestionDetails, questionRepository);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(DEFAULT_ID);
+
+    // When
+    Optional<Question> resultOptional = questionService.update(
+        DEFAULT_ID,
+        "Updated Question Text",
+        QuestionType.ONE_TO_TEN,
+        "Updated Tenant Id",
+        10.0,
+        DEFAULT_ID,
+        PILLAR_ID_1,
+        CATEGORY_ID_1
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedQuestionDetails, resultOptional.get());
+    verify(questionRepository).findById(DEFAULT_ID);
+    verify(questionRepository).save(updatedQuestionDetails);
+    verify(assessmentMatrixService).findById(DEFAULT_ID);
+    verify(questionService).update(DEFAULT_ID,
+        "Updated Question Text",
+        QuestionType.ONE_TO_TEN,
+        "Updated Tenant Id",
+        10.0,
+        DEFAULT_ID,
+        PILLAR_ID_1,
+        CATEGORY_ID_1);
+  }
+
+  @Test
+  void updateCustomQuestion_existingQuestion_shouldSucceed() {
+    // Prepare
+    boolean updatedIsMultipleChoice = false;
+    boolean updatedIsFlushed = true;
+    Question existingQuestion = createMockedCustomQuestion(CATEGORY_ID_1);
+    List<QuestionOption> updatedOptions = createMockedQuestionOptionList("Option", 5d, 10d, 15d, 20d);
+    Question updatedQuestion = createUpdatedQuestionOptionList(updatedIsMultipleChoice, updatedIsFlushed, updatedOptions);
+
+    // Mock repository calls
+    doReturn(existingQuestion).when(questionRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedQuestion, questionRepository);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(DEFAULT_ID);
+
+    // When
+    Optional<Question> resultOptional = questionService.updateCustomQuestion(
+        DEFAULT_ID,
+        "Updated Custom Question Text",
+        QuestionType.CUSTOMIZED,
+        "Updated Tenant Id",
+        updatedIsMultipleChoice,
+        updatedIsFlushed,
+        updatedOptions,
+        DEFAULT_ID,
+        PILLAR_ID_1,
+        CATEGORY_ID_1
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals(updatedQuestion, resultOptional.get());
+    verify(questionRepository).findById(DEFAULT_ID);
+    verify(questionRepository).save(updatedQuestion);
+    verify(assessmentMatrixService).findById(DEFAULT_ID);
+    verify(questionService).updateCustomQuestion(DEFAULT_ID,
+        "Updated Custom Question Text",
+        QuestionType.CUSTOMIZED,
+        "Updated Tenant Id",
+        false,
+        true,
+        updatedOptions,
+        DEFAULT_ID,
+        PILLAR_ID_1,
+        CATEGORY_ID_1);
+  }
+
+  @Test
+  void update_nonExistingQuestion_shouldReturnEmpty() {
+    // Prepare
+    String nonExistingId = "nonExistingId";
+
+    // Mock repository calls
+    doReturn(null).when(questionRepository).findById(nonExistingId);
+
+    // When
+    Optional<Question> resultOptional = questionService.update(
+        nonExistingId,
+        "question",
+        QuestionType.YES_NO,
+        "tenant",
+        5.0,
+        "matrixId",
+        "pillarId",
+        "categoryId"
+    );
+
+    // Then
+    assertTrue(resultOptional.isEmpty());
+    verify(questionRepository).findById(nonExistingId);
+    verify(questionService).update(nonExistingId, "question", QuestionType.YES_NO, "tenant", 5.0, "matrixId", "pillarId", "categoryId");
+  }
+
+  private Question createUpdatedQuestionOptionList(boolean updatedIsMultipleChoice, boolean updatedIsFlushed, List<QuestionOption> updatedOptions) {
+    Question updatedQuestion = createMockedCustomQuestion(CATEGORY_ID_1);
+    updatedQuestion.setQuestion("Updated Custom Question Text");
+    updatedQuestion.setTenantId("Updated Tenant Id");
+    updatedQuestion.setOptionGroup(OptionGroup.builder()
+        .isMultipleChoice(updatedIsMultipleChoice)
+        .showFlushed(updatedIsFlushed)
+        .optionMap(questionService.toOptionMap(updatedOptions))
+        .build());
+    return updatedQuestion;
   }
 }

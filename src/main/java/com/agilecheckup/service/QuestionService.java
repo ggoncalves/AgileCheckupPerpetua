@@ -22,7 +22,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.*;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.INVALID_OPTIONS_IDS;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_EMPTY;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TEXT_EMPTY;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_BIG;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_SHORT;
 
 public class QuestionService extends AbstractCrudService<Question, AbstractCrudRepository<Question>> {
 
@@ -49,6 +53,56 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   public Optional<Question> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId) {
     Question question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId);
     return createQuestion(question);
+  }
+
+  public Optional<Question> update(String id, String questionTxt, QuestionType questionType, String tenantId, Double points,
+                                   String assessmentMatrixId, String pillarId, String categoryId) {
+    Optional<Question> optionalQuestion = findById(id);
+    if (optionalQuestion.isPresent()) {
+      Question question = optionalQuestion.get();
+      AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
+      Pillar pillar = getPillar(assessmentMatrix, pillarId);
+      Category category = getCategory(pillar, categoryId);
+      
+      question.setAssessmentMatrixId(assessmentMatrix.getId());
+      question.setPillarId(pillar.getId());
+      question.setPillarName(pillar.getName());
+      question.setCategoryId(category.getId());
+      question.setCategoryName(category.getName());
+      question.setQuestion(questionTxt);
+      question.setQuestionType(questionType);
+      question.setTenantId(tenantId);
+      question.setPoints(points);
+      return super.update(question);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public Optional<Question> updateCustomQuestion(String id, String questionTxt, QuestionType questionType, String tenantId,
+                                                 boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options,
+                                                 String assessmentMatrixId, String pillarId, String categoryId) {
+    Optional<Question> optionalQuestion = findById(id);
+    if (optionalQuestion.isPresent()) {
+      Question question = optionalQuestion.get();
+      validateQuestionOptions(options);
+      AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
+      Pillar pillar = getPillar(assessmentMatrix, pillarId);
+      Category category = getCategory(pillar, categoryId);
+      
+      question.setAssessmentMatrixId(assessmentMatrix.getId());
+      question.setPillarId(pillar.getId());
+      question.setPillarName(pillar.getName());
+      question.setCategoryId(category.getId());
+      question.setCategoryName(category.getName());
+      question.setQuestion(questionTxt);
+      question.setQuestionType(questionType);
+      question.setOptionGroup(createOptionGroup(isMultipleChoice, showFlushed, options));
+      question.setTenantId(tenantId);
+      return super.update(question);
+    } else {
+      return Optional.empty();
+    }
   }
 
   public List<Question> findByAssessmentMatrixId(String matrixId, String tenantId) {
