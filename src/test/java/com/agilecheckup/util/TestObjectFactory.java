@@ -3,13 +3,16 @@ package com.agilecheckup.util;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.Department;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.Industry;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
+import com.agilecheckup.persistency.entity.person.Address;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
@@ -208,6 +211,12 @@ public class TestObjectFactory {
         .email("company@email.com")
         .personDocumentType(PersonDocumentType.CNPJ)
         .documentNumber("0001")
+        .size(CompanySize.MEDIUM)
+        .industry(Industry.TECHNOLOGY)
+        .website("https://www.company.com")
+        .legalName("Company Legal Name Inc.")
+        .contactPerson(createMockedNaturalPerson("Contact Person"))
+        .address(createMockedAddress())
         .build();
   }
 
@@ -226,6 +235,9 @@ public class TestObjectFactory {
         .documentNumber(company.getDocumentNumber())
         .industry(company.getIndustry())
         .size(company.getSize())
+        .website(company.getWebsite())
+        .legalName(company.getLegalName())
+        .contactPerson(company.getContactPerson())
         .address(company.getAddress())
         .build();
   }
@@ -258,6 +270,16 @@ public class TestObjectFactory {
         .personDocumentType(PersonDocumentType.CPF)
         .gender(Gender.MALE)
         .genderPronoun(GenderPronoun.HE)
+        .build();
+  }
+
+  public static Address createMockedAddress() {
+    return Address.builder()
+        .street("123 Main Street")
+        .city("São Paulo")
+        .state("SP")
+        .zipcode("01234-567")
+        .country("Brazil")
         .build();
   }
 

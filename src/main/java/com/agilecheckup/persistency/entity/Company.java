@@ -3,10 +3,7 @@ package com.agilecheckup.persistency.entity;
 import com.agilecheckup.persistency.entity.base.Tenantable;
 import com.agilecheckup.persistency.entity.person.LegalPerson;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -24,11 +21,19 @@ public class Company extends LegalPerson implements Tenantable {
   @DynamoDBIndexHashKey(globalSecondaryIndexName = "tenantId-index", attributeName = "tenantId")
   private String tenantId;
 
+  @DynamoDBAttribute(attributeName = "website")
+  private String website;
+
+  @DynamoDBAttribute(attributeName = "legalName")
+  private String legalName;
+
   @DynamoDBAttribute(attributeName = "size")
-  private Integer size;
+  @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.S)
+  private CompanySize size;
 
   @DynamoDBAttribute(attributeName = "industry")
-  private String industry;
+  @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.S)
+  private Industry industry;
 
   @DynamoDBAttribute(attributeName = "contactPerson")
   @DynamoDBTypeConvertedJson
