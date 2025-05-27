@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.entity.Department;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.DepartmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -48,6 +49,10 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
         .tenantId(tenantId)
         .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "Department", "Company")).getId())
         .build();
+  }
+
+  public PaginatedQueryList<Department> findAllByTenantId(String tenantId) {
+    return departmentRepository.findAllByTenantId(tenantId);
   }
 
   @Override
