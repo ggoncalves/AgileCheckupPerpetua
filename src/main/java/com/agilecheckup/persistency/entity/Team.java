@@ -16,8 +16,6 @@ import lombok.experimental.SuperBuilder;
 @DynamoDBTable(tableName = "Team")
 public class Team extends TenantDescribableEntity {
 
-  // If this class is refactored to be embedded inside Company, audit date and id shaw be removed.
-
   @NonNull
   @DynamoDBAttribute(attributeName = "department")
   @DynamoDBTypeConvertedJson
