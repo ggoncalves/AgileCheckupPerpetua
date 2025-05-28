@@ -5,9 +5,12 @@ import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TeamService extends AbstractCrudService<Team, AbstractCrudRepository<Team>> {
 
@@ -47,6 +50,15 @@ public class TeamService extends AbstractCrudService<Team, AbstractCrudRepositor
         .tenantId(tenantId)
         .department(department.orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department")))
         .build();
+  }
+
+  public List<Team> findAllByTenantId(String tenantId) {
+    PaginatedQueryList<Team> paginatedList = teamRepository.findAllByTenantId(tenantId);
+    return paginatedList.stream().collect(Collectors.toList());
+  }
+
+  public List<Team> findByDepartmentId(String departmentId, String tenantId) {
+    return teamRepository.findByDepartmentId(departmentId, tenantId);
   }
 
   @Override

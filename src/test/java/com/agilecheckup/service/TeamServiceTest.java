@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +14,11 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
 import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
@@ -24,7 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
@@ -172,5 +179,66 @@ class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudReposito
     assertTrue(resultOptional.isEmpty());
     verify(mockedTeamRepository).findById(nonExistingId);
     verify(teamService).update(nonExistingId, "name", "desc", "tenant", "departmentId");
+  }
+
+  @Test
+  void findAllByTenantId_shouldReturnTeamsForTenant() {
+    // Given
+    String tenantId = "tenant-123";
+    Team team1 = createMockedTeamWithDependenciesId("dept-1");
+    team1.setTenantId(tenantId);
+    Team team2 = createMockedTeamWithDependenciesId("dept-2");
+    team2.setTenantId(tenantId);
+    
+    PaginatedQueryList mockPaginatedList = mock(PaginatedQueryList.class);
+    when(mockPaginatedList.stream()).thenReturn(Stream.of(team1, team2));
+    
+    doReturn(mockPaginatedList).when(mockedTeamRepository).findAllByTenantId(tenantId);
+    
+    // When
+    List<Team> result = teamService.findAllByTenantId(tenantId);
+    
+    // Then
+    assertEquals(2, result.size());
+    assertTrue(result.contains(team1));
+    assertTrue(result.contains(team2));
+    verify(mockedTeamRepository).findAllByTenantId(tenantId);
+  }
+
+  @Test
+  void findByDepartmentId_shouldReturnFilteredTeams() {
+    // Given
+    String tenantId = "tenant-123";
+    String departmentId = "dept-123";
+    Team team1 = createMockedTeamWithDependenciesId(departmentId);
+    team1.setTenantId(tenantId);
+    Team team2 = createMockedTeamWithDependenciesId(departmentId);
+    team2.setTenantId(tenantId);
+    
+    List<Team> expectedTeams = Arrays.asList(team1, team2);
+    doReturn(expectedTeams).when(mockedTeamRepository).findByDepartmentId(departmentId, tenantId);
+    
+    // When
+    List<Team> result = teamService.findByDepartmentId(departmentId, tenantId);
+    
+    // Then
+    assertEquals(expectedTeams, result);
+    verify(mockedTeamRepository).findByDepartmentId(departmentId, tenantId);
+  }
+
+  @Test
+  void findByDepartmentId_shouldReturnEmptyListWhenNoTeams() {
+    // Given
+    String tenantId = "tenant-123";
+    String departmentId = "dept-123";
+    
+    doReturn(Collections.emptyList()).when(mockedTeamRepository).findByDepartmentId(departmentId, tenantId);
+    
+    // When
+    List<Team> result = teamService.findByDepartmentId(departmentId, tenantId);
+    
+    // Then
+    assertTrue(result.isEmpty());
+    verify(mockedTeamRepository).findByDepartmentId(departmentId, tenantId);
   }
 }
