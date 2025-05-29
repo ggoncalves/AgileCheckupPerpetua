@@ -28,8 +28,7 @@ public class TeamRepository extends AbstractCrudRepository<Team> {
     
     // Filter in-memory by department ID
     return teamsForTenant.stream()
-        .filter(team -> team.getDepartment() != null && 
-                       departmentId.equals(team.getDepartment().getId()))
+        .filter(team -> departmentId.equals(team.getDepartmentId()))
         .collect(Collectors.toList());
   }
 
