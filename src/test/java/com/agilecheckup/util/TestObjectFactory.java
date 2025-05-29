@@ -309,7 +309,7 @@ public class TestObjectFactory {
 
   public static Team createMockedTeam() {
     return Team.builder()
-        .department(createMockedDepartment("A DepartmentId"))
+        .departmentId("A DepartmentId")
         .name("TeamName")
         .description("Team description")
         .tenantId("tenantId")
@@ -318,7 +318,7 @@ public class TestObjectFactory {
 
   public static Team createMockedTeamWithDependenciesId(String departmentId) {
     return Team.builder()
-        .department(createMockedDepartment(departmentId))
+        .departmentId(departmentId)
         .name("TeamName")
         .description("Team description")
         .tenantId("tenantId")
@@ -332,7 +332,7 @@ public class TestObjectFactory {
   public static Team copyTeamAndAddId(Team team, String id) {
     return Team.builder()
         .id(id)
-        .department(team.getDepartment())
+        .departmentId(team.getDepartmentId())
         .name(team.getName())
         .description(team.getDescription())
         .tenantId(team.getTenantId())

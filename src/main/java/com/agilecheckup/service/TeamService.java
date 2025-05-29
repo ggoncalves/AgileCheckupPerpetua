@@ -31,11 +31,13 @@ public class TeamService extends AbstractCrudService<Team, AbstractCrudRepositor
     Optional<Team> optionalTeam = findById(id);
     if (optionalTeam.isPresent()) {
       Team team = optionalTeam.get();
-      Optional<Department> department = departmentService.findById(departmentId);
+      // Validate that department exists
+      departmentService.findById(departmentId)
+          .orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department"));
       team.setName(name);
       team.setDescription(description);
       team.setTenantId(tenantId);
-      team.setDepartment(department.orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department")));
+      team.setDepartmentId(departmentId);
       return super.update(team);
     } else {
       return Optional.empty();
@@ -43,12 +45,14 @@ public class TeamService extends AbstractCrudService<Team, AbstractCrudRepositor
   }
 
   private Team createTeam(String name, String description, String tenantId, String departmentId) {
-    Optional<Department> department = departmentService.findById(departmentId);
+    // Validate that department exists
+    departmentService.findById(departmentId)
+        .orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department"));
     return Team.builder()
         .name(name)
         .description(description)
         .tenantId(tenantId)
-        .department(department.orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department")))
+        .departmentId(departmentId)
         .build();
   }
 
