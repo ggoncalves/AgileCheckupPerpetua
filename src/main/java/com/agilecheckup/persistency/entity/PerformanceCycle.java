@@ -39,5 +39,5 @@ public class PerformanceCycle extends TenantDescribableEntity {
 
   // TODO: Add the field below
 //  @DynamoDBAttribute(attributeName = "consulting")
-//  private Person consulting;
+//  private NaturalPerson consulting;
 }
