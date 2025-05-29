@@ -13,15 +13,18 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
 import static com.agilecheckup.util.TestObjectFactory.createMockedPerformanceCycleWithDependenciesId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +53,11 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
   @Test
   void create() {
     PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
+    Date startDate = new Date();
+    Date endDate = new Date(startDate.getTime() + 86400000); // +1 day
+    savedPerformanceCycle.setStartDate(startDate);
+    savedPerformanceCycle.setEndDate(endDate);
+    savedPerformanceCycle.setIsTimeSensitive(true); // Should be true when endDate is present
 
     // Prevent/Stub
     doAnswerForSaveWithRandomEntityId(savedPerformanceCycle, mockPerformanceCycleRepository);
@@ -62,7 +70,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         originalPerformanceCycle.getTenantId(),
         originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
-        originalPerformanceCycle.getIsTimeSensitive()
+        originalPerformanceCycle.getIsTimeSensitive(), // This will be overridden by business rule
+        startDate,
+        endDate
     );
 
     // Then
@@ -75,7 +85,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         originalPerformanceCycle.getTenantId(),
         originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
-        originalPerformanceCycle.getIsTimeSensitive()
+        originalPerformanceCycle.getIsTimeSensitive(),
+        startDate,
+        endDate
     );
     verify(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
   }
@@ -92,7 +104,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         originalPerformanceCycle.getTenantId(),
         originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
-        originalPerformanceCycle.getIsTimeSensitive()
+        originalPerformanceCycle.getIsTimeSensitive(),
+        new Date(),
+        new Date()
     ));
   }
 
@@ -105,7 +119,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         originalPerformanceCycle.getTenantId(),
         originalPerformanceCycle.getCompanyId(),
         originalPerformanceCycle.getIsActive(),
-        originalPerformanceCycle.getIsTimeSensitive()
+        originalPerformanceCycle.getIsTimeSensitive(),
+        new Date(),
+        new Date()
     ));
   }
 
@@ -119,7 +135,11 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
     updatedPerformanceCycleDetails.setDescription("Updated Description");
     updatedPerformanceCycleDetails.setTenantId("Updated Tenant Id");
     updatedPerformanceCycleDetails.setIsActive(false);
-    updatedPerformanceCycleDetails.setIsTimeSensitive(false);
+    updatedPerformanceCycleDetails.setIsTimeSensitive(true);  // Should be true when isActive is false
+    Date startDate = new Date();
+    Date endDate = new Date(startDate.getTime() + 86400000);
+    updatedPerformanceCycleDetails.setStartDate(startDate);
+    updatedPerformanceCycleDetails.setEndDate(endDate);
 
     Company updatedCompany = createMockedCompany("updatedCompanyId");
 
@@ -136,7 +156,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         "Updated Tenant Id",
         "updatedCompanyId",
         false,
-        false
+        false,
+        startDate,
+        endDate
     );
 
     // Then
@@ -151,7 +173,9 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         "Updated Tenant Id",
         "updatedCompanyId",
         false,
-        false);
+        false,
+        startDate,
+        endDate);
   }
 
   @Test
@@ -170,12 +194,105 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
         "tenant",
         "companyId",
         true,
-        true
-                                                                              );
+        true,
+        new Date(),
+        new Date()
+    );
 
     // Then
     assertTrue(resultOptional.isEmpty());
     verify(mockPerformanceCycleRepository).findById(nonExistingId);
-    verify(performanceCycleService).update(nonExistingId, "name", "desc", "tenant", "companyId", true, true);
+    verify(performanceCycleService).update(eq(nonExistingId), eq("name"), eq("desc"), eq("tenant"), eq("companyId"), eq(true), eq(true), 
+        org.mockito.ArgumentMatchers.any(Date.class), org.mockito.ArgumentMatchers.any(Date.class));
+  }
+
+  @Test
+  void create_withEndDate_shouldSetIsTimeSensitiveTrue() {
+    // Prepare
+    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
+    Date endDate = new Date();
+    savedPerformanceCycle.setEndDate(endDate);
+    savedPerformanceCycle.setIsTimeSensitive(true); // Should be automatically set to true
+
+    // Mock
+    doAnswerForSaveWithRandomEntityId(savedPerformanceCycle, mockPerformanceCycleRepository);
+    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
+
+    // When
+    Optional<PerformanceCycle> result = performanceCycleService.create(
+        originalPerformanceCycle.getName(),
+        originalPerformanceCycle.getDescription(),
+        originalPerformanceCycle.getTenantId(),
+        originalPerformanceCycle.getCompanyId(),
+        originalPerformanceCycle.getIsActive(),
+        false, // Pass false, but should be overridden to true
+        null,
+        endDate
+    );
+
+    // Then
+    assertTrue(result.isPresent());
+    assertTrue(result.get().getIsTimeSensitive());
+  }
+
+  @Test
+  void create_withoutEndDate_shouldSetIsTimeSensitiveFalse() {
+    // Prepare
+    PerformanceCycle savedPerformanceCycle = cloneWithId(originalPerformanceCycle, DEFAULT_ID);
+    savedPerformanceCycle.setIsTimeSensitive(false); // Should be automatically set to false
+
+    // Mock
+    doAnswerForSaveWithRandomEntityId(savedPerformanceCycle, mockPerformanceCycleRepository);
+    doReturn(Optional.of(company)).when(mockCompanyService).findById(originalPerformanceCycle.getCompanyId());
+
+    // When
+    Optional<PerformanceCycle> result = performanceCycleService.create(
+        originalPerformanceCycle.getName(),
+        originalPerformanceCycle.getDescription(),
+        originalPerformanceCycle.getTenantId(),
+        originalPerformanceCycle.getCompanyId(),
+        originalPerformanceCycle.getIsActive(),
+        true, // Pass true, but should be overridden to false
+        null,
+        null
+    );
+
+    // Then
+    assertTrue(result.isPresent());
+    assertFalse(result.get().getIsTimeSensitive());
+  }
+
+  @Test
+  void update_withEndDate_shouldSetIsTimeSensitiveTrue() {
+    // Prepare
+    PerformanceCycle existingCycle = createMockedPerformanceCycleWithDependenciesId(DEFAULT_ID);
+    existingCycle = cloneWithId(existingCycle, DEFAULT_ID);
+    Date endDate = new Date();
+    
+    PerformanceCycle updatedCycle = cloneWithId(existingCycle, DEFAULT_ID);
+    updatedCycle.setEndDate(endDate);
+    updatedCycle.setIsTimeSensitive(true);
+
+    // Mock
+    doReturn(existingCycle).when(mockPerformanceCycleRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedCycle, mockPerformanceCycleRepository);
+    doReturn(Optional.of(company)).when(mockCompanyService).findById(existingCycle.getCompanyId());
+
+    // When
+    Optional<PerformanceCycle> result = performanceCycleService.update(
+        DEFAULT_ID,
+        existingCycle.getName(),
+        existingCycle.getDescription(),
+        existingCycle.getTenantId(),
+        existingCycle.getCompanyId(),
+        existingCycle.getIsActive(),
+        false, // Pass false, but should be overridden to true
+        null,
+        endDate
+    );
+
+    // Then
+    assertTrue(result.isPresent());
+    assertTrue(result.get().getIsTimeSensitive());
   }
 }

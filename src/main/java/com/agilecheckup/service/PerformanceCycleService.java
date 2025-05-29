@@ -7,6 +7,7 @@ import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 import javax.inject.Inject;
+import java.util.Date;
 import java.util.Optional;
 
 public class PerformanceCycleService extends AbstractCrudService<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
@@ -22,12 +23,14 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
   }
 
   public Optional<PerformanceCycle> create(String name, String description, String tenantId, String companyId,
-                                           Boolean isActive, Boolean isTimeSensitive) {
-    return super.create(createPerformanceCycle(name, description, tenantId, companyId, isActive, isTimeSensitive));
+                                           Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
+    // Business rule: isTimeSensitive is true only if endDate is present
+    Boolean calculatedIsTimeSensitive = (endDate != null);
+    return super.create(createPerformanceCycle(name, description, tenantId, companyId, isActive, calculatedIsTimeSensitive, startDate, endDate));
   }
 
   public Optional<PerformanceCycle> update(String id, String name, String description, String tenantId, String companyId,
-                                           Boolean isActive, Boolean isTimeSensitive) {
+                                           Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
     Optional<PerformanceCycle> optionalPerformanceCycle = findById(id);
     if (optionalPerformanceCycle.isPresent()) {
       PerformanceCycle performanceCycle = optionalPerformanceCycle.get();
@@ -38,7 +41,10 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
       performanceCycle.setTenantId(tenantId);
       performanceCycle.setCompanyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId());
       performanceCycle.setIsActive(isActive);
-      performanceCycle.setIsTimeSensitive(isTimeSensitive);
+      // Business rule: isTimeSensitive is true only if endDate is present
+      performanceCycle.setIsTimeSensitive(endDate != null);
+      performanceCycle.setStartDate(startDate);
+      performanceCycle.setEndDate(endDate);
       return super.update(performanceCycle);
     } else {
       return Optional.empty();
@@ -46,7 +52,7 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
   }
 
   private PerformanceCycle createPerformanceCycle(String name, String description, String tenantId, String companyId,
-                                                  Boolean isActive, Boolean isTimeSensitive) {
+                                                  Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
     Optional<Company> company = companyService.findById(companyId);
     return PerformanceCycle.builder()
         .name(name)
@@ -55,6 +61,8 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
         .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId())
         .isActive(isActive)
         .isTimeSensitive(isTimeSensitive)
+        .startDate(startDate)
+        .endDate(endDate)
         .build();
   }
 

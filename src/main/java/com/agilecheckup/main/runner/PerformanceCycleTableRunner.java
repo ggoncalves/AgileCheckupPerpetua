@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -31,7 +32,9 @@ public class PerformanceCycleTableRunner extends AbstractEntityCrudRunner<Perfor
         "Another TenantId",
         "ca93d066-62af-4a49-aa46-0dd7f33ba9bc",
         true,
-        false
+        false,
+        new Date(),
+        new Date()
     ));
     return collection;
   }
