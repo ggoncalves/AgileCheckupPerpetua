@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +14,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
@@ -25,7 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
@@ -294,5 +299,30 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
     // Then
     assertTrue(result.isPresent());
     assertTrue(result.get().getIsTimeSensitive());
+  }
+
+  @Test
+  void findAllByTenantId_shouldReturnListForTenant() {
+    // Prepare
+    String tenantId = "tenant123";
+    PerformanceCycle cycle1 = createMockedPerformanceCycleWithDependenciesId("cycle1");
+    cycle1.setTenantId(tenantId);
+    PerformanceCycle cycle2 = createMockedPerformanceCycleWithDependenciesId("cycle2");
+    cycle2.setTenantId(tenantId);
+    List<PerformanceCycle> expectedCycles = Arrays.asList(cycle1, cycle2);
+    
+    PaginatedQueryList<PerformanceCycle> mockPaginatedList = mock(PaginatedQueryList.class);
+    when(mockPaginatedList.stream()).thenReturn(expectedCycles.stream());
+    
+    // Mock
+    when(mockPerformanceCycleRepository.findAllByTenantId(tenantId)).thenReturn(mockPaginatedList);
+    
+    // When
+    List<PerformanceCycle> result = performanceCycleService.findAllByTenantId(tenantId);
+    
+    // Then
+    assertEquals(2, result.size());
+    assertEquals(expectedCycles, result);
+    verify(mockPerformanceCycleRepository).findAllByTenantId(tenantId);
   }
 }

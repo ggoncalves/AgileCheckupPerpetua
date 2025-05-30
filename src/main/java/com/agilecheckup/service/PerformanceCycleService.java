@@ -5,10 +5,13 @@ import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 import javax.inject.Inject;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PerformanceCycleService extends AbstractCrudService<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
 
@@ -64,6 +67,11 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
         .startDate(startDate)
         .endDate(endDate)
         .build();
+  }
+
+  public List<PerformanceCycle> findAllByTenantId(String tenantId) {
+    PaginatedQueryList<PerformanceCycle> paginatedList = performanceCycleRepository.findAllByTenantId(tenantId);
+    return paginatedList.stream().collect(Collectors.toList());
   }
 
   @Override
