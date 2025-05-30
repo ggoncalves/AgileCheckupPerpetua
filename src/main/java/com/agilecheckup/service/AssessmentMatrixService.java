@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
@@ -94,8 +96,13 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return performanceCycleService.findById(performanceCycleId);
   }
 
+  public List<AssessmentMatrix> findAllByTenantId(String tenantId) {
+    PaginatedQueryList<AssessmentMatrix> paginatedList = assessmentMatrixRepository.findAllByTenantId(tenantId);
+    return paginatedList.stream().collect(Collectors.toList());
+  }
+
   @Override
-  AbstractCrudRepository<AssessmentMatrix> getRepository() {
+  protected AbstractCrudRepository<AssessmentMatrix> getRepository() {
     return assessmentMatrixRepository;
   }
 
@@ -105,10 +112,10 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     // Map pillarId -> PillarScore
     Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
 
-    // 2. Calcula a pontuacao total possivelmente máxima das questões recuperadas
+    // 2. Calculate the maximum possible total score from the retrieved questions
     double totalPoints = questions.stream()
         .mapToDouble(question -> {
-          // Recupera ou cria o PillarScore
+          // Retrieve or create the PillarScore
           PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
               PillarScore.builder()
                   .pillarId(id)
@@ -117,17 +124,17 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
                   .build()
           );
 
-          // Roda lógica suposta para atualizar PillarScore e se necessario CategoryScore com base na questão
+          // Run the logic to update PillarScore and if necessary CategoryScore based on the question
           updatePillarScoreWithQuestion(pillarScore, question);
 
           return computeQuestionMaxScore(question);
         })
         .sum();
 
-    // 3.1 Recupere o AssessmentMatrix
+    // 3.1 Retrieve the AssessmentMatrix
     AssessmentMatrix assessmentMatrix = assessmentMatrixRepository.findById(matrixId);
 
-    // 3.2 Atualize o PotentialScore do AssessmentMatrix
+    // 3.2 Update the PotentialScore of the AssessmentMatrix
     PotentialScore potentialScore =  assessmentMatrix.getPotentialScore();
     if (potentialScore == null) {
       potentialScore = PotentialScore.builder().build();
@@ -136,14 +143,14 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     potentialScore.setPillarIdToPillarScoreMap(pillarIdToPillarScoreMap);
     potentialScore.setScore(totalPoints);
 
-    // 4. Salve o AssessmentMatrix atualizado
+    // 4. Save the updated AssessmentMatrix
     assessmentMatrixRepository.save(assessmentMatrix);
 
     return assessmentMatrix;
   }
 
   private void updatePillarScoreWithQuestion(PillarScore pillarScore, Question question) {
-    // Supondo que cada CategoryScore pode ser identificado pelo ID da categoria na questão
+    // Assuming each CategoryScore can be identified by the category ID in the question
     String categoryId = question.getCategoryId();
     CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id ->
         CategoryScore.builder()
@@ -153,19 +160,19 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
             .build()
     );
 
-    // Crie e adicione QuestionScore à lista de questionScores na CategoryScore
+    // Create and add QuestionScore to the questionScores list in CategoryScore
     QuestionScore questionScore = QuestionScore.builder()
         .questionId(question.getId())
         .score(computeQuestionMaxScore(question))
         .build();
     categoryScore.getQuestionScores().add(questionScore);
 
-    // Atualiza o maxCategoryScore na CategoryScore
+    // Update the maxCategoryScore in CategoryScore
     categoryScore.setScore(categoryScore.getQuestionScores().stream()
         .mapToDouble(QuestionScore::getScore)
         .sum());
 
-    // Atualiza o maxPillarScore no PillarScore
+    // Update the maxPillarScore in PillarScore
     pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
         .mapToDouble(CategoryScore::getScore)
         .sum());
