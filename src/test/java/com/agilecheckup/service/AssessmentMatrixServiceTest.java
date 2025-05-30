@@ -2,6 +2,7 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
+import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -443,7 +444,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void update_existingAssessmentMatrix_shouldSucceed() {
     // Prepare
-    Map mockedPillarMap = mock(Map.class);
+    @SuppressWarnings("unchecked")
+    Map<String, Pillar> mockedPillarMap = mock(Map.class);
     AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
     AssessmentMatrix updatedAssessmentMatrixDetails = createMockedAssessmentMatrixWithDependenciesId("updatedCycleId", mockedPillarMap);
@@ -486,7 +488,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void update_nonExistingAssessmentMatrix_shouldReturnEmpty() {
     // Prepare
     String nonExistingId = "nonExistingId";
-    Map mockedPillarMap = mock(Map.class);
+    @SuppressWarnings("unchecked")
+    Map<String, Pillar> mockedPillarMap = mock(Map.class);
 
     // Mock repository calls
     doReturn(null).when(mockAssessmentMatrixRepository).findById(nonExistingId);
@@ -505,6 +508,48 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     assertTrue(resultOptional.isEmpty());
     verify(mockAssessmentMatrixRepository).findById(nonExistingId);
     verify(assessmentMatrixService).update(nonExistingId, "name", "desc", "tenant", "cycleId", mockedPillarMap);
+  }
+
+  @Test
+  void findAllByTenantId_shouldReturnFilteredAssessmentMatrices() {
+    // Given
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix1 = AssessmentMatrix.builder()
+        .id("matrix-1")
+        .name("Engineering Matrix")
+        .description("For engineering assessments")
+        .tenantId(tenantId)
+        .performanceCycleId("cycle-1")
+        .build();
+
+    AssessmentMatrix matrix2 = AssessmentMatrix.builder()
+        .id("matrix-2")
+        .name("Sales Matrix")
+        .description("For sales assessments")
+        .tenantId(tenantId)
+        .performanceCycleId("cycle-2")
+        .build();
+
+    List<AssessmentMatrix> expectedMatrices = List.of(matrix1, matrix2);
+
+    // Create a mock PaginatedQueryList
+    @SuppressWarnings("unchecked")
+    com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList<AssessmentMatrix> mockPaginatedList =
+        mock(com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList.class);
+    when(mockPaginatedList.stream()).thenReturn(expectedMatrices.stream());
+
+    when(mockAssessmentMatrixRepository.findAllByTenantId(tenantId)).thenReturn(mockPaginatedList);
+
+    // When
+    List<AssessmentMatrix> result = assessmentMatrixService.findAllByTenantId(tenantId);
+
+    // Then
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    assertTrue(result.contains(matrix1));
+    assertTrue(result.contains(matrix2));
+    verify(mockAssessmentMatrixRepository).findAllByTenantId(tenantId);
   }
 
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){
