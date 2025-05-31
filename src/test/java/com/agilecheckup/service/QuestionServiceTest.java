@@ -34,6 +34,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatr
 import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionOptionList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -425,6 +426,57 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     assertTrue(resultOptional.isEmpty());
     verify(questionRepository).findById(nonExistingId);
     verify(questionService).update(nonExistingId, "question", QuestionType.YES_NO, "tenant", 5.0, "matrixId", "pillarId", "categoryId");
+  }
+
+  @Test
+  void hasCategoryQuestions_withExistingQuestions_shouldReturnTrue() {
+    // Given
+    String matrixId = "matrix-123";
+    String categoryId = "category-456";
+    String tenantId = "tenant-789";
+
+    doReturn(true).when(questionRepository).existsByCategoryId(matrixId, categoryId, tenantId);
+
+    // When
+    boolean result = questionService.hasCategoryQuestions(matrixId, categoryId, tenantId);
+
+    // Then
+    assertTrue(result);
+    verify(questionRepository).existsByCategoryId(matrixId, categoryId, tenantId);
+  }
+
+  @Test
+  void hasCategoryQuestions_withNoQuestions_shouldReturnFalse() {
+    // Given
+    String matrixId = "matrix-123";
+    String categoryId = "category-456";
+    String tenantId = "tenant-789";
+
+    doReturn(false).when(questionRepository).existsByCategoryId(matrixId, categoryId, tenantId);
+
+    // When
+    boolean result = questionService.hasCategoryQuestions(matrixId, categoryId, tenantId);
+
+    // Then
+    assertFalse(result);
+    verify(questionRepository).existsByCategoryId(matrixId, categoryId, tenantId);
+  }
+
+  @Test
+  void findByAssessmentMatrixId_shouldDelegateToRepository() {
+    // Given
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-789";
+    List<Question> expectedQuestions = List.of(createMockedQuestion());
+
+    doReturn(expectedQuestions).when(questionRepository).findByAssessmentMatrixId(matrixId, tenantId);
+
+    // When
+    List<Question> result = questionService.findByAssessmentMatrixId(matrixId, tenantId);
+
+    // Then
+    assertEquals(expectedQuestions, result);
+    verify(questionRepository).findByAssessmentMatrixId(matrixId, tenantId);
   }
 
   private Question createUpdatedQuestionOptionList(boolean updatedIsMultipleChoice, boolean updatedIsFlushed, List<QuestionOption> updatedOptions) {

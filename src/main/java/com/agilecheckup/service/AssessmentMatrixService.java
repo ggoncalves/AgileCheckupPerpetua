@@ -1,6 +1,7 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.QuestionType;
@@ -13,6 +14,7 @@ import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.exception.ValidationException;
 import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
 
@@ -60,6 +62,10 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     Optional<AssessmentMatrix> optionalAssessmentMatrix = findById(id);
     if (optionalAssessmentMatrix.isPresent()) {
       AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.get();
+      
+      // Validate that no categories with questions are being removed
+      validateCategoryDeletion(assessmentMatrix, pillarMap, tenantId);
+      
       Optional<PerformanceCycle> performanceCycle = getPerformanceCycle(performanceCycleId);
       
       assessmentMatrix.setName(name);
@@ -70,6 +76,40 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
       return super.update(assessmentMatrix);
     } else {
       return Optional.empty();
+    }
+  }
+
+  private void validateCategoryDeletion(AssessmentMatrix currentMatrix, Map<String, Pillar> newPillarMap, String tenantId) {
+    Map<String, Pillar> currentPillarMap = currentMatrix.getPillarMap();
+    
+    // Check for removed pillars
+    for (Map.Entry<String, Pillar> currentPillarEntry : currentPillarMap.entrySet()) {
+      String pillarId = currentPillarEntry.getKey();
+      Pillar currentPillar = currentPillarEntry.getValue();
+      
+      if (!newPillarMap.containsKey(pillarId)) {
+        // Pillar is being removed - check all its categories for questions
+        for (Map.Entry<String, Category> categoryEntry : currentPillar.getCategoryMap().entrySet()) {
+          String categoryId = categoryEntry.getKey();
+          if (getQuestionService().hasCategoryQuestions(currentMatrix.getId(), categoryId, tenantId)) {
+            throw new ValidationException("Cannot delete pillar '" + currentPillar.getName() + "' because it contains categories with questions");
+          }
+        }
+      } else {
+        // Pillar exists - check for removed categories
+        Pillar newPillar = newPillarMap.get(pillarId);
+        for (Map.Entry<String, Category> currentCategoryEntry : currentPillar.getCategoryMap().entrySet()) {
+          String categoryId = currentCategoryEntry.getKey();
+          Category currentCategory = currentCategoryEntry.getValue();
+          
+          if (!newPillar.getCategoryMap().containsKey(categoryId)) {
+            // Category is being removed - check for questions
+            if (getQuestionService().hasCategoryQuestions(currentMatrix.getId(), categoryId, tenantId)) {
+              throw new ValidationException("Cannot delete category '" + currentCategory.getName() + "' because it contains questions");
+            }
+          }
+        }
+      }
     }
   }
 
