@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -459,6 +460,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doAnswerForUpdate(updatedAssessmentMatrixDetails, mockAssessmentMatrixRepository);
     doReturn(Optional.of(updatedPerformanceCycle)).when(mockPerformanceCycleService).findById("updatedCycleId");
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    doReturn(false).when(mockQuestionService).hasCategoryQuestions(anyString(), anyString(), anyString());
 
     // When
     Optional<AssessmentMatrix> resultOptional = assessmentMatrixService.update(
@@ -596,6 +599,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doAnswerForUpdate(updatedAssessmentMatrixDetails, mockAssessmentMatrixRepository);
     doReturn(Optional.of(updatedPerformanceCycle)).when(mockPerformanceCycleService).findById("updatedCycleId");
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    doReturn(false).when(mockQuestionService).hasCategoryQuestions(anyString(), anyString(), anyString());
 
     // When
     Optional<AssessmentMatrix> resultOptional = assessmentMatrixService.update(
@@ -612,6 +617,128 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     assertEquals("", resultOptional.get().getDescription());
     verify(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     verify(mockAssessmentMatrixRepository).save(updatedAssessmentMatrixDetails);
+  }
+
+  @Test
+  void update_withCategoryWithQuestions_shouldThrowValidationException() {
+    // Prepare
+    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+
+    // New pillar map without the existing category (simulating deletion)
+    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 0, "pillar", "category"); // No categories
+
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    
+    // Mock that category has questions
+    doReturn(true).when(mockQuestionService).hasCategoryQuestions(eq(DEFAULT_ID), anyString(), anyString());
+
+    // When & Then
+    assertThrows(com.agilecheckup.service.exception.ValidationException.class, () -> 
+        assessmentMatrixService.update(
+            DEFAULT_ID,
+            "Updated Matrix Name",
+            "Updated Description",
+            "Updated Tenant Id",
+            GENERIC_ID_1234,
+            newPillarMap
+        )
+    );
+  }
+
+  @Test
+  void update_withPillarWithQuestions_shouldThrowValidationException() {
+    // Prepare
+    Map<String, Pillar> currentPillarMap = createMockedPillarMap(2, 1, "pillar", "category");
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+
+    // New pillar map with only one pillar (simulating deletion of a pillar)
+    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    
+    // Mock that the removed pillar's category has questions
+    doReturn(true).when(mockQuestionService).hasCategoryQuestions(anyString(), anyString(), anyString());
+
+    // When & Then
+    assertThrows(com.agilecheckup.service.exception.ValidationException.class, () -> 
+        assessmentMatrixService.update(
+            DEFAULT_ID,
+            "Updated Matrix Name",
+            "Updated Description", 
+            "Updated Tenant Id",
+            GENERIC_ID_1234,
+            newPillarMap
+        )
+    );
+  }
+
+  @Test
+  void update_withoutDeletingAnything_shouldSucceed() {
+    // Prepare - create consistent pillar maps using the same entities
+    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+
+    // Use the SAME pillar map instance (no deletion)
+    Map<String, Pillar> newPillarMap = existingAssessmentMatrix.getPillarMap();
+
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);
+    doAnswerForUpdate(existingAssessmentMatrix, mockAssessmentMatrixRepository);
+
+    // When
+    Optional<AssessmentMatrix> result = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Matrix Name",
+        "Updated Description",
+        "Updated Tenant Id", 
+        GENERIC_ID_1234,
+        newPillarMap
+    );
+
+    // Then
+    assertTrue(result.isPresent());
+    verify(mockAssessmentMatrixRepository).save(existingAssessmentMatrix);
+    // No validation should occur since nothing is being deleted
+  }
+
+  @Test
+  void update_deletingCategoryWithoutQuestions_shouldSucceed() {
+    // Prepare - use a more controlled test setup
+    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 2, "pillar", "category");
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+
+    // Create new pillar map manually to control the difference
+    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);
+    doAnswerForUpdate(existingAssessmentMatrix, mockAssessmentMatrixRepository);
+    
+    // Mock that categories have NO questions - be lenient about multiple calls
+    doReturn(false).when(mockQuestionService).hasCategoryQuestions(anyString(), anyString(), anyString());
+
+    // When
+    Optional<AssessmentMatrix> result = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Matrix Name",
+        "Updated Description",
+        "Updated Tenant Id",
+        GENERIC_ID_1234,
+        newPillarMap
+    );
+
+    // Then
+    assertTrue(result.isPresent());
+    verify(mockAssessmentMatrixRepository).save(existingAssessmentMatrix);
+    // Don't verify specific call count since the implementation might validate each category
   }
 
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){

@@ -109,6 +109,10 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     return questionRepository.findByAssessmentMatrixId(matrixId, tenantId);
   }
 
+  public boolean hasCategoryQuestions(String matrixId, String categoryId, String tenantId) {
+    return questionRepository.existsByCategoryId(matrixId, categoryId, tenantId);
+  }
+
   private Optional<Question> createQuestion(Question question) {
     Optional<Question> savedQuestion = super.create(question);
     postCreate(savedQuestion);
