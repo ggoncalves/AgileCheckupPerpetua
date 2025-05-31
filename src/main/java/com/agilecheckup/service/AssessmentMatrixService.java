@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
+import org.apache.commons.lang3.StringUtils;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
@@ -32,6 +33,8 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   private final PerformanceCycleService performanceCycleService;
 
   private final Lazy<QuestionService> questionService;
+
+  private static final String DEFAULT_WHEN_NULL = "";
 
   @Inject
   public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository,
@@ -60,7 +63,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
       Optional<PerformanceCycle> performanceCycle = getPerformanceCycle(performanceCycleId);
       
       assessmentMatrix.setName(name);
-      assessmentMatrix.setDescription(description);
+      assessmentMatrix.setDescription(StringUtils.defaultIfBlank(description, DEFAULT_WHEN_NULL));
       assessmentMatrix.setTenantId(tenantId);
       assessmentMatrix.setPerformanceCycleId(performanceCycle.orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId());
       assessmentMatrix.setPillarMap(pillarMap);
@@ -85,7 +88,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
                                                   Map<String, Pillar> pillarMap) {
     return AssessmentMatrix.builder()
         .name(name)
-        .description(description)
+        .description(StringUtils.defaultIfBlank(description, DEFAULT_WHEN_NULL))
         .tenantId(tenantId)
         .performanceCycleId(getPerformanceCycle(performanceCycleId).orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId())
         .pillarMap(pillarMap).build();

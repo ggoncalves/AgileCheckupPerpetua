@@ -552,6 +552,68 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     verify(mockAssessmentMatrixRepository).findAllByTenantId(tenantId);
   }
 
+  @Test
+  void create_withNullDescription_shouldSetEmptyString() {
+    // Given
+    AssessmentMatrix savedAssessmentMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
+    savedAssessmentMatrix.setDescription("");
+
+    // Prevent/Stub
+    doAnswerForSaveWithRandomEntityId(savedAssessmentMatrix, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(originalAssessmentMatrix.getPerformanceCycleId());
+
+    // When
+    Optional<AssessmentMatrix> assessmentMatrixOptional = assessmentMatrixService.create(
+        originalAssessmentMatrix.getName(),
+        null, // null description
+        originalAssessmentMatrix.getTenantId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
+        originalAssessmentMatrix.getPillarMap()
+    );
+
+    // Then
+    assertTrue(assessmentMatrixOptional.isPresent());
+    assertEquals("", assessmentMatrixOptional.get().getDescription());
+    verify(mockAssessmentMatrixRepository).save(savedAssessmentMatrix);
+  }
+
+  @Test
+  void update_withNullDescription_shouldSetEmptyString() {
+    // Prepare
+    @SuppressWarnings("unchecked")
+    Map<String, Pillar> mockedPillarMap = mock(Map.class);
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
+    
+    AssessmentMatrix updatedAssessmentMatrixDetails = createMockedAssessmentMatrixWithDependenciesId("updatedCycleId", mockedPillarMap);
+    updatedAssessmentMatrixDetails.setName("Updated Matrix Name");
+    updatedAssessmentMatrixDetails.setDescription(""); // Should be empty string
+    updatedAssessmentMatrixDetails.setTenantId("Updated Tenant Id");
+
+    PerformanceCycle updatedPerformanceCycle = createMockedPerformanceCycle("companyId", "updatedCycleId");
+
+    // Mock repository calls
+    doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doAnswerForUpdate(updatedAssessmentMatrixDetails, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(updatedPerformanceCycle)).when(mockPerformanceCycleService).findById("updatedCycleId");
+
+    // When
+    Optional<AssessmentMatrix> resultOptional = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Matrix Name",
+        null, // null description
+        "Updated Tenant Id",
+        "updatedCycleId",
+        mockedPillarMap
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    assertEquals("", resultOptional.get().getDescription());
+    verify(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    verify(mockAssessmentMatrixRepository).save(updatedAssessmentMatrixDetails);
+  }
+
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){
     assertNotNull(assessmentMatrix);
     assertNotNull(assessmentMatrix.getPotentialScore());
