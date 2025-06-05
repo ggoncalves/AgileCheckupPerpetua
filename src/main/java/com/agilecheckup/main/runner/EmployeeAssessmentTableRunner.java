@@ -98,7 +98,8 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
         15d,
         entity.getAssessmentMatrixId(),
         pillar.getId(),
-        category.getId()
+        category.getId(),
+        "Extra description"
     );
     questions.add(question);
     return question;

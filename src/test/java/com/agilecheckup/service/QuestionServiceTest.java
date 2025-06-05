@@ -11,6 +11,7 @@ import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.QuestionRepository;
 import com.agilecheckup.service.exception.InvalidCustomOptionListException;
 import com.agilecheckup.util.TestObjectFactory;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,7 +104,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createMockedQuestionOptionList("", 0d, 5d, 10d, 20d, 30d), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list text is empty.", exception.getMessage());
   }
@@ -114,7 +116,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             new ArrayList<>(), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list is empty. There should be at least 2 options.", exception.getMessage());
   }
@@ -126,7 +128,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createMockedQuestionOptionList("Prefix", 0d), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list too small. There should be at least 2 options.", exception.getMessage());
   }
@@ -144,7 +146,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createMockedQuestionOptionList("Prefix", options), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list too big. There should be at max 64 options.", exception.getMessage());
   }
@@ -157,7 +159,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createQuestionOption(1, 1, 2), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 1, 1, 2", exception.getMessage());
   }
@@ -170,7 +172,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createQuestionOption(2, 1, 3, 5, 7, 6, 4, 6), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 1, 2, 3, 4, 5, 6, 6, 7", exception.getMessage());
   }
@@ -183,7 +185,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createQuestionOption(0, 1, 2), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids. The ids in the sorted order: 0, 1, 2", exception.getMessage());
   }
@@ -196,7 +198,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createQuestionOption(1, 3, 4), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids" +
         ". The ids in the sorted order: 1, 3, 4", exception.getMessage());
@@ -210,7 +212,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         () -> questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
             originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
             createQuestionOption(2, 3, 4, 1, 6), originalCustomQuestion.getAssessmentMatrixId(),
-            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId()));
+            originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description"));
 
     assertEquals("Question option list must have ids from 1 to last with no missing values and without duplicated ids" +
         ". The ids in the sorted order: 1, 2, 3, 4, 6", exception.getMessage());
@@ -224,25 +226,27 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   @Test
   void create() {
     Question savedQuestion = copyQuestionAndAddId(originalQuestion, DEFAULT_ID);
+    savedQuestion.setExtraDescription("Test extra description");
 
     // Prevent/Stub
     doAnswerForSaveWithRandomEntityId(savedQuestion, questionRepository);
     doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalQuestion.getAssessmentMatrixId());
 
     // When
-    Optional<Question> questionOptional = questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId());
+    Optional<Question> questionOptional = questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId(), "Test extra description");
 
     // Then
     assertTrue(questionOptional.isPresent());
     assertEquals(savedQuestion, questionOptional.get());
     verify(questionRepository).save(savedQuestion);
-    verify(questionService).create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId());
+    verify(questionService).create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId(), "Test extra description");
     verify(assessmentMatrixService).incrementQuestionCount(originalCustomQuestion.getAssessmentMatrixId());
   }
 
   @Test
   void createCustomQuestion() {
     Question savedQuestion = copyQuestionAndAddId(originalCustomQuestion, DEFAULT_ID);
+    savedQuestion.setExtraDescription("Test extra description");
 
     // Prevent/Stub
     doAnswerForSaveWithRandomEntityId(savedQuestion, questionRepository);
@@ -252,7 +256,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     Optional<Question> questionOptional = questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
         originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
         createMockedQuestionOptionList("OptionPrefix", 0d, 5d, 10d, 20d, 30d),
-        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId());
+        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description");
 
     // Then
     assertTrue(questionOptional.isPresent());
@@ -261,7 +265,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     verify(questionService).createCustomQuestion(originalCustomQuestion.getQuestion(),
         originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
         createMockedQuestionOptionList("OptionPrefix", 0d, 5d, 10d, 20d, 30d),
-        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId());
+        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(), originalCustomQuestion.getCategoryId(), "Test extra description");
     verify(assessmentMatrixService).incrementQuestionCount(originalCustomQuestion.getAssessmentMatrixId());
   }
 
@@ -269,7 +273,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   void create_NullQuestion() {
     doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalQuestion.getAssessmentMatrixId());
     // When
-    assertThrows(NullPointerException.class, () -> questionService.create(null, originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId()));
+    assertThrows(NullPointerException.class, () -> questionService.create(null, originalQuestion.getQuestionType(), originalQuestion.getTenantId(), originalQuestion.getPoints(), originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId(), "Test extra description"));
   }
 
   @Test
@@ -279,7 +283,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     doReturn(savedQuestion).when(questionRepository).save(any());
     doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalQuestion.getAssessmentMatrixId());
     // When
-    questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), null, originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId());
+    questionService.create(originalQuestion.getQuestion(), originalQuestion.getQuestionType(), originalQuestion.getTenantId(), null, originalQuestion.getAssessmentMatrixId(), originalQuestion.getPillarId(), originalQuestion.getCategoryId(), "Test extra description");
   }
 
   @Test
@@ -322,6 +326,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     updatedQuestionDetails.setQuestionType(QuestionType.ONE_TO_TEN);
     updatedQuestionDetails.setTenantId("Updated Tenant Id");
     updatedQuestionDetails.setPoints(10.0);
+    updatedQuestionDetails.setExtraDescription("Test extra description");
 
     // Mock repository calls
     doReturn(existingQuestion).when(questionRepository).findById(DEFAULT_ID);
@@ -337,7 +342,8 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         10.0,
         DEFAULT_ID,
         PILLAR_ID_1,
-        CATEGORY_ID_1
+        CATEGORY_ID_1,
+        "Test extra description"
     );
 
     // Then
@@ -353,7 +359,8 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         10.0,
         DEFAULT_ID,
         PILLAR_ID_1,
-        CATEGORY_ID_1);
+        CATEGORY_ID_1,
+        "Test extra description");
   }
 
   @Test
@@ -381,7 +388,8 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         updatedOptions,
         DEFAULT_ID,
         PILLAR_ID_1,
-        CATEGORY_ID_1
+        CATEGORY_ID_1,
+        "Test extra description"
     );
 
     // Then
@@ -399,7 +407,8 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         updatedOptions,
         DEFAULT_ID,
         PILLAR_ID_1,
-        CATEGORY_ID_1);
+        CATEGORY_ID_1,
+        "Test extra description");
   }
 
   @Test
@@ -419,13 +428,14 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
         5.0,
         "matrixId",
         "pillarId",
-        "categoryId"
+        "categoryId",
+        "Test extra description"
     );
 
     // Then
     assertTrue(resultOptional.isEmpty());
     verify(questionRepository).findById(nonExistingId);
-    verify(questionService).update(nonExistingId, "question", QuestionType.YES_NO, "tenant", 5.0, "matrixId", "pillarId", "categoryId");
+    verify(questionService).update(nonExistingId, "question", QuestionType.YES_NO, "tenant", 5.0, "matrixId", "pillarId", "categoryId", "Test extra description");
   }
 
   @Test
@@ -479,10 +489,29 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     verify(questionRepository).findByAssessmentMatrixId(matrixId, tenantId);
   }
 
+  @Test
+  void findAllByTenantId_shouldDelegateToRepository() {
+    // Given
+    String tenantId = "tenant-789";
+    @SuppressWarnings("unchecked")
+    PaginatedQueryList<Question> expectedQuestions = mock(PaginatedQueryList.class);
+
+    doReturn(expectedQuestions).when(questionRepository).findAllByTenantId(tenantId);
+
+    // When
+    PaginatedQueryList<Question> result = questionService.findAllByTenantId(tenantId);
+
+    // Then
+    assertEquals(expectedQuestions, result);
+    verify(questionRepository).findAllByTenantId(tenantId);
+  }
+
+
   private Question createUpdatedQuestionOptionList(boolean updatedIsMultipleChoice, boolean updatedIsFlushed, List<QuestionOption> updatedOptions) {
     Question updatedQuestion = createMockedCustomQuestion(CATEGORY_ID_1);
     updatedQuestion.setQuestion("Updated Custom Question Text");
     updatedQuestion.setTenantId("Updated Tenant Id");
+    updatedQuestion.setExtraDescription("Test extra description");
     updatedQuestion.setOptionGroup(OptionGroup.builder()
         .isMultipleChoice(updatedIsMultipleChoice)
         .showFlushed(updatedIsFlushed)

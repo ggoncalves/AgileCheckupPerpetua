@@ -15,6 +15,7 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 
 import javax.inject.Inject;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -45,18 +46,18 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   }
 
   public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                   String assessmentMatrixId, String pillarId, String categoryId) {
-    Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId);
+                                   String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+    Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId, extraDescription);
     return createQuestion(question);
   }
 
-  public Optional<Question> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId) {
-    Question question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId);
+  public Optional<Question> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+    Question question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId, extraDescription);
     return createQuestion(question);
   }
 
   public Optional<Question> update(String id, String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                   String assessmentMatrixId, String pillarId, String categoryId) {
+                                   String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Optional<Question> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
@@ -73,6 +74,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
       question.setQuestionType(questionType);
       question.setTenantId(tenantId);
       question.setPoints(points);
+      question.setExtraDescription(extraDescription);
       return super.update(question);
     } else {
       return Optional.empty();
@@ -81,7 +83,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
 
   public Optional<Question> updateCustomQuestion(String id, String questionTxt, QuestionType questionType, String tenantId,
                                                  boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options,
-                                                 String assessmentMatrixId, String pillarId, String categoryId) {
+                                                 String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Optional<Question> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
@@ -99,6 +101,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
       question.setQuestionType(questionType);
       question.setOptionGroup(createOptionGroup(isMultipleChoice, showFlushed, options));
       question.setTenantId(tenantId);
+      question.setExtraDescription(extraDescription);
       return super.update(question);
     } else {
       return Optional.empty();
@@ -107,6 +110,10 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
 
   public List<Question> findByAssessmentMatrixId(String matrixId, String tenantId) {
     return questionRepository.findByAssessmentMatrixId(matrixId, tenantId);
+  }
+
+  public PaginatedQueryList<Question> findAllByTenantId(String tenantId) {
+    return questionRepository.findAllByTenantId(tenantId);
   }
 
   public boolean hasCategoryQuestions(String matrixId, String categoryId, String tenantId) {
@@ -125,7 +132,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   }
 
   private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                          String assessmentMatrixId, String pillarId, String categoryId) {
+                                          String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
@@ -139,13 +146,14 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
         .questionType(questionType)
         .tenantId(tenantId)
         .points(points)
+        .extraDescription(extraDescription)
         .build();
   }
 
   private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId,
                                                 boolean isMultipleChoice, boolean showFlushed,
                                                 @NonNull List<QuestionOption> options, String assessmentMatrixId,
-                                                String pillarId, String categoryId) {
+                                                String pillarId, String categoryId, String extraDescription) {
     validateQuestionOptions(options);
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
@@ -160,6 +168,7 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
         .questionType(questionType)
         .optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options))
         .tenantId(tenantId)
+        .extraDescription(extraDescription)
         .build();
   }
 

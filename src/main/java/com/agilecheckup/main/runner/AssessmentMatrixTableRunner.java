@@ -85,7 +85,8 @@ public class AssessmentMatrixTableRunner extends AbstractEntityCrudRunner<Assess
         15d,
         entity.getId(),
         pillar.getId(),
-        category.getId()
+        category.getId(),
+        "Extra description"
     ).ifPresent(question -> getQuestions().add(question));
   }
 
