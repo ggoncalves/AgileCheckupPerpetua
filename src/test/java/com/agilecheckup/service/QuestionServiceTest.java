@@ -256,7 +256,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     Optional<Question> questionOptional = questionService.createCustomQuestion(originalCustomQuestion.getQuestion(),
         originalCustomQuestion.getQuestionType(), originalCustomQuestion.getTenantId(), false, true,
         createMockedQuestionOptionList("OptionPrefix", 0d, 5d, 10d, 20d, 30d),
-        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestionD.getPillarId(),
+        originalCustomQuestion.getAssessmentMatrixId(), originalCustomQuestion.getPillarId(),
         originalCustomQuestion.getCategoryId(), "Test extra description");
 
     // Then
