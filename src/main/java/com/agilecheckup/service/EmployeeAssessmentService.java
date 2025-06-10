@@ -1,6 +1,7 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.Team;
@@ -16,6 +17,7 @@ import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.validator.AssessmentStatusValidator;
 import lombok.NonNull;
 
 import javax.inject.Inject;
@@ -72,6 +74,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         .teamId(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")).getId())
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
         .answeredQuestionCount(0)
+        .assessmentStatus(AssessmentStatus.INVITED)
         .build();
   }
 
@@ -91,8 +94,32 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     EmployeeAssessment employeeAssessment = getRepository().findById(employeeAssessmentId);
     if (employeeAssessment != null) {
       employeeAssessment.setAnsweredQuestionCount(employeeAssessment.getAnsweredQuestionCount() + 1);
+      AssessmentStatus currentStatus = employeeAssessment.getAssessmentStatus();
+      if (currentStatus == null) {
+        currentStatus = AssessmentStatus.INVITED;
+        employeeAssessment.setAssessmentStatus(currentStatus);
+      }
+      if (employeeAssessment.getAnsweredQuestionCount() == 1 && currentStatus == AssessmentStatus.INVITED) {
+        employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+      }
       getRepository().save(employeeAssessment);
     }
+  }
+
+  public Optional<EmployeeAssessment> updateAssessmentStatus(@NonNull String employeeAssessmentId, @NonNull AssessmentStatus status) {
+    Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(employeeAssessmentId);
+    if (optionalEmployeeAssessment.isPresent()) {
+      EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
+      AssessmentStatus currentStatus = employeeAssessment.getAssessmentStatus();
+      if (currentStatus == null) {
+        currentStatus = AssessmentStatus.INVITED;
+        employeeAssessment.setAssessmentStatus(currentStatus);
+      }
+      AssessmentStatusValidator.validateTransition(currentStatus, status);
+      employeeAssessment.setAssessmentStatus(status);
+      return super.update(employeeAssessment);
+    }
+    return Optional.empty();
   }
 
   // TODO Remove this tenantId and refactor this code.

@@ -1,6 +1,7 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.QuestionType;
@@ -17,6 +18,7 @@ import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.exception.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedTeam;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -105,7 +108,9 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
 
     // Then
     assertTrue(employeeAssessmentOptional.isPresent());
-    assertNotNull(employeeAssessmentOptional.get());
+    EmployeeAssessment createdAssessment = employeeAssessmentOptional.get();
+    assertNotNull(createdAssessment);
+    assertEquals(AssessmentStatus.INVITED, createdAssessment.getAssessmentStatus());
     verify(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
     verify(employeeAssessmentService).create(
         originalEmployeeAssessment.getAssessmentMatrixId(),
@@ -592,5 +597,174 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         PersonDocumentType.CPF,
         null,
         null);
+  }
+
+  @Test
+  void create_shouldSetInvitedStatusByDefault() {
+    EmployeeAssessment savedEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
+
+    // Prevent/Stub
+    doAnswerForSaveWithRandomEntityId(savedEmployeeAssessment, employeeAssessmentRepository);
+    doReturn(Optional.of(team)).when(teamService).findById(originalEmployeeAssessment.getTeamId());
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
+
+    // When
+    Optional<EmployeeAssessment> employeeAssessmentOptional = employeeAssessmentService.create(
+        originalEmployeeAssessment.getAssessmentMatrixId(),
+        originalEmployeeAssessment.getTeamId(),
+        originalEmployeeAssessment.getEmployee().getName(),
+        originalEmployeeAssessment.getEmployee().getEmail(),
+        originalEmployeeAssessment.getEmployee().getDocumentNumber(),
+        originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
+        originalEmployeeAssessment.getEmployee().getGender(),
+        originalEmployeeAssessment.getEmployee().getGenderPronoun());
+
+    // Then
+    assertTrue(employeeAssessmentOptional.isPresent());
+    EmployeeAssessment createdAssessment = employeeAssessmentOptional.get();
+    assertEquals(AssessmentStatus.INVITED, createdAssessment.getAssessmentStatus());
+  }
+
+  @Test
+  void incrementAnsweredQuestionCount_shouldUpdateStatusToInProgressOnFirstAnswer() {
+    // Given
+    String employeeAssessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(employeeAssessmentId, "John", "matrix-id");
+    assessment.setAnsweredQuestionCount(0);
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+
+    doReturn(assessment).when(employeeAssessmentRepository).findById(employeeAssessmentId);
+
+    // When
+    employeeAssessmentService.incrementAnsweredQuestionCount(employeeAssessmentId);
+
+    // Then
+    assertEquals(1, assessment.getAnsweredQuestionCount());
+    assertEquals(AssessmentStatus.IN_PROGRESS, assessment.getAssessmentStatus());
+    verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void incrementAnsweredQuestionCount_shouldNotChangeStatusIfAlreadyInProgress() {
+    // Given
+    String employeeAssessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(employeeAssessmentId, "John", "matrix-id");
+    assessment.setAnsweredQuestionCount(5);
+    assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+
+    doReturn(assessment).when(employeeAssessmentRepository).findById(employeeAssessmentId);
+
+    // When
+    employeeAssessmentService.incrementAnsweredQuestionCount(employeeAssessmentId);
+
+    // Then
+    assertEquals(6, assessment.getAnsweredQuestionCount());
+    assertEquals(AssessmentStatus.IN_PROGRESS, assessment.getAssessmentStatus());
+    verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void incrementAnsweredQuestionCount_shouldNotChangeStatusIfCompleted() {
+    // Given
+    String employeeAssessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(employeeAssessmentId, "John", "matrix-id");
+    assessment.setAnsweredQuestionCount(10);
+    assessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+
+    doReturn(assessment).when(employeeAssessmentRepository).findById(employeeAssessmentId);
+
+    // When
+    employeeAssessmentService.incrementAnsweredQuestionCount(employeeAssessmentId);
+
+    // Then
+    assertEquals(11, assessment.getAnsweredQuestionCount());
+    assertEquals(AssessmentStatus.COMPLETED, assessment.getAssessmentStatus());
+    verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldUpdateStatusForExistingAssessment() {
+    // Given
+    String assessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(assessmentId, "John", "matrix-id");
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+
+    doReturn(Optional.of(assessment)).when(employeeAssessmentService).findById(assessmentId);
+    doReturn(Optional.of(assessment)).when(employeeAssessmentService).update(any(EmployeeAssessment.class));
+
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.updateAssessmentStatus(assessmentId, AssessmentStatus.CONFIRMED);
+
+    // Then
+    assertTrue(result.isPresent());
+    assertEquals(AssessmentStatus.CONFIRMED, assessment.getAssessmentStatus());
+    verify(employeeAssessmentService).update(assessment);
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldReturnEmptyForNonExistingAssessment() {
+    // Given
+    String nonExistingId = "non-existing-id";
+    doReturn(Optional.empty()).when(employeeAssessmentService).findById(nonExistingId);
+
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.updateAssessmentStatus(nonExistingId, AssessmentStatus.COMPLETED);
+
+    // Then
+    assertFalse(result.isPresent());
+    verify(employeeAssessmentService, never()).update(any(EmployeeAssessment.class));
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldThrowExceptionForNullStatus() {
+    // Given
+    String assessmentId = "test-assessment-id";
+
+    // When & Then
+    assertThrows(NullPointerException.class, () -> {
+      employeeAssessmentService.updateAssessmentStatus(assessmentId, null);
+    });
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldThrowExceptionForNullAssessmentId() {
+    // When & Then
+    assertThrows(NullPointerException.class, () -> {
+      employeeAssessmentService.updateAssessmentStatus(null, AssessmentStatus.COMPLETED);
+    });
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldValidateStatusTransition() {
+    // Given
+    String assessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(assessmentId, "John", "matrix-id");
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+
+    doReturn(Optional.of(assessment)).when(employeeAssessmentService).findById(assessmentId);
+
+    // When & Then - Invalid transition should throw ValidationException
+    assertThrows(ValidationException.class, () -> {
+      employeeAssessmentService.updateAssessmentStatus(assessmentId, AssessmentStatus.COMPLETED);
+    });
+  }
+
+  @Test
+  void updateAssessmentStatus_shouldAllowValidStatusTransition() {
+    // Given
+    String assessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(assessmentId, "John", "matrix-id");
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+
+    doReturn(Optional.of(assessment)).when(employeeAssessmentService).findById(assessmentId);
+    doReturn(Optional.of(assessment)).when(employeeAssessmentService).update(any(EmployeeAssessment.class));
+
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.updateAssessmentStatus(assessmentId, AssessmentStatus.CONFIRMED);
+
+    // Then
+    assertTrue(result.isPresent());
+    assertEquals(AssessmentStatus.CONFIRMED, assessment.getAssessmentStatus());
+    verify(employeeAssessmentService).update(assessment);
   }
 }

@@ -4,6 +4,7 @@ import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -31,6 +32,10 @@ public class EmployeeAssessment extends BaseEntity {
 
   @DynamoDBAttribute(attributeName = "employeeAssessmentScore")
   private EmployeeAssessmentScore employeeAssessmentScore;
+
+  @DynamoDBAttribute(attributeName = "assessmentStatus")
+  @DynamoDBTypeConvertedEnum
+  private AssessmentStatus assessmentStatus = AssessmentStatus.INVITED;
 
   @DynamoDBAttribute(attributeName = "answeredQuestionCount")
   private Integer answeredQuestionCount;
