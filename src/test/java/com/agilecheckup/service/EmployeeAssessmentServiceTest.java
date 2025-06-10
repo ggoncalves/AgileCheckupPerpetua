@@ -100,8 +100,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun());
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun()); // Explicitly pass genderPronoun
 
     // Then
     assertTrue(employeeAssessmentOptional.isPresent());
@@ -114,9 +114,43 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun());
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun()); // Explicitly pass genderPronoun
     verify(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
+  }
+
+  @Test
+  void create_withNullGenderAndPronoun_shouldSucceed() {
+    EmployeeAssessment savedEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
+    savedEmployeeAssessment.getEmployee().setGender(null);
+    savedEmployeeAssessment.getEmployee().setGenderPronoun(null);
+
+    // Prevent/Stub
+    doAnswerForSaveWithRandomEntityId(savedEmployeeAssessment, employeeAssessmentRepository);
+    doReturn(Optional.of(team)).when(teamService).findById(originalEmployeeAssessment.getTeam().getId());
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
+
+    // When
+    Optional<EmployeeAssessment> employeeAssessmentOptional = employeeAssessmentService.create(
+        originalEmployeeAssessment.getAssessmentMatrixId(),
+        originalEmployeeAssessment.getTeam().getId(),
+        originalEmployeeAssessment.getEmployee().getName(),
+        originalEmployeeAssessment.getEmployee().getEmail(),
+        originalEmployeeAssessment.getEmployee().getDocumentNumber(),
+        originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
+        null, // Pass null for gender
+        null); // Pass null for genderPronoun
+
+    // Then
+    assertTrue(employeeAssessmentOptional.isPresent());
+    EmployeeAssessment createdEmployeeAssessment = employeeAssessmentOptional.get();
+    assertEquals(savedEmployeeAssessment.getEmployee().getName(), createdEmployeeAssessment.getEmployee().getName());
+    assertEquals(savedEmployeeAssessment.getEmployee().getEmail(), createdEmployeeAssessment.getEmployee().getEmail());
+    assertEquals(null, createdEmployeeAssessment.getEmployee().getGender());
+    assertEquals(null, createdEmployeeAssessment.getEmployee().getGenderPronoun());
+    verify(employeeAssessmentRepository).save(any(EmployeeAssessment.class)); // Use any() here as the NaturalPerson inside will be different due to nulls
+    verify(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
+    verify(teamService).findById(originalEmployeeAssessment.getTeam().getId());
   }
 
   @Test
@@ -156,8 +190,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun()
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun() // Explicitly pass genderPronoun
     );
 
     // Then
@@ -171,8 +205,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun()
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun() // Explicitly pass genderPronoun
     );
     if (assessmentMatrixId == null) {
       verify(assessmentMatrixService, never()).findById(assessmentMatrixId);
@@ -198,8 +232,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun()
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun() // Explicitly pass genderPronoun
     );
 
     // Then
@@ -213,8 +247,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         originalEmployeeAssessment.getEmployee().getEmail(),
         originalEmployeeAssessment.getEmployee().getDocumentNumber(),
         originalEmployeeAssessment.getEmployee().getPersonDocumentType(),
-        originalEmployeeAssessment.getEmployee().getGender(),
-        originalEmployeeAssessment.getEmployee().getGenderPronoun()
+        originalEmployeeAssessment.getEmployee().getGender(), // Explicitly pass gender
+        originalEmployeeAssessment.getEmployee().getGenderPronoun() // Explicitly pass genderPronoun
     );
     if (teamId == null) {
       verify(teamService, never()).findById(teamId);
@@ -435,8 +469,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         "name@company.com",
         "1234",
         PersonDocumentType.CPF,
-        Gender.MALE,
-        GenderPronoun.HE
+        Gender.MALE, // Explicitly pass gender
+        GenderPronoun.HE // Explicitly pass genderPronoun
     );
 
     // Then
@@ -453,8 +487,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         "name@company.com",
         "1234",
         PersonDocumentType.CPF,
-        Gender.MALE,
-        GenderPronoun.HE);
+        Gender.MALE, // Explicitly pass gender
+        GenderPronoun.HE); // Explicitly pass genderPronoun
   }
 
   @Test
@@ -474,15 +508,89 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
         "email",
         "doc",
         PersonDocumentType.CPF,
-        Gender.MALE,
-        GenderPronoun.HE
+        Gender.MALE, // Explicitly pass gender
+        GenderPronoun.HE // Explicitly pass genderPronoun
     );
 
     // Then
     assertTrue(resultOptional.isEmpty());
     verify(employeeAssessmentRepository).findById(nonExistingId);
     verify(employeeAssessmentService).update(nonExistingId, "matrixId", "teamId", "name", "email", "doc",
-        PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE);
+        PersonDocumentType.CPF, Gender.MALE, // Explicitly pass gender
+        GenderPronoun.HE); // Explicitly pass genderPronoun
   }
 
+  @Test
+  void update_withNullGenderAndPronoun_shouldSucceed() {
+    // Prepare
+    EmployeeAssessment existingEmployeeAssessment = createMockedEmployeeAssessment(DEFAULT_ID, EMPLOYEE_NAME_JOHN, GENERIC_ID_1234);
+    // The updated details will have null gender and genderPronoun
+    EmployeeAssessment updatedEmployeeAssessmentDetails = createMockedEmployeeAssessment("updatedMatrixId", "Updated Employee Name", "updatedMatrixId");
+    updatedEmployeeAssessmentDetails.setId(DEFAULT_ID);
+    updatedEmployeeAssessmentDetails.setTeam(createMockedTeam("updatedTeamId"));
+    // Crucially, set gender and genderPronoun to null for the expected person
+    updatedEmployeeAssessmentDetails.setEmployee(
+        EmployeeAssessmentService.createNaturalPerson(
+            "Updated Employee Name",
+            "name@company.com",
+            "1234",
+            PersonDocumentType.CPF,
+            null, // gender is null
+            null, // genderPronoun is null
+            existingEmployeeAssessment.getEmployee().getId()
+        )
+    );
+
+
+    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMap(1, 1, "pillar", "category"));
+    Team team1 = createMockedTeam("updatedTeamId");
+
+    // Mock repository calls
+    doReturn(Optional.of(existingEmployeeAssessment)).when(employeeAssessmentService).findById(DEFAULT_ID); // Use Optional for findById
+    doReturn(Optional.of(assessmentMatrix1)).when(assessmentMatrixService).findById("updatedMatrixId");
+    doReturn(Optional.of(team1)).when(teamService).findById("updatedTeamId");
+    // Mock the save operation to capture the argument and return it
+    doReturn(Optional.of(updatedEmployeeAssessmentDetails)).when(employeeAssessmentService).update(any(EmployeeAssessment.class));
+
+
+    // When
+    Optional<EmployeeAssessment> resultOptional = employeeAssessmentService.update(
+        DEFAULT_ID,
+        "updatedMatrixId",
+        "updatedTeamId",
+        "Updated Employee Name",
+        "name@company.com",
+        "1234",
+        PersonDocumentType.CPF,
+        null, // Pass null for gender
+        null  // Pass null for genderPronoun
+    );
+
+    // Then
+    assertTrue(resultOptional.isPresent());
+    EmployeeAssessment resultEmployeeAssessment = resultOptional.get();
+
+    // Verify the fields of the employee within the result
+    assertEquals("Updated Employee Name", resultEmployeeAssessment.getEmployee().getName());
+    assertEquals("name@company.com", resultEmployeeAssessment.getEmployee().getEmail());
+    assertEquals(null, resultEmployeeAssessment.getEmployee().getGender());
+    assertEquals(null, resultEmployeeAssessment.getEmployee().getGenderPronoun());
+
+    // Verify interactions
+    verify(employeeAssessmentService).findById(DEFAULT_ID);
+    verify(assessmentMatrixService).findById("updatedMatrixId");
+    verify(teamService).findById("updatedTeamId");
+    // Verify that the update method on the service (which internally calls super.update -> repository.save) was called with an EmployeeAssessment
+    // whose NaturalPerson has null gender and genderPronoun.
+     verify(employeeAssessmentService).update(
+        DEFAULT_ID,
+        "updatedMatrixId",
+        "updatedTeamId",
+        "Updated Employee Name",
+        "name@company.com",
+        "1234",
+        PersonDocumentType.CPF,
+        null,
+        null);
+  }
 }

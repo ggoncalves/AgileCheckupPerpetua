@@ -19,12 +19,10 @@ public class NaturalPerson extends Person {
   @DynamoDBAttribute(attributeName = "aliasName")
   private String aliasName;
 
-  @NonNull
   @DynamoDBAttribute(attributeName = "gender")
   @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.S)
   private Gender gender;
 
-  @NonNull
   @DynamoDBAttribute(attributeName = "genderPronoun")
   @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.S)
   private GenderPronoun genderPronoun;
