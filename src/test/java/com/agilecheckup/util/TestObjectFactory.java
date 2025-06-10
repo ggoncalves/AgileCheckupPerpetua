@@ -1,6 +1,7 @@
 package com.agilecheckup.util;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.CompanySize;
@@ -258,6 +259,18 @@ public class TestObjectFactory {
         .teamId("team-" + id)
         .employee(createMockedNaturalPerson(name))
         .answeredQuestionCount(0)
+        .assessmentStatus(AssessmentStatus.INVITED)
+        .build();
+  }
+
+  public static EmployeeAssessment createMockedEmployeeAssessment(String id, String name, String assessmentMatrixId, AssessmentStatus status) {
+    return EmployeeAssessment.builder()
+        .id(id)
+        .assessmentMatrixId(assessmentMatrixId)
+        .teamId("team-" + id)
+        .employee(createMockedNaturalPerson(name))
+        .answeredQuestionCount(0)
+        .assessmentStatus(status)
         .build();
   }
 
