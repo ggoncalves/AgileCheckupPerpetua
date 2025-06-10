@@ -273,6 +273,18 @@ public class TestObjectFactory {
         .build();
   }
 
+  public static NaturalPerson createMockedNaturalPersonOptionalGender(String name, Gender gender, GenderPronoun genderPronoun) {
+    return NaturalPerson.builder()
+        .id(null)
+        .name(name)
+        .email("name@company.com")
+        .documentNumber("1234")
+        .personDocumentType(PersonDocumentType.CPF)
+        .gender(gender)
+        .genderPronoun(genderPronoun)
+        .build();
+  }
+
   public static Address createMockedAddress() {
     return Address.builder()
         .street("123 Main Street")

@@ -44,11 +44,11 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     this.answerRepository = answerRepository;
   }
 
-  public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
+  public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
     return super.create(createEmployeeAssessment(assessmentMatrixId, teamId, name, email, documentNumber, documentType, gender, genderPronoun));
   }
 
-  public Optional<EmployeeAssessment> update(@NonNull String id, @NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
+  public Optional<EmployeeAssessment> update(@NonNull String id, @NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
     Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(id);
     if (optionalEmployeeAssessment.isPresent()) {
       EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
@@ -64,7 +64,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     }
   }
 
-  private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun) {
+  private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
     Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
     Optional<Team> team = teamService.findById(teamId);
     return EmployeeAssessment.builder()
@@ -75,7 +75,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         .build();
   }
 
-  public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, @NonNull Gender gender, @NonNull GenderPronoun genderPronoun, String personId) {
+  public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
     return NaturalPerson.builder()
         .id(personId)
         .name(name)
