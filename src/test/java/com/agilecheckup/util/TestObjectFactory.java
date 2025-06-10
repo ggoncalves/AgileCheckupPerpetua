@@ -255,7 +255,7 @@ public class TestObjectFactory {
     return EmployeeAssessment.builder()
         .id(id)
         .assessmentMatrixId(assessmentMatrixId)
-        .team(createMockedTeam(id))
+        .teamId("team-" + id)
         .employee(createMockedNaturalPerson(name))
         .answeredQuestionCount(0)
         .build();

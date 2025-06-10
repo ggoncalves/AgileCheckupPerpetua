@@ -26,9 +26,8 @@ public class EmployeeAssessment extends BaseEntity {
   @DynamoDBTypeConvertedJson
   private NaturalPerson employee;
 
-  @DynamoDBAttribute(attributeName = "team")
-  @DynamoDBTypeConvertedJson
-  private Team team;
+  @DynamoDBAttribute(attributeName = "teamId")
+  private String teamId;
 
   @DynamoDBAttribute(attributeName = "employeeAssessmentScore")
   private EmployeeAssessmentScore employeeAssessmentScore;
