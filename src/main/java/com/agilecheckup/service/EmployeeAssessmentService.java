@@ -56,7 +56,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       Optional<Team> team = teamService.findById(teamId);
       
       employeeAssessment.setAssessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId());
-      employeeAssessment.setTeam(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")));
+      employeeAssessment.setTeamId(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")).getId());
       employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
       return super.update(employeeAssessment);
     } else {
@@ -69,7 +69,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     Optional<Team> team = teamService.findById(teamId);
     return EmployeeAssessment.builder()
         .assessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId())
-        .team(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")))
+        .teamId(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")).getId())
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
         .answeredQuestionCount(0)
         .build();

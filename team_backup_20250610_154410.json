@@ -1,0 +1,72 @@
+[ {
+  "lastUpdatedDate" : "2025-05-28T20:42:16.103Z",
+  "createdDate" : "2025-05-28T20:42:16.102Z",
+  "departmentId" : "869fa3bb-1cc9-471d-92fc-d0a3a5b618f5",
+  "tenantId" : "test-tenant-123",
+  "name" : "PO Team",
+  "description" : "PO Team",
+  "id" : "e7fd3f1b-4a01-4ba3-b42f-02b4c943a6f5"
+}, {
+  "lastUpdatedDate" : "2025-05-28T20:41:49.048Z",
+  "createdDate" : "2025-05-28T20:41:49.048Z",
+  "departmentId" : "4fc101a4-2a6c-48bc-9015-9279d9422e42",
+  "tenantId" : "test-tenant-123",
+  "name" : "Empreendedores de Novos Projetos",
+  "description" : "Time de Vibe Coding prático",
+  "id" : "af19977a-f1a5-41d7-b36c-7cfd2dcd9b75"
+}, {
+  "lastUpdatedDate" : "2025-05-28T23:59:16.133Z",
+  "createdDate" : "2025-05-28T19:58:36.847Z",
+  "departmentId" : "a669d041-ce42-44e4-af9a-16537d102921",
+  "tenantId" : "new-company-tenant",
+  "name" : "Junior Backend Team 2",
+  "description" : "All the Juniors, AI replaceables? ",
+  "id" : "f2770ac6-9e47-45b8-a653-e91827fe8775"
+}, {
+  "lastUpdatedDate" : "2025-05-23T22:56:59.233Z",
+  "createdDate" : "2023-08-28T02:07:02.972Z",
+  "departmentId" : "8db3abd1-d1a8-46e4-8d87-1dcce1825e51",
+  "tenantId" : "Another TenantId",
+  "name" : "Updated Backend Development Team",
+  "description" : "Team responsible for backend services and APIs - updated",
+  "id" : "9c4505d9-2241-45c0-9eda-ddb85d8c5608"
+}, {
+  "lastUpdatedDate" : "2023-08-28T02:05:50.752Z",
+  "createdDate" : "2023-08-28T02:05:50.751Z",
+  "departmentId" : "8db3abd1-d1a8-46e4-8d87-1dcce1825e51",
+  "tenantId" : "Another TenantId",
+  "name" : "TeamName",
+  "description" : "Team Description",
+  "id" : "a9eb85f8-57f3-4e15-ab38-dc5f871f3584"
+}, {
+  "lastUpdatedDate" : "2025-05-28T20:32:20.247Z",
+  "createdDate" : "2025-05-28T19:13:28.172Z",
+  "departmentId" : "ed3bbd56-667e-43f3-983a-4c4b67f3cf51",
+  "tenantId" : "new-company-tenant",
+  "name" : "Updated new Backend Development Team",
+  "description" : "Updated Team responsible for backend services and APIs - updated",
+  "id" : "a17bbd44-139e-450a-accf-352de8757ffe"
+}, {
+  "lastUpdatedDate" : "2024-02-03T15:18:30.023Z",
+  "createdDate" : "2024-02-03T15:18:30.023Z",
+  "departmentId" : "A DepartmentId",
+  "tenantId" : "tenantId",
+  "name" : "TeamName",
+  "description" : "Team description",
+  "id" : "056e8887-3b55-4d69-a0bb-1aac99bdcbf8"
+}, {
+  "lastUpdatedDate" : "2025-06-07T20:02:47.972Z",
+  "createdDate" : "2025-06-07T20:02:47.953Z",
+  "departmentId" : "869fa3bb-1cc9-471d-92fc-d0a3a5b618f5",
+  "name" : "Team with POs",
+  "tenantId" : "test-tenant-123",
+  "id" : "8d7f0ddd-ebc0-4854-9d2b-b6e66a842f92"
+}, {
+  "lastUpdatedDate" : "2023-08-28T02:05:16.710Z",
+  "createdDate" : "2023-08-28T02:05:16.710Z",
+  "departmentId" : "8db3abd1-d1a8-46e4-8d87-1dcce1825e51",
+  "tenantId" : "Another TenantId",
+  "name" : "TeamName",
+  "description" : "Team Description",
+  "id" : "7c03c7a5-22f4-4211-9511-e70b5067d849"
+} ]
