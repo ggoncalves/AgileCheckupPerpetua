@@ -9,9 +9,9 @@ class EmployeeAssessmentTest {
 
     @Test
     void shouldSetDefaultAssessmentStatusToInvited() {
-        // When
+        // When using constructor
         EmployeeAssessment employeeAssessment = new EmployeeAssessment();
-
+        
         // Then
         assertThat(employeeAssessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.INVITED);
     }
@@ -20,6 +20,7 @@ class EmployeeAssessmentTest {
     void shouldSetDefaultAssessmentStatusToInvitedWhenBuilderUsed() {
         // When
         EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+            .tenantId("test-tenant")
             .assessmentMatrixId("matrix-id")
             .employee(createTestEmployee())
             .build();
@@ -36,6 +37,7 @@ class EmployeeAssessmentTest {
     void shouldMaintainExplicitlySetAssessmentStatus() {
         // When
         EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+            .tenantId("test-tenant")
             .assessmentMatrixId("matrix-id")
             .employee(createTestEmployee())
             .assessmentStatus(AssessmentStatus.COMPLETED)
@@ -49,6 +51,7 @@ class EmployeeAssessmentTest {
     void shouldHandleNullAssessmentStatusGracefully() {
         // When
         EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+            .tenantId("test-tenant")
             .assessmentMatrixId("matrix-id")
             .employee(createTestEmployee())
             .build();
@@ -67,9 +70,27 @@ class EmployeeAssessmentTest {
     }
 
     @Test
+    void shouldHaveAssessmentStatusAsNonNullWhenExplicitlySet() {
+        // When
+        EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+            .tenantId("test-tenant")
+            .assessmentMatrixId("matrix-id")
+            .employee(createTestEmployee())
+            .assessmentStatus(AssessmentStatus.INVITED)
+            .build();
+
+        // Then
+        assertThat(employeeAssessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.INVITED);
+    }
+
+    @Test
     void shouldHaveAssessmentStatusAsNonNull() {
         // When
-        EmployeeAssessment employeeAssessment = new EmployeeAssessment();
+        EmployeeAssessment employeeAssessment = EmployeeAssessment.builder()
+            .tenantId("test-tenant")
+            .assessmentMatrixId("matrix-id")
+            .employee(createTestEmployee())
+            .build();
 
         // Then
         assertThat(employeeAssessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.INVITED);

@@ -255,6 +255,7 @@ public class TestObjectFactory {
   public static EmployeeAssessment createMockedEmployeeAssessment(String id, String name, String assessmentMatrixId) {
     return EmployeeAssessment.builder()
         .id(id)
+        .tenantId("test-tenant-123")
         .assessmentMatrixId(assessmentMatrixId)
         .teamId("team-" + id)
         .employee(createMockedNaturalPerson(name))
@@ -266,6 +267,7 @@ public class TestObjectFactory {
   public static EmployeeAssessment createMockedEmployeeAssessment(String id, String name, String assessmentMatrixId, AssessmentStatus status) {
     return EmployeeAssessment.builder()
         .id(id)
+        .tenantId("test-tenant-123")
         .assessmentMatrixId(assessmentMatrixId)
         .teamId("team-" + id)
         .employee(createMockedNaturalPerson(name))

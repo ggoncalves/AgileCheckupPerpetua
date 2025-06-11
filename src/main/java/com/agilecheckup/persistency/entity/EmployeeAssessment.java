@@ -3,6 +3,7 @@ package com.agilecheckup.persistency.entity;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
@@ -17,6 +18,11 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @DynamoDBTable(tableName = "EmployeeAssessment")
 public class EmployeeAssessment extends BaseEntity {
+
+  @NonNull
+  @DynamoDBAttribute(attributeName = "tenantId")
+  @DynamoDBIndexHashKey(globalSecondaryIndexName = "tenantId-index")
+  private String tenantId;
 
   @NonNull
   @DynamoDBAttribute(attributeName = "assessmentMatrixId")
@@ -35,6 +41,7 @@ public class EmployeeAssessment extends BaseEntity {
 
   @DynamoDBAttribute(attributeName = "assessmentStatus")
   @DynamoDBTypeConvertedEnum
+  @Builder.Default
   private AssessmentStatus assessmentStatus = AssessmentStatus.INVITED;
 
   @DynamoDBAttribute(attributeName = "answeredQuestionCount")
