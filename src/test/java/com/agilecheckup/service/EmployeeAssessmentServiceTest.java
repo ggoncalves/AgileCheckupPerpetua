@@ -19,6 +19,7 @@ import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.ValidationException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +44,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssess
 import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedTeam;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -49,8 +52,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAssessment, AbstractCrudRepository<EmployeeAssessment>> {
@@ -84,6 +89,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
   void setUpBefore() {
     originalEmployeeAssessment = createMockedEmployeeAssessment(DEFAULT_ID, "Fernando", assessmentMatrix.getId());
     originalEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
+    // Update team's tenantId to match the employeeAssessment's tenantId
+    team.setTenantId("test-tenant-123");
   }
 
   @Test
@@ -766,5 +773,155 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     assertTrue(result.isPresent());
     assertEquals(AssessmentStatus.CONFIRMED, assessment.getAssessmentStatus());
     verify(employeeAssessmentService).update(assessment);
+  }
+
+  @Test
+  void findAllByTenantId_shouldReturnAllAssessmentsForTenant() {
+    // Given
+    EmployeeAssessment assessment1 = createMockedEmployeeAssessment("1", "John", assessmentMatrix.getId());
+    EmployeeAssessment assessment2 = createMockedEmployeeAssessment("2", "Jane", assessmentMatrix.getId());
+    List<EmployeeAssessment> expectedAssessments = Arrays.asList(assessment1, assessment2);
+    
+    @SuppressWarnings("unchecked")
+    PaginatedQueryList<EmployeeAssessment> mockResult = mock(PaginatedQueryList.class);
+    when(mockResult.stream()).thenReturn(expectedAssessments.stream());
+    when(employeeAssessmentRepository.findAllByTenantId(TENANT_ID)).thenReturn(mockResult);
+    
+    // When
+    List<EmployeeAssessment> result = employeeAssessmentService.findAllByTenantId(TENANT_ID);
+    
+    // Then
+    assertThat(result).hasSize(2);
+    assertThat(result).containsExactlyInAnyOrder(assessment1, assessment2);
+    verify(employeeAssessmentRepository).findAllByTenantId(TENANT_ID);
+  }
+
+  @Test
+  void findByAssessmentMatrix_shouldFilterAssessmentsByMatrixId() {
+    // Given
+    EmployeeAssessment matchingAssessment = createMockedEmployeeAssessment("1", "John", assessmentMatrix.getId());
+    EmployeeAssessment nonMatchingAssessment = createMockedEmployeeAssessment("2", "Jane", "other-matrix");
+    List<EmployeeAssessment> allAssessments = Arrays.asList(matchingAssessment, nonMatchingAssessment);
+    
+    @SuppressWarnings("unchecked")
+    PaginatedQueryList<EmployeeAssessment> mockResult = mock(PaginatedQueryList.class);
+    when(mockResult.stream()).thenReturn(allAssessments.stream());
+    when(employeeAssessmentRepository.findAllByTenantId(TENANT_ID)).thenReturn(mockResult);
+    
+    // When
+    List<EmployeeAssessment> result = employeeAssessmentService.findByAssessmentMatrix(assessmentMatrix.getId(), TENANT_ID);
+    
+    // Then
+    assertThat(result).hasSize(1);
+    assertThat(result).containsExactly(matchingAssessment);
+    verify(employeeAssessmentRepository).findAllByTenantId(TENANT_ID);
+  }
+
+  @Test
+  void findByAssessmentMatrix_shouldReturnEmptyListWhenNoMatches() {
+    // Given
+    EmployeeAssessment assessment = createMockedEmployeeAssessment("1", "John", "other-matrix");
+    List<EmployeeAssessment> allAssessments = Arrays.asList(assessment);
+    
+    @SuppressWarnings("unchecked")
+    PaginatedQueryList<EmployeeAssessment> mockResult = mock(PaginatedQueryList.class);
+    when(mockResult.stream()).thenReturn(allAssessments.stream());
+    when(employeeAssessmentRepository.findAllByTenantId(TENANT_ID)).thenReturn(mockResult);
+    
+    // When
+    List<EmployeeAssessment> result = employeeAssessmentService.findByAssessmentMatrix(assessmentMatrix.getId(), TENANT_ID);
+    
+    // Then
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void findById_withTenantId_shouldReturnAssessmentWhenTenantMatches() {
+    // Given
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(EMPLOYEE_ASSESSMENT_ID, "John", assessmentMatrix.getId());
+    assessment.setTenantId(TENANT_ID);
+    
+    when(employeeAssessmentRepository.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(assessment);
+    
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID, TENANT_ID);
+    
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get()).isEqualTo(assessment);
+    verify(employeeAssessmentRepository).findById(EMPLOYEE_ASSESSMENT_ID);
+  }
+
+  @Test
+  void findById_withTenantId_shouldReturnEmptyWhenTenantDoesNotMatch() {
+    // Given
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(EMPLOYEE_ASSESSMENT_ID, "John", assessmentMatrix.getId());
+    assessment.setTenantId("different-tenant");
+    
+    when(employeeAssessmentRepository.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(assessment);
+    
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID, TENANT_ID);
+    
+    // Then
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void findById_withTenantId_shouldReturnEmptyWhenAssessmentNotFound() {
+    // Given
+    when(employeeAssessmentRepository.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(null);
+    
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID, TENANT_ID);
+    
+    // Then
+    assertThat(result).isEmpty();
+    verify(employeeAssessmentRepository).findById(EMPLOYEE_ASSESSMENT_ID);
+  }
+
+  @Test
+  void deleteById_shouldDeleteExistingAssessment() {
+    // Given
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(EMPLOYEE_ASSESSMENT_ID, "John", assessmentMatrix.getId());
+    when(employeeAssessmentRepository.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(assessment);
+    
+    // When
+    employeeAssessmentService.deleteById(EMPLOYEE_ASSESSMENT_ID);
+    
+    // Then
+    verify(employeeAssessmentRepository).findById(EMPLOYEE_ASSESSMENT_ID);
+    verify(employeeAssessmentRepository).delete(assessment);
+  }
+
+  @Test
+  void deleteById_shouldHandleNonExistentAssessmentGracefully() {
+    // Given
+    when(employeeAssessmentRepository.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(null);
+    
+    // When
+    employeeAssessmentService.deleteById(EMPLOYEE_ASSESSMENT_ID);
+    
+    // Then
+    verify(employeeAssessmentRepository).findById(EMPLOYEE_ASSESSMENT_ID);
+    verify(employeeAssessmentRepository, never()).delete(any());
+  }
+
+  @Test
+  void save_shouldPersistEmployeeAssessment() {
+    // Given
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(EMPLOYEE_ASSESSMENT_ID, "John", assessmentMatrix.getId());
+    EmployeeAssessment savedAssessment = createMockedEmployeeAssessment(EMPLOYEE_ASSESSMENT_ID, "John", assessmentMatrix.getId());
+    savedAssessment.setId("generated-id");
+    
+    when(employeeAssessmentRepository.save(assessment)).thenReturn(savedAssessment);
+    
+    // When
+    EmployeeAssessment result = employeeAssessmentService.save(assessment);
+    
+    // Then
+    assertThat(result).isEqualTo(savedAssessment);
+    assertThat(result.getId()).isEqualTo("generated-id");
+    verify(employeeAssessmentRepository).save(assessment);
   }
 }

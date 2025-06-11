@@ -69,9 +69,11 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
     Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
     Optional<Team> team = teamService.findById(teamId);
+    Team teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
     return EmployeeAssessment.builder()
         .assessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId())
-        .teamId(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")).getId())
+        .teamId(teamEntity.getId())
+        .tenantId(teamEntity.getTenantId())
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
         .answeredQuestionCount(0)
         .assessmentStatus(AssessmentStatus.INVITED)
@@ -228,5 +230,50 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   @Override
   AbstractCrudRepository<EmployeeAssessment> getRepository() {
     return employeeAssessmentRepository;
+  }
+  
+  /**
+   * Find all employee assessments by tenant ID
+   */
+  public List<EmployeeAssessment> findAllByTenantId(String tenantId) {
+    return employeeAssessmentRepository.findAllByTenantId(tenantId).stream()
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * Find all employee assessments by assessment matrix ID and tenant ID
+   */
+  public List<EmployeeAssessment> findByAssessmentMatrix(String assessmentMatrixId, String tenantId) {
+    return employeeAssessmentRepository.findAllByTenantId(tenantId).stream()
+        .filter(ea -> assessmentMatrixId.equals(ea.getAssessmentMatrixId()))
+        .collect(Collectors.toList());
+  }
+  
+  /**
+   * Find employee assessment by ID and tenant ID
+   */
+  public Optional<EmployeeAssessment> findById(String id, String tenantId) {
+    EmployeeAssessment ea = employeeAssessmentRepository.findById(id);
+    if (ea != null && tenantId.equals(ea.getTenantId())) {
+      return Optional.of(ea);
+    }
+    return Optional.empty();
+  }
+  
+  /**
+   * Delete employee assessment by ID
+   */
+  public void deleteById(String id) {
+    EmployeeAssessment ea = employeeAssessmentRepository.findById(id);
+    if (ea != null) {
+      employeeAssessmentRepository.delete(ea);
+    }
+  }
+  
+  /**
+   * Save employee assessment (create or update)
+   */
+  public EmployeeAssessment save(EmployeeAssessment employeeAssessment) {
+    return employeeAssessmentRepository.save(employeeAssessment);
   }
 }
