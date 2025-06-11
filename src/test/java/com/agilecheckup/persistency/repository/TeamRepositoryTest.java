@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.persistency.entity.Team;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,8 +16,10 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedTeam;
 import static com.agilecheckup.util.TestObjectFactory.createMockedTeamWithDependenciesId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,33 +30,23 @@ class TeamRepositoryTest extends AbstractRepositoryTest<Team> {
   private TeamRepository teamRepository;
 
   @Test
-  void findByDepartmentId_shouldFilterByDepartment() {
+  void findByDepartmentId_shouldQueryGSIByDepartment() {
     // Given
     String tenantId = "tenant-123";
     String departmentId = "dept-123";
-    String otherDepartmentId = "dept-456";
-    
-    Team team1 = createMockedTeamWithDependenciesId(departmentId);
-    team1.setTenantId(tenantId);
-    
-    Team team2 = createMockedTeamWithDependenciesId(departmentId);
-    team2.setTenantId(tenantId);
-    
-    Team team3 = createMockedTeamWithDependenciesId(otherDepartmentId);
-    team3.setTenantId(tenantId);
     
     PaginatedQueryList<Team> mockPaginatedList = mock(PaginatedQueryList.class);
-    when(mockPaginatedList.stream()).thenReturn(Arrays.asList(team1, team2, team3).stream());
     
-    doReturn(mockPaginatedList).when(teamRepository).findAllByTenantId(tenantId);
+    when(dynamoDBMapperMock.query(eq(Team.class), any(DynamoDBQueryExpression.class)))
+        .thenReturn(mockPaginatedList);
     
     // When
     List<Team> result = teamRepository.findByDepartmentId(departmentId, tenantId);
     
     // Then
-    assertEquals(2, result.size());
-    assertTrue(result.contains(team1));
-    assertTrue(result.contains(team2));
+    assertEquals(mockPaginatedList, result);
+    // Verify DynamoDB query was called correctly
+    verify(dynamoDBMapperMock).query(eq(Team.class), any(DynamoDBQueryExpression.class));
   }
 
   @Test
@@ -61,21 +54,17 @@ class TeamRepositoryTest extends AbstractRepositoryTest<Team> {
     // Given
     String tenantId = "tenant-123";
     String departmentId = "dept-123";
-    String otherDepartmentId = "dept-456";
-    
-    Team team1 = createMockedTeamWithDependenciesId(otherDepartmentId);
-    team1.setTenantId(tenantId);
     
     PaginatedQueryList<Team> mockPaginatedList = mock(PaginatedQueryList.class);
-    when(mockPaginatedList.stream()).thenReturn(Arrays.asList(team1).stream());
     
-    doReturn(mockPaginatedList).when(teamRepository).findAllByTenantId(tenantId);
+    when(dynamoDBMapperMock.query(eq(Team.class), any(DynamoDBQueryExpression.class)))
+        .thenReturn(mockPaginatedList);
     
     // When
     List<Team> result = teamRepository.findByDepartmentId(departmentId, tenantId);
     
     // Then
-    assertTrue(result.isEmpty());
+    assertEquals(mockPaginatedList, result);
   }
 
   @Override
