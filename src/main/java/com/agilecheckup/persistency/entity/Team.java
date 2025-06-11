@@ -2,6 +2,7 @@ package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -17,6 +18,7 @@ public class Team extends TenantDescribableEntity {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "departmentId")
+  @DynamoDBIndexHashKey(globalSecondaryIndexName = "departmentId-index")
   private String departmentId;
 
 
