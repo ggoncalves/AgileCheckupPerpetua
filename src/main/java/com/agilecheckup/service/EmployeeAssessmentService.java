@@ -17,8 +17,10 @@ import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.agilecheckup.service.validator.AssessmentStatusValidator;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   }
 
   public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
+    validateEmployeeAssessmentUniqueness(email, assessmentMatrixId);
     return super.create(createEmployeeAssessment(assessmentMatrixId, teamId, name, email, documentNumber, documentType, gender, genderPronoun));
   }
 
@@ -60,6 +63,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       employeeAssessment.setAssessmentMatrixId(assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix")).getId());
       employeeAssessment.setTeamId(team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team")).getId());
       employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
+      employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim());
       return super.update(employeeAssessment);
     } else {
       return Optional.empty();
@@ -75,6 +79,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         .teamId(teamEntity.getId())
         .tenantId(teamEntity.getTenantId())
         .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
+        .employeeEmailNormalized(email.toLowerCase().trim())
         .answeredQuestionCount(0)
         .assessmentStatus(AssessmentStatus.INVITED)
         .build();
@@ -274,6 +279,40 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
    * Save employee assessment (create or update)
    */
   public EmployeeAssessment save(EmployeeAssessment employeeAssessment) {
+    // Ensure normalized email is set for GSI
+    Optional.ofNullable(employeeAssessment.getEmployee())
+        .map(employee -> employee.getEmail())
+        .filter(StringUtils::isNotBlank)
+        .ifPresent(email -> employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim()));
+    
+    // For new assessments (no ID), validate employee assessment uniqueness
+    if (employeeAssessment.getId() == null) {
+      String email = Optional.ofNullable(employeeAssessment.getEmployee())
+          .map(employee -> employee.getEmail())
+          .orElseThrow(() -> new IllegalArgumentException("Employee email is required"));
+      validateEmployeeAssessmentUniqueness(email, employeeAssessment.getAssessmentMatrixId());
+    }
     return employeeAssessmentRepository.save(employeeAssessment);
+  }
+  
+  /**
+   * Validates that employee assessment does not already exist within the assessment matrix.
+   * Uses efficient GSI query instead of expensive table scan.
+   */
+  private void validateEmployeeAssessmentUniqueness(String employeeEmail, String assessmentMatrixId) {
+    boolean exists = employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, employeeEmail);
+    
+    if (exists) {
+      throw new EmployeeAssessmentAlreadyExistsException(employeeEmail, assessmentMatrixId);
+    }
+  }
+  
+  /**
+   * Scan all EmployeeAssessments in the database (for maintenance/debugging purposes only)
+   * WARNING: This is an expensive operation - use only for debugging or data migration
+   */
+  public List<EmployeeAssessment> scanAllEmployeeAssessments() {
+    return employeeAssessmentRepository.getDynamoDBMapper()
+        .scan(EmployeeAssessment.class, new com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression());
   }
 }
