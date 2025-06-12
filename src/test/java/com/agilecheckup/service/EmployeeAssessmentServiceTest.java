@@ -19,7 +19,9 @@ import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.ValidationException;
+import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +53,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -91,6 +95,9 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     originalEmployeeAssessment = cloneWithId(originalEmployeeAssessment, DEFAULT_ID);
     // Update team's tenantId to match the employeeAssessment's tenantId
     team.setTenantId("test-tenant-123");
+    
+    // Default mock for GSI validation - no existing employee assessments by default
+    lenient().when(employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(any(), any())).thenReturn(false);
   }
 
   @Test
@@ -462,6 +469,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     EmployeeAssessment updatedEmployeeAssessmentDetails = createMockedEmployeeAssessment("updatedMatrixId", "Updated Employee Name", "updatedMatrixId");
     updatedEmployeeAssessmentDetails.setId(DEFAULT_ID);
     updatedEmployeeAssessmentDetails.setTeamId("updatedTeamId");
+    updatedEmployeeAssessmentDetails.setEmployeeEmailNormalized("name@company.com"); // Set normalized email
 
     AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMap(1, 1, "pillar", "category"));
     Team team1 = createMockedTeam("updatedTeamId");
@@ -923,5 +931,171 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     assertThat(result).isEqualTo(savedAssessment);
     assertThat(result.getId()).isEqualTo("generated-id");
     verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void create_shouldThrowEmployeeAssessmentAlreadyExistsExceptionWhenEmployeeAssessmentAlreadyExistsInMatrix() {
+    // Given
+    String existingEmail = "existing@company.com";
+    
+    // Mock GSI query to return true (employee assessment exists)
+    when(employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), existingEmail))
+        .thenReturn(true);
+    
+    lenient().doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrix.getId());
+    lenient().doReturn(Optional.of(team)).when(teamService).findById(team.getId());
+    
+    // When & Then
+    EmployeeAssessmentAlreadyExistsException exception = assertThrows(EmployeeAssessmentAlreadyExistsException.class, () -> {
+      employeeAssessmentService.create(
+          assessmentMatrix.getId(),
+          team.getId(),
+          "John Doe",
+          existingEmail,
+          "123456789",
+          PersonDocumentType.CPF,
+          Gender.MALE,
+          GenderPronoun.HE
+      );
+    });
+    
+    assertThat(exception.getEmployeeEmail()).isEqualTo(existingEmail);
+    assertThat(exception.getAssessmentMatrixId()).isEqualTo(assessmentMatrix.getId());
+    assertThat(exception.getMessage()).contains(existingEmail);
+    assertThat(exception.getMessage()).contains(assessmentMatrix.getId());
+    
+    // Verify GSI method was called with correct parameters
+    verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), existingEmail);
+  }
+
+  @Test
+  void create_shouldSucceedWhenEmployeeAssessmentIsUniqueInMatrix() {
+    // Given
+    String uniqueEmail = "john@company.com";
+    EmployeeAssessment newAssessment = createMockedEmployeeAssessment(null, "John", assessmentMatrix.getId());
+    newAssessment.getEmployee().setEmail(uniqueEmail);
+    EmployeeAssessment savedAssessment = cloneWithId(newAssessment, DEFAULT_ID);
+    
+    // Mock GSI query to return false (no employee assessment exists)
+    when(employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), uniqueEmail))
+        .thenReturn(false);
+    
+    doAnswerForSaveWithRandomEntityId(savedAssessment, employeeAssessmentRepository);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrix.getId());
+    doReturn(Optional.of(team)).when(teamService).findById(team.getId());
+    
+    // When
+    Optional<EmployeeAssessment> result = employeeAssessmentService.create(
+        assessmentMatrix.getId(),
+        team.getId(),
+        "John Doe",
+        uniqueEmail,
+        "123456789",
+        PersonDocumentType.CPF,
+        Gender.MALE,
+        GenderPronoun.HE
+    );
+    
+    // Then
+    assertTrue(result.isPresent());
+    verify(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
+    verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), uniqueEmail);
+  }
+
+  @Test
+  void save_shouldThrowEmployeeAssessmentAlreadyExistsExceptionForNewAssessmentWithExistingEmployeeAssessment() {
+    // Given
+    String existingEmail = "existing@company.com";
+    EmployeeAssessment newEmployeeAssessment = createMockedEmployeeAssessment(null, "John", assessmentMatrix.getId());
+    newEmployeeAssessment.setId(null); // Ensure it's treated as new
+    newEmployeeAssessment.getEmployee().setEmail(existingEmail);
+    
+    // Mock GSI query to return true (employee assessment exists)
+    when(employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), existingEmail))
+        .thenReturn(true);
+    
+    // When & Then
+    EmployeeAssessmentAlreadyExistsException exception = assertThrows(EmployeeAssessmentAlreadyExistsException.class, () -> {
+      employeeAssessmentService.save(newEmployeeAssessment);
+    });
+    
+    assertThat(exception.getEmployeeEmail()).isEqualTo(existingEmail);
+    assertThat(exception.getAssessmentMatrixId()).isEqualTo(assessmentMatrix.getId());
+    
+    // Verify GSI method was called
+    verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), existingEmail);
+  }
+
+  @Test
+  void save_shouldAllowUpdateForExistingEmployeeAssessment() {
+    // Given
+    EmployeeAssessment existingEmployeeAssessment = createMockedEmployeeAssessment("existing-id", "John", assessmentMatrix.getId());
+    existingEmployeeAssessment.getEmployee().setEmail("john@company.com");
+    
+    when(employeeAssessmentRepository.save(existingEmployeeAssessment)).thenReturn(existingEmployeeAssessment);
+    
+    // When
+    EmployeeAssessment result = employeeAssessmentService.save(existingEmployeeAssessment);
+    
+    // Then
+    assertThat(result).isEqualTo(existingEmployeeAssessment);
+    verify(employeeAssessmentRepository).save(existingEmployeeAssessment);
+    // Should not call GSI validation for existing assessments (has ID)
+    verify(employeeAssessmentRepository, never()).existsByAssessmentMatrixAndEmployeeEmail(any(), any());
+  }
+
+  @Test
+  void create_shouldBeCaseInsensitiveForEmployeeAssessmentDuplication() {
+    // Given
+    String emailLowerCase = "jane@company.com";
+    
+    // Mock GSI query to return true (employee assessment exists - case insensitive)
+    when(employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), emailLowerCase))
+        .thenReturn(true);
+    
+    lenient().doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrix.getId());
+    lenient().doReturn(Optional.of(team)).when(teamService).findById(team.getId());
+    
+    // When & Then
+    EmployeeAssessmentAlreadyExistsException exception = assertThrows(EmployeeAssessmentAlreadyExistsException.class, () -> {
+      employeeAssessmentService.create(
+          assessmentMatrix.getId(),
+          team.getId(),
+          "John Doe",
+          emailLowerCase, // Same email, different case should be handled by repository normalization
+          "123456789",
+          PersonDocumentType.CPF,
+          Gender.MALE,
+          GenderPronoun.HE
+      );
+    });
+    
+    assertThat(exception.getEmployeeEmail()).isEqualTo(emailLowerCase);
+    
+    // Verify GSI method was called with normalized email
+    verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrix.getId(), emailLowerCase);
+  }
+
+  @Test
+  void scanAllEmployeeAssessments_shouldReturnAllAssessments() {
+    // Given
+    List<EmployeeAssessment> expectedAssessments = Arrays.asList(
+        createMockedEmployeeAssessment("id1", "Employee 1", "matrix1"),
+        createMockedEmployeeAssessment("id2", "Employee 2", "matrix2"),
+        createMockedEmployeeAssessment("id3", "Employee 3", "matrix1")
+    );
+    
+    // Mock the service method directly
+    doReturn(expectedAssessments).when(employeeAssessmentService).scanAllEmployeeAssessments();
+    
+    // When
+    List<EmployeeAssessment> result = employeeAssessmentService.scanAllEmployeeAssessments();
+    
+    // Then
+    assertThat(result).isEqualTo(expectedAssessments);
+    assertThat(result).hasSize(3);
+    assertThat(result.get(0).getId()).isEqualTo("id1");
+    assertThat(result.get(1).getId()).isEqualTo("id2");
+    assertThat(result.get(2).getId()).isEqualTo("id3");
   }
 }

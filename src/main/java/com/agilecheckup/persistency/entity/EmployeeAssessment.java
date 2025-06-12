@@ -4,11 +4,15 @@ import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -26,6 +30,7 @@ public class EmployeeAssessment extends BaseEntity {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "assessmentMatrixId")
+  @DynamoDBIndexHashKey(globalSecondaryIndexName = "assessmentMatrixId-employeeEmail-index")
   private String assessmentMatrixId;
 
   @NonNull
@@ -47,7 +52,23 @@ public class EmployeeAssessment extends BaseEntity {
   @DynamoDBAttribute(attributeName = "answeredQuestionCount")
   private Integer answeredQuestionCount;
 
+  @DynamoDBAttribute(attributeName = "employeeEmailNormalized")
+  @DynamoDBIndexRangeKey(globalSecondaryIndexName = "assessmentMatrixId-employeeEmail-index")
+  private String employeeEmailNormalized;
+
   {
     answeredQuestionCount = 0;
+  }
+  
+  /**
+   * Sets the employee and automatically updates the normalized email for GSI
+   */
+  public void setEmployee(NaturalPerson employee) {
+    this.employee = employee;
+    this.employeeEmailNormalized = Optional.ofNullable(employee)
+        .map(NaturalPerson::getEmail)
+        .filter(StringUtils::isNotBlank)
+        .map(email -> email.toLowerCase().trim())
+        .orElse(null);
   }
 }
