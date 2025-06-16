@@ -51,7 +51,6 @@ abstract class AbstractRepositoryTest<T> {
     getRepository().save(mockedT);
 
     // Then
-    verify(getRepository()).save(mockedT);
     verify(dynamoDBMapperMock).save(mockedT);
   }
 
@@ -61,7 +60,6 @@ abstract class AbstractRepositoryTest<T> {
     getRepository().delete(mockedT);
 
     // Then
-    verify(getRepository()).delete(mockedT);
     verify(dynamoDBMapperMock).delete(mockedT);
   }
 
@@ -71,7 +69,6 @@ abstract class AbstractRepositoryTest<T> {
     getRepository().findById(GENERIC_ID_1234);
 
     // Then
-    verify(getRepository()).findById(GENERIC_ID_1234);
     verify(dynamoDBMapperMock).load(argThat(arg -> arg.isInstance(mockedT)), eq(GENERIC_ID_1234));
   }
 
@@ -81,7 +78,6 @@ abstract class AbstractRepositoryTest<T> {
     getRepository().findAll();
 
     // Then
-    verify(getRepository()).findAll();
     verify(dynamoDBMapperMock).scan(argThat(arg -> arg.isInstance(mockedT)), any(DynamoDBScanExpression.class));
   }
 
