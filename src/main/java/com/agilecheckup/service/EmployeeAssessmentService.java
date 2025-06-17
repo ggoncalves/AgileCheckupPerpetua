@@ -16,8 +16,10 @@ import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.dto.EmployeeValidationRequest;
+import com.agilecheckup.service.dto.EmployeeValidationResponse;
 import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.validator.AssessmentStatusValidator;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -314,5 +316,97 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   public List<EmployeeAssessment> scanAllEmployeeAssessments() {
     return employeeAssessmentRepository.getDynamoDBMapper()
         .scan(EmployeeAssessment.class, new com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression());
+  }
+
+  /**
+   * Validates an employee for assessment access
+   * Updates status from INVITED to CONFIRMED if applicable
+   */
+  public EmployeeValidationResponse validateEmployee(EmployeeValidationRequest request) {
+    Optional<EmployeeAssessment> matchingAssessment = findEmployeeAssessment(request);
+
+    if (!matchingAssessment.isPresent()) {
+      return createEmployeeNotFoundResponse();
+    }
+
+    return handleEmployeeAssessmentValidation(matchingAssessment.get());
+  }
+
+  private void confirmEmployeeAssessment(EmployeeAssessment assessment) {
+    assessment.setAssessmentStatus(AssessmentStatus.CONFIRMED);
+    employeeAssessmentRepository.save(assessment);
+  }
+
+  private EmployeeValidationResponse createEmployeeNotFoundResponse() {
+    return EmployeeValidationResponse.error(
+        "We couldn't find your assessment invitation. Please check that you're using the same email address that HR used to invite you, or contact your HR department for assistance."
+                                           );
+  }
+
+  private Optional<EmployeeAssessment> findEmployeeAssessment(EmployeeValidationRequest request) {
+    List<EmployeeAssessment> assessments = findByAssessmentMatrix(
+        request.getAssessmentMatrixId(), request.getTenantId());
+
+    return assessments.stream()
+        .filter(assessment -> isEmailMatch(assessment, request.getEmail()))
+        .findFirst();
+  }
+
+  private EmployeeValidationResponse handleActiveStatus(EmployeeAssessment assessment, AssessmentStatus currentStatus) {
+    return EmployeeValidationResponse.info(
+        "Welcome back! You can continue your assessment where you left off.",
+        assessment.getId(),
+        assessment.getEmployee().getName(),
+        currentStatus.toString()
+                                          );
+  }
+
+  private EmployeeValidationResponse handleCompletedStatus(EmployeeAssessment assessment) {
+    return EmployeeValidationResponse.info(
+        "You have already completed this assessment. Thank you for your participation!",
+        assessment.getId(),
+        assessment.getEmployee().getName(),
+        AssessmentStatus.COMPLETED.toString()
+                                          );
+  }
+
+  private EmployeeValidationResponse handleEmployeeAssessmentValidation(EmployeeAssessment assessment) {
+    AssessmentStatus currentStatus = assessment.getAssessmentStatus();
+
+    switch (currentStatus) {
+      case INVITED:
+        return handleInvitedStatus(assessment);
+      case CONFIRMED:
+      case IN_PROGRESS:
+        return handleActiveStatus(assessment, currentStatus);
+      case COMPLETED:
+        return handleCompletedStatus(assessment);
+      default:
+        return handleUnknownStatus(assessment, currentStatus);
+    }
+  }
+
+  private EmployeeValidationResponse handleInvitedStatus(EmployeeAssessment assessment) {
+    confirmEmployeeAssessment(assessment);
+
+    return EmployeeValidationResponse.success(
+        "Welcome! Your assessment access has been confirmed.",
+        assessment.getId(),
+        assessment.getEmployee().getName(),
+        AssessmentStatus.CONFIRMED.toString()
+                                             );
+  }
+
+  private EmployeeValidationResponse handleUnknownStatus(EmployeeAssessment assessment, AssessmentStatus currentStatus) {
+    return EmployeeValidationResponse.info(
+        "Your assessment is in status: " + currentStatus,
+        assessment.getId(),
+        assessment.getEmployee().getName(),
+        currentStatus.toString()
+                                          );
+  }
+
+  private boolean isEmailMatch(EmployeeAssessment assessment, String email) {
+    return assessment.getEmployee().getEmail().equalsIgnoreCase(email);
   }
 }
