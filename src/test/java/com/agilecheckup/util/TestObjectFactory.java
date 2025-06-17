@@ -1,5 +1,6 @@
 package com.agilecheckup.util;
 
+import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Category;
@@ -10,6 +11,7 @@ import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.Industry;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.base.BaseEntity;
@@ -441,5 +443,43 @@ public class TestObjectFactory {
     T clonedT = SerializationUtils.clone(t);
     clonedT.setId(id);
     return clonedT;
+  }
+
+  /**
+   * Creates a default AssessmentConfiguration for testing
+   */
+  public static AssessmentConfiguration createDefaultAssessmentConfiguration() {
+    return AssessmentConfiguration.builder()
+        .allowQuestionReview(true)
+        .requireAllQuestions(true)
+        .autoSave(true)
+        .navigationMode(QuestionNavigationType.RANDOM)
+        .build();
+  }
+
+  /**
+   * Creates a custom AssessmentConfiguration for testing
+   */
+  public static AssessmentConfiguration createCustomAssessmentConfiguration(Boolean allowReview,
+                                                                            Boolean requireAll,
+                                                                            Boolean autoSave,
+                                                                            QuestionNavigationType navigationMode) {
+    return AssessmentConfiguration.builder()
+        .allowQuestionReview(allowReview)
+        .requireAllQuestions(requireAll)
+        .autoSave(autoSave)
+        .navigationMode(navigationMode)
+        .build();
+  }
+
+  /**
+   * Creates an AssessmentMatrix with configuration
+   */
+  public static AssessmentMatrix createMockedAssessmentMatrixWithConfiguration(String dependenciesId,
+                                                                               Map<String, Pillar> pillarMap,
+                                                                               AssessmentConfiguration configuration) {
+    AssessmentMatrix matrix = createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillarMap);
+    matrix.setConfiguration(configuration);
+    return matrix;
   }
 }

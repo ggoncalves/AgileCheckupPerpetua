@@ -1,8 +1,10 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -27,11 +29,14 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
 import static com.agilecheckup.util.TestObjectFactory.cloneWithId;
+import static com.agilecheckup.util.TestObjectFactory.createCustomAssessmentConfiguration;
+import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithConfiguration;
 import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithDependenciesId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedPerformanceCycle;
 import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -739,6 +744,202 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     assertTrue(result.isPresent());
     verify(mockAssessmentMatrixRepository).save(existingAssessmentMatrix);
     // Don't verify specific call count since the implementation might validate each category
+  }
+
+  @Test
+  void createDefaultConfiguration_shouldReturnExpectedDefaults() {
+    // When
+    AssessmentConfiguration config = assessmentMatrixService.createDefaultConfiguration();
+
+    // Then
+    assertThat(config).isNotNull();
+    assertThat(config.getAllowQuestionReview()).isTrue();
+    assertThat(config.getRequireAllQuestions()).isTrue();
+    assertThat(config.getAutoSave()).isTrue();
+    assertThat(config.getNavigationMode()).isEqualTo(QuestionNavigationType.RANDOM);
+  }
+
+  // ========== Configuration Tests ==========
+
+  @Test
+  void getEffectiveConfiguration_withNullConfiguration_shouldReturnDefault() {
+    // Given
+    AssessmentMatrix matrixWithoutConfig = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234,
+        createMockedPillarMap(1, 1, "pillar", "category"));
+    matrixWithoutConfig.setConfiguration(null);
+
+    // When
+    AssessmentConfiguration effectiveConfig = assessmentMatrixService.getEffectiveConfiguration(matrixWithoutConfig);
+
+    // Then
+    assertThat(effectiveConfig).isNotNull();
+    assertThat(effectiveConfig.getAllowQuestionReview()).isTrue();
+    assertThat(effectiveConfig.getRequireAllQuestions()).isTrue();
+    assertThat(effectiveConfig.getAutoSave()).isTrue();
+    assertThat(effectiveConfig.getNavigationMode()).isEqualTo(QuestionNavigationType.RANDOM);
+  }
+
+  @Test
+  void getEffectiveConfiguration_withExistingConfiguration_shouldReturnExisting() {
+    // Given
+    AssessmentConfiguration customConfig = createCustomAssessmentConfiguration(false, false, false, QuestionNavigationType.SEQUENTIAL);
+    AssessmentMatrix matrixWithConfig = createMockedAssessmentMatrixWithConfiguration(GENERIC_ID_1234,
+        createMockedPillarMap(1, 1, "pillar", "category"), customConfig);
+
+    // When
+    AssessmentConfiguration effectiveConfig = assessmentMatrixService.getEffectiveConfiguration(matrixWithConfig);
+
+    // Then
+    assertThat(effectiveConfig).isNotNull();
+    assertThat(effectiveConfig.getAllowQuestionReview()).isFalse();
+    assertThat(effectiveConfig.getRequireAllQuestions()).isFalse();
+    assertThat(effectiveConfig.getAutoSave()).isFalse();
+    assertThat(effectiveConfig.getNavigationMode()).isEqualTo(QuestionNavigationType.SEQUENTIAL);
+  }
+
+  @Test
+  void createWithConfiguration_shouldSaveConfiguration() {
+    // Given
+    AssessmentConfiguration customConfig = createCustomAssessmentConfiguration(false, true, false, QuestionNavigationType.FREE_FORM);
+    AssessmentMatrix savedMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
+    savedMatrix.setConfiguration(customConfig);
+
+    doAnswerForSaveWithRandomEntityId(savedMatrix, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService)
+        .findById(originalAssessmentMatrix.getPerformanceCycleId());
+
+    // When
+    Optional<AssessmentMatrix> result = assessmentMatrixService.create(
+        originalAssessmentMatrix.getName(),
+        originalAssessmentMatrix.getDescription(),
+        originalAssessmentMatrix.getTenantId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
+        originalAssessmentMatrix.getPillarMap(),
+        customConfig
+                                                                      );
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentMatrix createdMatrix = result.get();
+    assertThat(createdMatrix.getConfiguration()).isNotNull();
+    assertThat(createdMatrix.getConfiguration().getAllowQuestionReview()).isFalse();
+    assertThat(createdMatrix.getConfiguration().getRequireAllQuestions()).isTrue();
+    assertThat(createdMatrix.getConfiguration().getAutoSave()).isFalse();
+    assertThat(createdMatrix.getConfiguration().getNavigationMode()).isEqualTo(QuestionNavigationType.FREE_FORM);
+    verify(mockAssessmentMatrixRepository).save(savedMatrix);
+  }
+
+  @Test
+  void createWithoutConfiguration_shouldAcceptNullConfiguration() {
+    // Given
+    AssessmentMatrix savedMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
+    savedMatrix.setConfiguration(null);
+
+    doAnswerForSaveWithRandomEntityId(savedMatrix, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService)
+        .findById(originalAssessmentMatrix.getPerformanceCycleId());
+
+    // When
+    Optional<AssessmentMatrix> result = assessmentMatrixService.create(
+        originalAssessmentMatrix.getName(),
+        originalAssessmentMatrix.getDescription(),
+        originalAssessmentMatrix.getTenantId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
+        originalAssessmentMatrix.getPillarMap(),
+        null
+                                                                      );
+
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get().getConfiguration()).isNull();
+    verify(mockAssessmentMatrixRepository).save(savedMatrix);
+  }
+
+  @Test
+  void updateWithConfiguration_shouldUpdateConfiguration() {
+    // Given
+    AssessmentConfiguration newConfig = createCustomAssessmentConfiguration(true, false, true, QuestionNavigationType.SEQUENTIAL);
+    AssessmentMatrix existingMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    existingMatrix = cloneWithId(existingMatrix, DEFAULT_ID);
+
+    doReturn(existingMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);
+    doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
+    doReturn(false).when(mockQuestionService).hasCategoryQuestions(anyString(), anyString(), anyString());
+    doAnswerForUpdate(existingMatrix, mockAssessmentMatrixRepository);
+
+    // When
+    Optional<AssessmentMatrix> result = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Name",
+        "Updated Description",
+        "Updated Tenant",
+        GENERIC_ID_1234,
+        originalAssessmentMatrix.getPillarMap(),
+        newConfig
+                                                                      );
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentMatrix updatedMatrix = result.get();
+    assertThat(updatedMatrix.getConfiguration()).isNotNull();
+    assertThat(updatedMatrix.getConfiguration().getAllowQuestionReview()).isTrue();
+    assertThat(updatedMatrix.getConfiguration().getRequireAllQuestions()).isFalse();
+    assertThat(updatedMatrix.getConfiguration().getAutoSave()).isTrue();
+    assertThat(updatedMatrix.getConfiguration().getNavigationMode()).isEqualTo(QuestionNavigationType.SEQUENTIAL);
+    verify(mockAssessmentMatrixRepository).save(existingMatrix);
+  }
+
+  @Test
+  void backwardCompatibility_createWithoutConfiguration_shouldStillWork() {
+    // Given
+    AssessmentMatrix savedMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
+
+    doAnswerForSaveWithRandomEntityId(savedMatrix, mockAssessmentMatrixRepository);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService)
+        .findById(originalAssessmentMatrix.getPerformanceCycleId());
+
+    // When - using the old create method without configuration
+    Optional<AssessmentMatrix> result = assessmentMatrixService.create(
+        originalAssessmentMatrix.getName(),
+        originalAssessmentMatrix.getDescription(),
+        originalAssessmentMatrix.getTenantId(),
+        originalAssessmentMatrix.getPerformanceCycleId(),
+        originalAssessmentMatrix.getPillarMap()
+                                                                      );
+
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get().getConfiguration()).isNull(); // Should be null for backward compatibility
+    verify(mockAssessmentMatrixRepository).save(savedMatrix);
+  }
+
+  @Test
+  void backwardCompatibility_updateWithoutConfiguration_shouldStillWork() {
+    // Given - use the same pillar map to avoid validation logic (no categories are being removed)
+    AssessmentMatrix existingMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234,
+        createMockedPillarMap(1, 1, "pillar", "category"));
+    existingMatrix = cloneWithId(existingMatrix, DEFAULT_ID);
+    Map<String, Pillar> samePillarMap = existingMatrix.getPillarMap(); // Same map = no validation needed
+
+    doReturn(existingMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
+    doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);
+    doAnswerForUpdate(existingMatrix, mockAssessmentMatrixRepository);
+
+    // When - using the old update method without configuration
+    Optional<AssessmentMatrix> result = assessmentMatrixService.update(
+        DEFAULT_ID,
+        "Updated Name",
+        "Updated Description",
+        "Updated Tenant",
+        GENERIC_ID_1234,
+        samePillarMap
+                                                                      );
+
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get().getConfiguration()).isNull(); // Should be null for backward compatibility
+    verify(mockAssessmentMatrixRepository).save(existingMatrix);
   }
 
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){

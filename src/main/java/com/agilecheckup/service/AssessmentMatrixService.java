@@ -1,9 +1,11 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
@@ -15,8 +17,10 @@ import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.ValidationException;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -25,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
-import org.apache.commons.lang3.StringUtils;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AbstractCrudRepository<AssessmentMatrix>> {
 
@@ -54,11 +56,21 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
                                            Map<String, Pillar> pillarMap) {
-    return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap));
+    return create(name, description, tenantId, performanceCycleId, pillarMap, null);
+  }
+
+  public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
+                                           Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
+    return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap, configuration));
   }
 
   public Optional<AssessmentMatrix> update(String id, String name, String description, String tenantId, String performanceCycleId,
                                            Map<String, Pillar> pillarMap) {
+    return update(id, name, description, tenantId, performanceCycleId, pillarMap, null);
+  }
+
+  public Optional<AssessmentMatrix> update(String id, String name, String description, String tenantId, String performanceCycleId,
+                                           Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
     Optional<AssessmentMatrix> optionalAssessmentMatrix = findById(id);
     if (optionalAssessmentMatrix.isPresent()) {
       AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.get();
@@ -73,6 +85,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
       assessmentMatrix.setTenantId(tenantId);
       assessmentMatrix.setPerformanceCycleId(performanceCycle.orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId());
       assessmentMatrix.setPillarMap(pillarMap);
+      assessmentMatrix.setConfiguration(configuration);
       return super.update(assessmentMatrix);
     } else {
       return Optional.empty();
@@ -124,14 +137,38 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return getRepository().findById(matrixId);
   }
 
+  /**
+   * Creates a default assessment configuration with RANDOM navigation mode
+   * and standard settings for new assessments.
+   */
+  public AssessmentConfiguration createDefaultConfiguration() {
+    return AssessmentConfiguration.builder()
+        .allowQuestionReview(true)
+        .requireAllQuestions(true)
+        .autoSave(true)
+        .navigationMode(QuestionNavigationType.RANDOM)
+        .build();
+  }
+
+  /**
+   * Gets the configuration for an assessment matrix, returning default if null
+   */
+  public AssessmentConfiguration getEffectiveConfiguration(AssessmentMatrix assessmentMatrix) {
+    return assessmentMatrix.getConfiguration() != null
+        ? assessmentMatrix.getConfiguration()
+        : createDefaultConfiguration();
+  }
+
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
-                                                  Map<String, Pillar> pillarMap) {
+                                                  Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
     return AssessmentMatrix.builder()
         .name(name)
         .description(StringUtils.defaultIfBlank(description, DEFAULT_WHEN_NULL))
         .tenantId(tenantId)
         .performanceCycleId(getPerformanceCycle(performanceCycleId).orElseThrow(() -> new InvalidIdReferenceException(performanceCycleId, "AssessmentMatrix", "PerformanceCycle")).getId())
-        .pillarMap(pillarMap).build();
+        .pillarMap(pillarMap)
+        .configuration(configuration)
+        .build();
   }
 
   private Optional<PerformanceCycle> getPerformanceCycle(String performanceCycleId) {

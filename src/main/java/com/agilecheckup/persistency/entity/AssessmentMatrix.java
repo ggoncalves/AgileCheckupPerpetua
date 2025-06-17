@@ -4,7 +4,13 @@ import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Map;
@@ -31,5 +37,8 @@ public class AssessmentMatrix extends TenantDescribableEntity {
 
   @DynamoDBAttribute(attributeName = "potentialScore")
   private PotentialScore potentialScore;
+
+  @DynamoDBAttribute(attributeName = "configuration")
+  private AssessmentConfiguration configuration;
 
 }
