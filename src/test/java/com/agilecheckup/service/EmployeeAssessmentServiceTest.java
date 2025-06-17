@@ -17,11 +17,12 @@ import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
+import com.agilecheckup.service.dto.EmployeeValidationRequest;
+import com.agilecheckup.service.dto.EmployeeValidationResponse;
+import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.ValidationException;
-import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +54,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -165,8 +165,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     EmployeeAssessment createdEmployeeAssessment = employeeAssessmentOptional.get();
     assertEquals(savedEmployeeAssessment.getEmployee().getName(), createdEmployeeAssessment.getEmployee().getName());
     assertEquals(savedEmployeeAssessment.getEmployee().getEmail(), createdEmployeeAssessment.getEmployee().getEmail());
-    assertEquals(null, createdEmployeeAssessment.getEmployee().getGender());
-    assertEquals(null, createdEmployeeAssessment.getEmployee().getGenderPronoun());
+    assertThat(createdEmployeeAssessment.getEmployee().getGender()).isNull();
+    assertThat(createdEmployeeAssessment.getEmployee().getGenderPronoun()).isNull();
     verify(employeeAssessmentRepository).save(any(EmployeeAssessment.class)); // Use any() here as the NaturalPerson inside will be different due to nulls
     verify(assessmentMatrixService).findById(originalEmployeeAssessment.getAssessmentMatrixId());
     verify(teamService).findById(originalEmployeeAssessment.getTeamId());
@@ -593,8 +593,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     // Verify the fields of the employee within the result
     assertEquals("Updated Employee Name", resultEmployeeAssessment.getEmployee().getName());
     assertEquals("name@company.com", resultEmployeeAssessment.getEmployee().getEmail());
-    assertEquals(null, resultEmployeeAssessment.getEmployee().getGender());
-    assertEquals(null, resultEmployeeAssessment.getEmployee().getGenderPronoun());
+    assertThat(resultEmployeeAssessment.getEmployee().getGender()).isNull();
+    assertThat(resultEmployeeAssessment.getEmployee().getGenderPronoun()).isNull();
 
     // Verify interactions
     verify(employeeAssessmentService).findById(DEFAULT_ID);
@@ -1097,5 +1097,168 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     assertThat(result.get(0).getId()).isEqualTo("id1");
     assertThat(result.get(1).getId()).isEqualTo("id2");
     assertThat(result.get(2).getId()).isEqualTo("id3");
+  }
+
+  @Test
+  void validateEmployee_whenEmployeeNotFound_shouldReturnErrorResponse() {
+    // Given
+    String email = "notfound@example.com";
+    String assessmentMatrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+        .email(email)
+        .assessmentMatrixId(assessmentMatrixId)
+        .tenantId(tenantId)
+        .build();
+
+    // Mock empty list (no assessments found)
+    doReturn(new LinkedList<>()).when(employeeAssessmentService).findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+    // When
+    EmployeeValidationResponse response = employeeAssessmentService.validateEmployee(request);
+
+    // Then
+    assertThat(response.getStatus()).isEqualTo("ERROR");
+    assertThat(response.getMessage()).contains("couldn't find your assessment invitation");
+    assertThat(response.getEmployeeAssessmentId()).isNull();
+    assertThat(response.getName()).isNull();
+    assertThat(response.getAssessmentStatus()).isNull();
+  }
+
+  @Test
+  void validateEmployee_whenStatusInvited_shouldUpdateToConfirmed() {
+    // Given
+    String email = "john@example.com";
+    String assessmentMatrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    EmployeeAssessment assessment = createMockedEmployeeAssessment("ea123", "John Doe", assessmentMatrixId);
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+    assessment.getEmployee().setEmail(email);
+
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+        .email(email)
+        .assessmentMatrixId(assessmentMatrixId)
+        .tenantId(tenantId)
+        .build();
+
+    // Mock finding the assessment
+    doReturn(Arrays.asList(assessment)).when(employeeAssessmentService)
+        .findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+    // When
+    EmployeeValidationResponse response = employeeAssessmentService.validateEmployee(request);
+
+    // Then
+    assertThat(response.getStatus()).isEqualTo("SUCCESS");
+    assertThat(response.getMessage()).contains("Welcome! Your assessment access has been confirmed");
+    assertThat(response.getEmployeeAssessmentId()).isEqualTo("ea123");
+    assertThat(response.getName()).isEqualTo("John Doe");
+    assertThat(response.getAssessmentStatus()).isEqualTo("CONFIRMED");
+
+    // Verify status was updated
+    assertThat(assessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.CONFIRMED);
+    verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void validateEmployee_whenStatusInProgress_shouldReturnInfoResponse() {
+    // Given
+    String email = "john@example.com";
+    String assessmentMatrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    EmployeeAssessment assessment = createMockedEmployeeAssessment("ea123", "John Doe", assessmentMatrixId);
+    assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    assessment.getEmployee().setEmail(email);
+
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+        .email(email)
+        .assessmentMatrixId(assessmentMatrixId)
+        .tenantId(tenantId)
+        .build();
+
+    // Mock finding the assessment
+    doReturn(Arrays.asList(assessment)).when(employeeAssessmentService)
+        .findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+    // When
+    EmployeeValidationResponse response = employeeAssessmentService.validateEmployee(request);
+
+    // Then
+    assertThat(response.getStatus()).isEqualTo("INFO");
+    assertThat(response.getMessage()).contains("Welcome back! You can continue your assessment");
+    assertThat(response.getEmployeeAssessmentId()).isEqualTo("ea123");
+    assertThat(response.getName()).isEqualTo("John Doe");
+    assertThat(response.getAssessmentStatus()).isEqualTo("IN_PROGRESS");
+
+    // Verify status was NOT updated
+    verify(employeeAssessmentRepository, never()).save(any(EmployeeAssessment.class));
+  }
+
+  @Test
+  void validateEmployee_whenStatusCompleted_shouldReturnInfoResponse() {
+    // Given
+    String email = "john@example.com";
+    String assessmentMatrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    EmployeeAssessment assessment = createMockedEmployeeAssessment("ea123", "John Doe", assessmentMatrixId);
+    assessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+    assessment.getEmployee().setEmail(email);
+
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+        .email(email)
+        .assessmentMatrixId(assessmentMatrixId)
+        .tenantId(tenantId)
+        .build();
+
+    // Mock finding the assessment
+    doReturn(Arrays.asList(assessment)).when(employeeAssessmentService)
+        .findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+    // When
+    EmployeeValidationResponse response = employeeAssessmentService.validateEmployee(request);
+
+    // Then
+    assertThat(response.getStatus()).isEqualTo("INFO");
+    assertThat(response.getMessage()).contains("You have already completed this assessment");
+    assertThat(response.getEmployeeAssessmentId()).isEqualTo("ea123");
+    assertThat(response.getName()).isEqualTo("John Doe");
+    assertThat(response.getAssessmentStatus()).isEqualTo("COMPLETED");
+
+    // Verify status was NOT updated
+    verify(employeeAssessmentRepository, never()).save(any(EmployeeAssessment.class));
+  }
+
+  @Test
+  void validateEmployee_caseInsensitiveEmailMatch_shouldFindEmployee() {
+    // Given
+    String emailInput = "JOHN@EXAMPLE.COM";
+    String emailStored = "john@example.com";
+    String assessmentMatrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    EmployeeAssessment assessment = createMockedEmployeeAssessment("ea123", "John Doe", assessmentMatrixId);
+    assessment.setAssessmentStatus(AssessmentStatus.INVITED);
+    assessment.getEmployee().setEmail(emailStored);
+
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+        .email(emailInput)
+        .assessmentMatrixId(assessmentMatrixId)
+        .tenantId(tenantId)
+        .build();
+
+    // Mock finding the assessment
+    doReturn(Arrays.asList(assessment)).when(employeeAssessmentService)
+        .findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+    // When
+    EmployeeValidationResponse response = employeeAssessmentService.validateEmployee(request);
+
+    // Then
+    assertThat(response.getStatus()).isEqualTo("SUCCESS");
+    assertThat(response.getEmployeeAssessmentId()).isEqualTo("ea123");
   }
 }
