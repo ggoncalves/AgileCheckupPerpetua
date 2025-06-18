@@ -25,4 +25,6 @@ public interface ServiceComponent {
   EmployeeAssessmentService buildEmployeeAssessmentService();
 
   AnswerService buildAnswerService();
+  
+  AssessmentNavigationService buildAssessmentNavigationService();
 }

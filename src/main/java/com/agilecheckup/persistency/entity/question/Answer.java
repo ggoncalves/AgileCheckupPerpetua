@@ -21,6 +21,7 @@ public class Answer extends TenantableEntity {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "employeeAssessmentId")
+  @DynamoDBIndexHashKey(globalSecondaryIndexName = "employeeAssessmentId-tenantId-index", attributeName = "employeeAssessmentId")
   private String employeeAssessmentId;
 
   @NonNull
@@ -68,6 +69,16 @@ public class Answer extends TenantableEntity {
 
   @DynamoDBAttribute(attributeName = "notes")
   private String notes;
+
+  /**
+   * Override tenantId to add it as range key for employeeAssessmentId-tenantId-index GSI.
+   * This enables efficient querying by both employeeAssessmentId and tenantId.
+   */
+  @Override
+  @DynamoDBIndexRangeKey(globalSecondaryIndexName = "employeeAssessmentId-tenantId-index", attributeName = "tenantId")
+  public String getTenantId() {
+    return super.getTenantId();
+  }
 
   public static class LocalDateTimeConverter implements DynamoDBTypeConverter<String, LocalDateTime> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;

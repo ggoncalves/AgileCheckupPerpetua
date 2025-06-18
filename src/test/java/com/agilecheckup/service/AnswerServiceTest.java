@@ -1,5 +1,7 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Answer;
@@ -21,6 +23,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.EMPLOYEE_NAME_JOHN;
@@ -33,7 +37,9 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +57,9 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
 
   @Mock
   private AnswerRepository answerRepository;
+  
+  @Mock
+  private AssessmentMatrixService assessmentMatrixService;
 
   private static final LocalDateTime NOW_DATE_TIME = LocalDateTime.now();
   private static final LocalDateTime FUTURE_DATE_TIME_59_MINUTES = LocalDateTime.now().plusMinutes(59);
@@ -67,7 +76,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
 
   @AfterEach
   void afterEach() {
-    Mockito.reset(questionService, answerService, questionService, employeeAssessmentService);
+    Mockito.reset(questionService, answerService, questionService, employeeAssessmentService, assessmentMatrixService);
   }
 
   @Test
@@ -263,11 +272,22 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     answer.setPendingReview(pendingReview);
     Answer savedAnswer = cloneWithId(answer, DEFAULT_ID);
 
+    // Mock AssessmentMatrix for status completion check
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(employeeAssessment.getAssessmentMatrixId())
+        .tenantId("tenant123")
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20)
+        .build();
+
     // Prevent/Stub
 //    doReturn(savedAnswer).when(answerRepository).save(any());
     doAnswerForSaveWithRandomEntityId(savedAnswer, answerRepository);
     doReturn(Optional.of(question)).when(questionService).findById(answer.getQuestionId());
-    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
+    lenient().doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
+    lenient().doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(employeeAssessment.getAssessmentMatrixId());
 
     // When
     Optional<Answer> optionalAnswer = answerService.create(
@@ -290,7 +310,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         answer.getTenantId(),
         answer.getNotes());
 
-    verify(employeeAssessmentService).findById(answer.getEmployeeAssessmentId());
+    verify(employeeAssessmentService, atLeastOnce()).findById(answer.getEmployeeAssessmentId());
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(answer.getEmployeeAssessmentId());
     verify(questionService).findById(answer.getQuestionId());
   }
@@ -337,10 +357,22 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     updatedAnswer.setScore(5.0);
     updatedAnswer.setNotes("Updated notes");
 
+    // Mock AssessmentMatrix for status completion check
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(employeeAssessment.getAssessmentMatrixId())
+        .tenantId("tenant123")
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20)
+        .build();
+
     // Mock repository calls
     doReturn(existingAnswer).when(answerRepository).findById(DEFAULT_ID);
     doAnswerForUpdate(updatedAnswer, answerRepository);
     doReturn(Optional.of(question)).when(questionService).findById(question.getId());
+    lenient().doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(existingAnswer.getEmployeeAssessmentId());
+    lenient().doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(employeeAssessment.getAssessmentMatrixId());
 
     // When
     Optional<Answer> resultOptional = answerService.update(DEFAULT_ID,
@@ -361,6 +393,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         "Updated notes"
     );
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(updatedAnswer.getEmployeeAssessmentId());
+    verify(employeeAssessmentService, atLeastOnce()).findById(updatedAnswer.getEmployeeAssessmentId());
   }
 
   @Test
@@ -387,5 +420,64 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
         "5",
         "Updated notes"
     );
+  }
+
+  @Test
+  void findByEmployeeAssessmentId_shouldReturnAnswers() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String tenantId = "tenant123";
+    Question question1 = createMockedQuestion("q1", QuestionType.YES_NO);
+    Question question2 = createMockedQuestion("q2", QuestionType.ONE_TO_TEN);
+    List<Answer> expectedAnswers = Arrays.asList(
+        createMockedAnswer("answer1", employeeAssessmentId, question1, QuestionType.YES_NO, NOW_DATE_TIME, "Yes", 5.0),
+        createMockedAnswer("answer2", employeeAssessmentId, question2, QuestionType.ONE_TO_TEN, NOW_DATE_TIME, "8", 8.0)
+    );
+    
+    // Mock repository call
+    doReturn(expectedAnswers).when(answerRepository).findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
+    
+    // When
+    List<Answer> actualAnswers = answerService.findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
+    
+    // Then
+    assertEquals(expectedAnswers, actualAnswers);
+    verify(answerRepository).findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
+  }
+
+  @Test
+  void postCreate_shouldUpdateAssessmentStatusToCompleted() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String assessmentMatrixId = "am123";
+    Question question = createMockedQuestion("q123", QuestionType.YES_NO);
+    Answer savedAnswer = createMockedAnswer("answer123", employeeAssessmentId, question, QuestionType.YES_NO, NOW_DATE_TIME, "Yes", 5.0);
+    
+    EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
+    employeeAssessment.setAnsweredQuestionCount(20);
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(assessmentMatrixId)
+        .tenantId("tenant123")
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20)
+        .build();
+    
+    // Mock service calls
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+    
+    // When
+    answerService.postCreate(savedAnswer);
+    
+    // Then
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
+    verify(employeeAssessmentService).findById(employeeAssessmentId);
+    verify(assessmentMatrixService).findById(assessmentMatrixId);
+    verify(employeeAssessmentService).save(employeeAssessment);
+    assertEquals(AssessmentStatus.COMPLETED, employeeAssessment.getAssessmentStatus());
   }
 }
