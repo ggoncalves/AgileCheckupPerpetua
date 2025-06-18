@@ -1,5 +1,7 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Answer;
@@ -16,7 +18,10 @@ import lombok.NonNull;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepository<Answer>> {
 
@@ -25,12 +30,16 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
   private final QuestionService questionService;
 
   private final AnswerRepository answerRepository;
+  
+  private final AssessmentMatrixService assessmentMatrixService;
 
   @Inject
-  public AnswerService(AnswerRepository answerRepository, EmployeeAssessmentService employeeAssessmentService, QuestionService questionService) {
+  public AnswerService(AnswerRepository answerRepository, EmployeeAssessmentService employeeAssessmentService, 
+                       QuestionService questionService, AssessmentMatrixService assessmentMatrixService) {
     this.answerRepository = answerRepository;
     this.employeeAssessmentService = employeeAssessmentService;
     this.questionService = questionService;
+    this.assessmentMatrixService = assessmentMatrixService;
   }
 
   public Optional<Answer> create(@NonNull String employeeAssessmentId, @NonNull String questionId,
@@ -63,12 +72,29 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
   @Override
   public void postCreate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+    checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
   }
 
   // TODO: It can also trigger an event to start another lambda to actually update and notify HR
   @Override
   public void postUpdate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+    checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
+  }
+  
+  private void checkAndUpdateAssessmentStatus(String employeeAssessmentId) {
+    EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
+    AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(employeeAssessment.getAssessmentMatrixId());
+    
+    if (employeeAssessment.getAnsweredQuestionCount() >= assessmentMatrix.getQuestionCount()) {
+      employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+      employeeAssessmentService.save(employeeAssessment);
+    }
+  }
+  
+  private AssessmentMatrix getAssessmentMatrixById(String assessmentMatrixId) {
+    Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
+    return assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
   }
 
   private Answer internalCreateAnswer(@NonNull String employeeAssessmentId, @NonNull String questionId,
@@ -117,4 +143,22 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     Optional<EmployeeAssessment> employeeAssessment = employeeAssessmentService.findById(employeeAssessmentId);
     return employeeAssessment.orElseThrow(() -> new InvalidIdReferenceException(employeeAssessmentId, getClass().getName(), "EmployeeAssessment"));
   }
+
+  public List<Answer> findByEmployeeAssessmentId(@NonNull String employeeAssessmentId, @NonNull String tenantId) {
+    return answerRepository.findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
+  }
+
+  /**
+   * Efficiently retrieves only the question IDs that have been answered for an employee assessment.
+   * Performance optimized: Returns only IDs instead of full Answer objects to reduce memory usage
+   * and network transfer when checking completion status.
+   * 
+   * @param employeeAssessmentId The employee assessment ID
+   * @param tenantId The tenant ID for data isolation
+   * @return Set of question IDs that have been answered
+   */
+  public Set<String> findAnsweredQuestionIds(@NonNull String employeeAssessmentId, @NonNull String tenantId) {
+    return answerRepository.findAnsweredQuestionIds(employeeAssessmentId, tenantId);
+  }
+
 }
