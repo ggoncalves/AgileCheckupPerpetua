@@ -44,7 +44,17 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
   public Optional<Answer> create(@NonNull String employeeAssessmentId, @NonNull String questionId,
                                  @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId,
                                  String notes) {
-    return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes));
+    // Check for existing answer to prevent duplicates
+    Optional<Answer> existingAnswer = answerRepository.findByEmployeeAssessmentIdAndQuestionId(
+        employeeAssessmentId, questionId, tenantId);
+    
+    if (existingAnswer.isPresent()) {
+      // Update existing answer instead of creating duplicate
+      return updateExistingAnswer(existingAnswer.get(), answeredAt, value, notes);
+    } else {
+      // Create new answer
+      return super.create(internalCreateAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes));
+    }
   }
 
   public Optional<Answer> update(@NonNull String id, @NonNull LocalDateTime answeredAt, @NonNull String value,
@@ -65,6 +75,33 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     } else {
       return Optional.empty();
     }
+  }
+
+  /**
+   * Updates an existing answer when duplicate prevention is triggered.
+   * This method is called when a create operation detects an existing answer
+   * for the same employeeAssessmentId + questionId combination.
+   * 
+   * @param existingAnswer The existing answer to update
+   * @param answeredAt The new timestamp
+   * @param value The new value
+   * @param notes The new notes
+   * @return Optional containing the updated answer
+   */
+  private Optional<Answer> updateExistingAnswer(@NonNull Answer existingAnswer, @NonNull LocalDateTime answeredAt, 
+                                               @NonNull String value, String notes) {
+    validateAnsweredAt(answeredAt);
+    Question question = getQuestionById(existingAnswer.getQuestionId());
+    AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
+    answerStrategy.assignValue(value);
+    AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
+    
+    existingAnswer.setAnsweredAt(answeredAt);
+    existingAnswer.setValue(answerStrategy.valueToString());
+    existingAnswer.setScore(scoreCalculator.getCalculatedScore());
+    existingAnswer.setNotes(notes);
+    
+    return super.update(existingAnswer);
   }
 
   // TODO: It can also trigger an event to start another lambda to actually update and notify HR
