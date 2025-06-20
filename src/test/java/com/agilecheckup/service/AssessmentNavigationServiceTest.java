@@ -29,11 +29,10 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedAnswer;
 import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -220,6 +219,121 @@ class AssessmentNavigationServiceTest {
     assertNotNull(response.getQuestion());
     // existingAnswer should always be null as documented in AnswerWithProgressResponse
     assertNull(response.getExistingAnswer());
+  }
+
+  @Test
+  void saveAnswerAndGetNext_shouldSaveAnswerAndReturnNextQuestion() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String questionId = "q1";
+    String tenantId = "tenant123";
+    String value = "Yes";
+    String notes = "Test notes";
+    LocalDateTime answeredAt = LocalDateTime.now();
+
+    Answer savedAnswer = createAnswerForQuestion(questionId, employeeAssessmentId);
+    List<Question> remainingQuestions = Arrays.asList(question2, question3);
+
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    employeeAssessment.setAnsweredQuestionCount(1);
+
+    // Mock the answer creation
+    doReturn(Optional.of(savedAnswer)).when(answerService).create(
+        eq(employeeAssessmentId), eq(questionId), eq(answeredAt), eq(value), eq(tenantId), eq(notes)
+                                                                 );
+
+    // Mock the navigation service calls for getting next question
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrix.getId());
+    doReturn(configuration).when(assessmentMatrixService).getEffectiveConfiguration(assessmentMatrix);
+    doReturn(remainingQuestions).when(questionService).findByAssessmentMatrixId(assessmentMatrix.getId(), tenantId);
+    doReturn(Set.of("q1")).when(answerService).findAnsweredQuestionIds(employeeAssessmentId, tenantId);
+
+    // When
+    AnswerWithProgressResponse response = assessmentNavigationService.saveAnswerAndGetNext(
+        employeeAssessmentId, questionId, answeredAt, value, tenantId, notes
+                                                                                          );
+
+    // Then
+    assertNotNull(response);
+    assertNotNull(response.getQuestion());
+    assertTrue(Arrays.asList("q2", "q3").contains(response.getQuestion().getId()));
+    assertEquals(Integer.valueOf(1), response.getCurrentProgress());
+    assertEquals(Integer.valueOf(3), response.getTotalQuestions());
+
+    // Verify that answer was saved
+    verify(answerService).create(eq(employeeAssessmentId), eq(questionId), eq(answeredAt), eq(value), eq(tenantId), eq(notes));
+  }
+
+  @Test
+  void saveAnswerAndGetNext_failedToSaveAnswer_shouldThrowException() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String questionId = "q1";
+    String tenantId = "tenant123";
+    String value = "Yes";
+    String notes = "Test notes";
+    LocalDateTime answeredAt = LocalDateTime.now();
+
+    // Mock answer creation failure
+    doReturn(Optional.empty()).when(answerService).create(
+        eq(employeeAssessmentId), eq(questionId), eq(answeredAt), eq(value), eq(tenantId), eq(notes)
+                                                         );
+
+    // When & Then
+    RuntimeException exception = org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () ->
+        assessmentNavigationService.saveAnswerAndGetNext(
+          employeeAssessmentId, questionId, answeredAt, value, tenantId, notes
+        )
+    );
+
+    assertEquals("Failed to save answer", exception.getMessage());
+  }
+
+  @Test
+  void saveAnswerAndGetNext_lastQuestion_shouldReturnNullQuestion() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String questionId = "q3";
+    String tenantId = "tenant123";
+    String value = "Yes";
+    String notes = "Test notes";
+    LocalDateTime answeredAt = LocalDateTime.now();
+
+    Answer savedAnswer = createAnswerForQuestion(questionId, employeeAssessmentId);
+
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    employeeAssessment.setAnsweredQuestionCount(3);
+
+    // Mock the answer creation
+    doReturn(Optional.of(savedAnswer)).when(answerService).create(
+        eq(employeeAssessmentId), eq(questionId), eq(answeredAt), eq(value), eq(tenantId), eq(notes)
+                                                                 );
+
+    // Mock all questions answered
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrix.getId());
+    doReturn(Arrays.asList(question1, question2, question3)).when(questionService)
+        .findByAssessmentMatrixId(assessmentMatrix.getId(), tenantId);
+    doReturn(Set.of("q1", "q2", "q3")).when(answerService).findAnsweredQuestionIds(employeeAssessmentId, tenantId);
+
+    // When
+    AnswerWithProgressResponse response = assessmentNavigationService.saveAnswerAndGetNext(
+        employeeAssessmentId, questionId, answeredAt, value, tenantId, notes
+                                                                                          );
+
+    // Then
+    assertNotNull(response);
+    assertNull(response.getQuestion()); // Should be null when assessment is completed
+    assertEquals(Integer.valueOf(3), response.getCurrentProgress());
+    assertEquals(Integer.valueOf(3), response.getTotalQuestions());
+
+    // Verify that answer was saved
+    verify(answerService).create(eq(employeeAssessmentId), eq(questionId), eq(answeredAt), eq(value), eq(tenantId), eq(notes));
+
+    // Verify assessment status updated to COMPLETED
+    assertEquals(AssessmentStatus.COMPLETED, employeeAssessment.getAssessmentStatus());
+    verify(employeeAssessmentService).save(employeeAssessment);
   }
 
   private Answer createAnswerForQuestion(String questionId, String employeeAssessmentId) {

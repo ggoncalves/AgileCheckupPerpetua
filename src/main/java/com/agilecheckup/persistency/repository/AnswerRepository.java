@@ -83,4 +83,33 @@ public class AnswerRepository extends AbstractCrudRepository<Answer> {
         .map(Answer::getQuestionId)
         .collect(Collectors.toSet());
   }
+
+  /**
+   * Finds an existing answer for a specific question within an employee assessment.
+   * Used for duplicate prevention: ensures only one answer per question per employee assessment.
+   * Performance optimized: Uses GSI query followed by stream filtering for precise matching.
+   * 
+   * @param employeeAssessmentId The employee assessment ID
+   * @param questionId The question ID to check for existing answer
+   * @param tenantId The tenant ID for data isolation
+   * @return Optional containing existing answer if found, empty otherwise
+   */
+  public java.util.Optional<Answer> findByEmployeeAssessmentIdAndQuestionId(String employeeAssessmentId, String questionId, String tenantId) {
+    // Create key object for GSI query without triggering @NonNull validations
+    Answer keyObject = new Answer();
+    keyObject.setEmployeeAssessmentId(employeeAssessmentId);
+    keyObject.setTenantId(tenantId);
+
+    DynamoDBQueryExpression<Answer> queryExpression = new DynamoDBQueryExpression<Answer>()
+        .withIndexName("employeeAssessmentId-tenantId-index")
+        .withConsistentRead(false) // GSI queries are eventually consistent
+        .withHashKeyValues(keyObject);
+
+    List<Answer> answers = getDynamoDBMapper().query(Answer.class, queryExpression);
+    
+    // Filter by questionId to find the specific answer
+    return answers.stream()
+        .filter(answer -> questionId.equals(answer.getQuestionId()))
+        .findFirst();
+  }
 }

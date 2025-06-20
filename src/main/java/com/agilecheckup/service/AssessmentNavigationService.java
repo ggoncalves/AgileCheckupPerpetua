@@ -12,6 +12,7 @@ import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import lombok.NonNull;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -176,5 +177,34 @@ public class AssessmentNavigationService {
   private AssessmentMatrix getAssessmentMatrixById(String assessmentMatrixId) {
     Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
     return assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
+  }
+
+  /**
+   * Saves an answer and returns the next unanswered question in a single atomic operation.
+   * This method combines answer persistence with navigation logic to optimize the assessment flow.
+   *
+   * @param employeeAssessmentId The employee assessment ID
+   * @param questionId           The ID of the question being answered
+   * @param answeredAt           The timestamp when the answer was provided
+   * @param value                The answer value
+   * @param tenantId             The tenant ID for data isolation
+   * @param notes                Optional notes for the answer
+   * @return AnswerWithProgressResponse containing the saved answer and next question with progress
+   */
+  public AnswerWithProgressResponse saveAnswerAndGetNext(@NonNull String employeeAssessmentId,
+                                                         @NonNull String questionId,
+                                                         @NonNull LocalDateTime answeredAt,
+                                                         @NonNull String value,
+                                                         @NonNull String tenantId,
+                                                         String notes) {
+    // Save the answer first
+    Optional<Answer> savedAnswer = answerService.create(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes);
+
+    if (savedAnswer.isEmpty()) {
+      throw new RuntimeException("Failed to save answer");
+    }
+
+    // Get the next unanswered question with progress
+    return getNextUnansweredQuestion(employeeAssessmentId, tenantId);
   }
 }

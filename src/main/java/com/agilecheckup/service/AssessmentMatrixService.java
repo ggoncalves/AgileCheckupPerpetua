@@ -137,6 +137,18 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return getRepository().findById(matrixId);
   }
 
+  public AssessmentMatrix decrementQuestionCount(String matrixId) {
+    assessmentMatrixRepository.performLocked(matrixId, () -> {
+      AssessmentMatrix matrix = getRepository().findById(matrixId);
+      if (matrix != null) {
+        int currentCount = matrix.getQuestionCount();
+        matrix.setQuestionCount(Math.max(0, currentCount - 1));
+        getRepository().save(matrix);
+      }
+    });
+    return getRepository().findById(matrixId);
+  }
+
   /**
    * Creates a default assessment configuration with RANDOM navigation mode
    * and standard settings for new assessments.
