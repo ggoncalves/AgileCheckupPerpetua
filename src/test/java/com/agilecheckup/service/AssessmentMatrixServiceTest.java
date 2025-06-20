@@ -191,6 +191,53 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   }
 
   @Test
+  void shouldDecrementQuestionCount() {
+    String assessmentMatrixId = "matrixId";
+    originalAssessmentMatrix.setQuestionCount(5);
+    mockFindById(assessmentMatrixId, originalAssessmentMatrix);
+    mockPerformLockedAsSynchronous();
+
+    assessmentMatrixService.decrementQuestionCount(assessmentMatrixId);
+
+    assertQuestionCountDecremented();
+    verifyRepositoryInteractions(assessmentMatrixId);
+  }
+
+  @Test
+  void shouldDecrementQuestionCountToZero() {
+    String assessmentMatrixId = "matrixId";
+    originalAssessmentMatrix.setQuestionCount(1);
+    mockFindById(assessmentMatrixId, originalAssessmentMatrix);
+    mockPerformLockedAsSynchronous();
+
+    assessmentMatrixService.decrementQuestionCount(assessmentMatrixId);
+
+    assertEquals(0, originalAssessmentMatrix.getQuestionCount());
+    verifyRepositoryInteractions(assessmentMatrixId);
+  }
+
+  @Test
+  void shouldNotDecrementBelowZero() {
+    String assessmentMatrixId = "matrixId";
+    originalAssessmentMatrix.setQuestionCount(0);
+    mockFindById(assessmentMatrixId, originalAssessmentMatrix);
+    mockPerformLockedAsSynchronous();
+
+    assessmentMatrixService.decrementQuestionCount(assessmentMatrixId);
+
+    assertEquals(0, originalAssessmentMatrix.getQuestionCount());
+    verifyRepositoryInteractions(assessmentMatrixId);
+  }
+
+  @Test
+  void shouldNotDecrementQuestionCount() {
+    String assessmentMatrixId = "matrixId";
+    doReturn(null).when(mockAssessmentMatrixRepository).findById(assessmentMatrixId);
+    assessmentMatrixService.decrementQuestionCount(assessmentMatrixId);
+    verify(mockAssessmentMatrixRepository, never()).save(any());
+  }
+
+  @Test
   void shouldSumAllOptionsOnMultipleChoiceCustomQuestion() {
     // sum is 70
     Question question = createMockedCustomQuestion("questionId1", true, 10d, 10d, 20d, 10d, 20d);
@@ -298,6 +345,10 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
 
   private void assertQuestionCountIncremented() {
     assertEquals(1, originalAssessmentMatrix.getQuestionCount());
+  }
+
+  private void assertQuestionCountDecremented() {
+    assertEquals(4, originalAssessmentMatrix.getQuestionCount());
   }
 
   private void verifyRepositoryInteractions(String matrixId) {

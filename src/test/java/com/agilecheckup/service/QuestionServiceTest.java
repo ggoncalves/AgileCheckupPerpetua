@@ -507,6 +507,31 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
     verify(questionRepository).findAllByTenantId(tenantId);
   }
 
+  @Test
+  void delete_shouldDecrementQuestionCount() {
+    // Given
+    Question questionToDelete = createMockedQuestion();
+    questionToDelete.setAssessmentMatrixId("matrix-123");
+
+    // When
+    questionService.delete(questionToDelete);
+
+    // Then
+    verify(questionRepository).delete(questionToDelete);
+    verify(assessmentMatrixService).decrementQuestionCount("matrix-123");
+  }
+
+  @Test
+  void delete_withNullQuestion_shouldNotDecrementQuestionCount() {
+    // When
+    questionService.delete(null);
+
+    // Then
+    verify(questionRepository).delete(null);
+    verify(assessmentMatrixService, org.mockito.Mockito.never()).decrementQuestionCount(org.mockito.ArgumentMatchers.anyString());
+  }
+
+
 
   private Question createUpdatedQuestionOptionList(boolean updatedIsMultipleChoice, boolean updatedIsFlushed, List<QuestionOption> updatedOptions) {
     Question updatedQuestion = createMockedCustomQuestion(CATEGORY_ID_1);

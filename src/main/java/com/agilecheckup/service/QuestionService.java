@@ -264,6 +264,14 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   }
 
   @Override
+  public void delete(Question question) {
+    super.delete(question);
+    if (question != null && question.getAssessmentMatrixId() != null) {
+      assessmentMatrixService.decrementQuestionCount(question.getAssessmentMatrixId());
+    }
+  }
+
+  @Override
   AbstractCrudRepository<Question> getRepository() {
     return questionRepository;
   }
