@@ -123,8 +123,14 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(employeeAssessment.getAssessmentMatrixId());
     
     if (employeeAssessment.getAnsweredQuestionCount() >= assessmentMatrix.getQuestionCount()) {
+      AssessmentStatus previousStatus = employeeAssessment.getAssessmentStatus();
       employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
       employeeAssessmentService.save(employeeAssessment);
+      
+      // Automatically calculate score when assessment becomes COMPLETED
+      if (previousStatus != AssessmentStatus.COMPLETED) {
+        employeeAssessmentService.updateEmployeeAssessmentScore(employeeAssessmentId, employeeAssessment.getTenantId());
+      }
     }
   }
   
