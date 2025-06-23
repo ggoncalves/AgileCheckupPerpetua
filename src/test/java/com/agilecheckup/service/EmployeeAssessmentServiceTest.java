@@ -54,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -286,8 +287,10 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     employeeAssessmentService.incrementAnsweredQuestionCount(employeeAssessmentId);
 
     assertEquals(1, originalEmployeeAssessment.getAnsweredQuestionCount());
-    verify(employeeAssessmentRepository).findById(employeeAssessmentId);
-    verify(employeeAssessmentRepository).save(originalEmployeeAssessment);
+    // Verify that findById is called at least once (could be twice due to updateLastActivityDate)
+    verify(employeeAssessmentRepository, atLeastOnce()).findById(employeeAssessmentId);
+    // Verify that save is called at least once (could be twice due to updateLastActivityDate)
+    verify(employeeAssessmentRepository, atLeastOnce()).save(originalEmployeeAssessment);
   }
 
   @Test
@@ -656,7 +659,8 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     // Then
     assertEquals(1, assessment.getAnsweredQuestionCount());
     assertEquals(AssessmentStatus.IN_PROGRESS, assessment.getAssessmentStatus());
-    verify(employeeAssessmentRepository).save(assessment);
+    // Verify save is called at least once (could be twice due to status change triggering updateLastActivityDate)
+    verify(employeeAssessmentRepository, atLeastOnce()).save(assessment);
   }
 
   @Test
@@ -1260,5 +1264,57 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     // Then
     assertThat(response.getStatus()).isEqualTo("SUCCESS");
     assertThat(response.getEmployeeAssessmentId()).isEqualTo("ea123");
+  }
+
+  @Test
+  void updateLastActivityDate_shouldUpdateDateForNonCompletedAssessment() {
+    // Given
+    String assessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(assessmentId, "John", assessmentMatrix.getId());
+    assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    assessment.setLastActivityDate(null);
+
+    doReturn(assessment).when(employeeAssessmentRepository).findById(assessmentId);
+
+    // When
+    employeeAssessmentService.updateLastActivityDate(assessmentId);
+
+    // Then
+    assertThat(assessment.getLastActivityDate()).isNotNull();
+    verify(employeeAssessmentRepository).findById(assessmentId);
+    verify(employeeAssessmentRepository).save(assessment);
+  }
+
+  @Test
+  void updateLastActivityDate_shouldNotUpdateDateForCompletedAssessment() {
+    // Given
+    String assessmentId = "test-assessment-id";
+    EmployeeAssessment assessment = createMockedEmployeeAssessment(assessmentId, "John", assessmentMatrix.getId());
+    assessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+    assessment.setLastActivityDate(null);
+
+    doReturn(assessment).when(employeeAssessmentRepository).findById(assessmentId);
+
+    // When
+    employeeAssessmentService.updateLastActivityDate(assessmentId);
+
+    // Then
+    assertThat(assessment.getLastActivityDate()).isNull();
+    verify(employeeAssessmentRepository).findById(assessmentId);
+    verify(employeeAssessmentRepository, never()).save(assessment);
+  }
+
+  @Test
+  void updateLastActivityDate_shouldHandleNonExistentAssessment() {
+    // Given
+    String nonExistentId = "non-existent-id";
+    doReturn(null).when(employeeAssessmentRepository).findById(nonExistentId);
+
+    // When
+    employeeAssessmentService.updateLastActivityDate(nonExistentId);
+
+    // Then
+    verify(employeeAssessmentRepository).findById(nonExistentId);
+    verify(employeeAssessmentRepository, never()).save(any());
   }
 }
