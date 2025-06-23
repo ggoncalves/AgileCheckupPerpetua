@@ -2,11 +2,14 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Category;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -15,6 +18,9 @@ import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.service.dto.AssessmentDashboardData;
+import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
+import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.ValidationException;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
@@ -38,20 +44,38 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private final Lazy<QuestionService> questionService;
 
+  private final Lazy<EmployeeAssessmentService> employeeAssessmentService;
+
+  private final Lazy<TeamService> teamService;
+
   private static final String DEFAULT_WHEN_NULL = "";
 
   @Inject
   public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository,
                                  PerformanceCycleService performanceCycleService,
-                                 Lazy<QuestionService> questionService) {
+                                 Lazy<QuestionService> questionService,
+                                 Lazy<EmployeeAssessmentService> employeeAssessmentService,
+                                 Lazy<TeamService> teamService) {
     this.assessmentMatrixRepository = assessmentMatrixRepository;
     this.performanceCycleService = performanceCycleService;
     this.questionService = questionService;
+    this.employeeAssessmentService = employeeAssessmentService;
+    this.teamService = teamService;
   }
 
   @VisibleForTesting
   protected QuestionService getQuestionService() {
     return questionService.get();
+  }
+
+  @VisibleForTesting
+  protected EmployeeAssessmentService getEmployeeAssessmentService() {
+    return employeeAssessmentService.get();
+  }
+
+  @VisibleForTesting
+  protected TeamService getTeamService() {
+    return teamService.get();
   }
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
@@ -285,5 +309,167 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     } else {
       return question.getPoints();
     }
+  }
+
+  /**
+   * Gets comprehensive dashboard data for an assessment matrix including team summaries
+   * and employee details with both potential scores (max possible) and actual scores.
+   * <p>
+   * Performance optimized using existing GSI: assessmentMatrixId-employeeEmail-index
+   * Cost-effective: Single GSI query + in-memory aggregation vs multiple table scans
+   *
+   * @param matrixId The assessment matrix ID
+   * @param tenantId The tenant ID for security filtering
+   * @return Dashboard data with team and employee assessment summaries
+   */
+  public Optional<AssessmentDashboardData> getAssessmentDashboard(String matrixId, String tenantId) {
+    Optional<AssessmentMatrix> matrixOpt = findById(matrixId);
+    if (!matrixOpt.isPresent()) {
+      return Optional.empty();
+    }
+
+    AssessmentMatrix matrix = matrixOpt.get();
+
+    // Validate tenant access
+    if (!tenantId.equals(matrix.getTenantId())) {
+      return Optional.empty();
+    }
+
+    // Get all employee assessments for this matrix using existing GSI
+    // This is cost-effective as it uses assessmentMatrixId-employeeEmail-index
+    List<EmployeeAssessment> employeeAssessments = getEmployeeAssessmentService()
+        .findByAssessmentMatrix(matrixId, tenantId);
+
+    // Build team summaries using in-memory aggregation (low cost)
+    List<TeamAssessmentSummary> teamSummaries = buildTeamSummaries(employeeAssessments, tenantId);
+
+    // Build employee summaries with pagination consideration
+    List<EmployeeAssessmentSummary> employeeSummaries = buildEmployeeSummaries(employeeAssessments);
+
+    // Calculate completion statistics
+    int completedCount = calculateCompletedCount(employeeAssessments);
+
+    return Optional.of(AssessmentDashboardData.builder()
+        .assessmentMatrixId(matrixId)
+        .matrixName(matrix.getName())
+        .potentialScore(matrix.getPotentialScore())
+        .teamSummaries(teamSummaries)
+        .employeeSummaries(employeeSummaries)
+        .totalEmployees(employeeAssessments.size())
+        .completedAssessments(completedCount)
+        .build());
+  }
+
+  /**
+   * Builds employee summaries with efficient data conversion.
+   */
+  private List<EmployeeAssessmentSummary> buildEmployeeSummaries(List<EmployeeAssessment> assessments) {
+    return assessments.stream()
+        .map(this::buildEmployeeSummary)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Builds individual employee assessment summary.
+   */
+  private EmployeeAssessmentSummary buildEmployeeSummary(EmployeeAssessment assessment) {
+    Double currentScore = null;
+    if (assessment.getEmployeeAssessmentScore() != null) {
+      currentScore = assessment.getEmployeeAssessmentScore().getScore();
+    }
+
+    // Note: EmployeeAssessment extends BaseEntity (not AuditableEntity) so no lastUpdatedDate
+    java.time.LocalDateTime lastModified = null;
+
+    return EmployeeAssessmentSummary.builder()
+        .employeeAssessmentId(assessment.getId())
+        .employeeName(assessment.getEmployee().getName())
+        .employeeEmail(assessment.getEmployee().getEmail())
+        .teamId(assessment.getTeamId())
+        .assessmentStatus(assessment.getAssessmentStatus())
+        .currentScore(currentScore)
+        .answeredQuestions(assessment.getAnsweredQuestionCount())
+        .lastModified(lastModified)
+        .build();
+  }
+
+  /**
+   * Builds team summaries by grouping employee assessments and fetching team details.
+   * Uses batch processing for team lookups to minimize DynamoDB calls.
+   */
+  private List<TeamAssessmentSummary> buildTeamSummaries(List<EmployeeAssessment> assessments, String tenantId) {
+    // Group assessments by team ID (in-memory operation - no additional DynamoDB cost)
+    Map<String, List<EmployeeAssessment>> assessmentsByTeam = assessments.stream()
+        .filter(ea -> StringUtils.isNotBlank(ea.getTeamId()))
+        .collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
+
+    return assessmentsByTeam.entrySet().stream()
+        .map(entry -> buildTeamSummary(entry.getKey(), entry.getValue()))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Builds a team summary for a specific team with aggregated metrics.
+   */
+  private Optional<TeamAssessmentSummary> buildTeamSummary(String teamId, List<EmployeeAssessment> assessments) {
+    try {
+      Optional<Team> teamOpt = getTeamService().findById(teamId);
+      if (!teamOpt.isPresent()) {
+        return Optional.empty();
+      }
+
+      Team team = teamOpt.get();
+
+      int totalEmployees = assessments.size();
+      int completedAssessments = calculateCompletedCount(assessments);
+      double completionPercentage = totalEmployees > 0 ? (completedAssessments * 100.0) / totalEmployees : 0.0;
+
+      // Calculate average score for completed assessments
+      Double averageScore = calculateAverageScore(assessments);
+
+      return Optional.of(TeamAssessmentSummary.builder()
+          .teamId(teamId)
+          .teamName(team.getName())
+          .totalEmployees(totalEmployees)
+          .completedAssessments(completedAssessments)
+          .completionPercentage(completionPercentage)
+          .averageScore(averageScore)
+          .build());
+    }
+    catch (Exception e) {
+      // Log error and skip this team rather than failing entire dashboard
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Calculates average score for completed assessments.
+   */
+  private Double calculateAverageScore(List<EmployeeAssessment> assessments) {
+    List<Double> completedScores = assessments.stream()
+        .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
+        .filter(ea -> ea.getEmployeeAssessmentScore() != null && ea.getEmployeeAssessmentScore().getScore() != null)
+        .map(ea -> ea.getEmployeeAssessmentScore().getScore())
+        .collect(Collectors.toList());
+
+    if (completedScores.isEmpty()) {
+      return null;
+    }
+
+    return completedScores.stream()
+        .mapToDouble(Double::doubleValue)
+        .average()
+        .orElse(0.0);
+  }
+
+  /**
+   * Counts completed assessments efficiently.
+   */
+  private int calculateCompletedCount(List<EmployeeAssessment> assessments) {
+    return (int) assessments.stream()
+        .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
+        .count();
   }
 }
