@@ -2,10 +2,14 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
@@ -13,6 +17,9 @@ import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.service.dto.AssessmentDashboardData;
+import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
+import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +29,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -66,6 +75,12 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   private PerformanceCycleService mockPerformanceCycleService;
 
   private QuestionService mockQuestionService;
+
+  @Mock
+  private EmployeeAssessmentService mockEmployeeAssessmentService;
+
+  @Mock
+  private TeamService mockTeamService;
 
   private AssessmentMatrix originalAssessmentMatrix;
 
@@ -993,6 +1008,276 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     verify(mockAssessmentMatrixRepository).save(existingMatrix);
   }
 
+  @Test
+  void getAssessmentDashboard_whenMatrixNotFound_shouldReturnEmpty() {
+    // Given
+    String matrixId = "nonexistent-matrix";
+    String tenantId = "tenant123";
+
+    doReturn(Optional.empty()).when(assessmentMatrixService).findById(matrixId);
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isEmpty();
+    verify(assessmentMatrixService).findById(matrixId);
+  }
+
+  @Test
+  void getAssessmentDashboard_whenTenantMismatch_shouldReturnEmpty() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+    String differentTenantId = "different-tenant";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(differentTenantId)
+        .name(originalAssessmentMatrix.getName())
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isEmpty();
+    verify(assessmentMatrixService).findById(matrixId);
+  }
+
+  @Test
+  void getAssessmentDashboard_withNoEmployeeAssessments_shouldReturnEmptyData() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+    doReturn(mockEmployeeAssessmentService).when(assessmentMatrixService).getEmployeeAssessmentService();
+    doReturn(new ArrayList<>()).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentDashboardData data = result.get();
+    assertThat(data.getAssessmentMatrixId()).isEqualTo(matrixId);
+    assertThat(data.getMatrixName()).isEqualTo("Test Matrix");
+    assertThat(data.getTeamSummaries()).isEmpty();
+    assertThat(data.getEmployeeSummaries()).isEmpty();
+    assertThat(data.getTotalEmployees()).isEqualTo(0);
+    assertThat(data.getCompletedAssessments()).isEqualTo(0);
+  }
+
+  @Test
+  void getAssessmentDashboard_withMixedAssessmentStatuses_shouldCalculateCorrectly() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    List<EmployeeAssessment> employeeAssessments = createMixedStatusEmployeeAssessments(matrixId, tenantId);
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+    doReturn(mockEmployeeAssessmentService).when(assessmentMatrixService).getEmployeeAssessmentService();
+    doReturn(mockTeamService).when(assessmentMatrixService).getTeamService();
+    doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+
+    // Mock team service calls
+    setupTeamServiceMocks();
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentDashboardData data = result.get();
+
+    assertThat(data.getAssessmentMatrixId()).isEqualTo(matrixId);
+    assertThat(data.getMatrixName()).isEqualTo("Test Matrix");
+    assertThat(data.getTotalEmployees()).isEqualTo(5);
+    assertThat(data.getCompletedAssessments()).isEqualTo(2); // Only COMPLETED ones
+
+    // Check team summaries
+    assertThat(data.getTeamSummaries()).hasSize(2);
+    TeamAssessmentSummary team1Summary = data.getTeamSummaries().stream()
+        .filter(ts -> ts.getTeamId().equals("team-1"))
+        .findFirst().orElse(null);
+    assertThat(team1Summary).isNotNull();
+    assertThat(team1Summary.getTeamName()).isEqualTo("Team Alpha");
+    assertThat(team1Summary.getTotalEmployees()).isEqualTo(3);
+    assertThat(team1Summary.getCompletedAssessments()).isEqualTo(2);
+    assertThat(team1Summary.getCompletionPercentage()).isEqualTo(66.67, org.assertj.core.data.Offset.offset(0.01));
+    assertThat(team1Summary.getAverageScore()).isEqualTo(87.5, org.assertj.core.data.Offset.offset(0.01));
+
+    // Check employee summaries
+    assertThat(data.getEmployeeSummaries()).hasSize(5);
+    EmployeeAssessmentSummary completedEmployee = data.getEmployeeSummaries().stream()
+        .filter(es -> es.getAssessmentStatus() == AssessmentStatus.COMPLETED)
+        .findFirst().orElse(null);
+    assertThat(completedEmployee).isNotNull();
+    assertThat(completedEmployee.getCurrentScore()).isNotNull();
+  }
+
+  @Test
+  void getAssessmentDashboard_withEmployeesWithoutTeams_shouldHandleGracefully() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    List<EmployeeAssessment> employeeAssessments = createEmployeeAssessmentsWithoutTeams(matrixId, tenantId);
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+    doReturn(mockEmployeeAssessmentService).when(assessmentMatrixService).getEmployeeAssessmentService();
+    doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentDashboardData data = result.get();
+
+    // Should have no team summaries since employees have no teams
+    assertThat(data.getTeamSummaries()).isEmpty();
+    // But should still have employee summaries
+    assertThat(data.getEmployeeSummaries()).hasSize(2);
+    assertThat(data.getTotalEmployees()).isEqualTo(2);
+  }
+
+  @Test
+  void getAssessmentDashboard_withTeamServiceErrors_shouldSkipFailedTeams() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    List<EmployeeAssessment> employeeAssessments = createEmployeeAssessmentsWithMixedTeams(matrixId, tenantId);
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+    doReturn(mockEmployeeAssessmentService).when(assessmentMatrixService).getEmployeeAssessmentService();
+    doReturn(mockTeamService).when(assessmentMatrixService).getTeamService();
+    doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+
+    // Mock team service - one succeeds, one fails
+    Team goodTeam = Team.builder()
+        .id("team-1")
+        .name("Good Team")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+    doReturn(Optional.of(goodTeam)).when(mockTeamService).findById("team-1");
+    doThrow(new RuntimeException("Database error"))
+        .when(mockTeamService).findById("team-2");
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentDashboardData data = result.get();
+
+    // Should only have one team summary (the successful one)
+    assertThat(data.getTeamSummaries()).hasSize(1);
+    assertThat(data.getTeamSummaries().get(0).getTeamId()).isEqualTo("team-1");
+    assertThat(data.getTeamSummaries().get(0).getTeamName()).isEqualTo("Good Team");
+
+    // Employee summaries should still be complete
+    assertThat(data.getEmployeeSummaries()).hasSize(4);
+  }
+
+  @Test
+  void getAssessmentDashboard_withComplexScenario_shouldCalculateAccurately() {
+    // Given
+    String matrixId = "matrix123";
+    String tenantId = "tenant123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+        .id(matrixId)
+        .tenantId(tenantId)
+        .name("Complex Test Matrix")
+        .description(originalAssessmentMatrix.getDescription())
+        .performanceCycleId(originalAssessmentMatrix.getPerformanceCycleId())
+        .pillarMap(originalAssessmentMatrix.getPillarMap())
+        .build();
+
+    List<EmployeeAssessment> employeeAssessments = createComplexEmployeeAssessmentScenario(matrixId, tenantId);
+
+    doReturn(Optional.of(matrix)).when(assessmentMatrixService).findById(matrixId);
+    doReturn(mockEmployeeAssessmentService).when(assessmentMatrixService).getEmployeeAssessmentService();
+    doReturn(mockTeamService).when(assessmentMatrixService).getTeamService();
+    doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+
+    setupComplexTeamServiceMocks();
+
+    // When
+    Optional<AssessmentDashboardData> result = assessmentMatrixService.getAssessmentDashboard(matrixId, tenantId);
+
+    // Then
+    assertThat(result).isPresent();
+    AssessmentDashboardData data = result.get();
+
+    assertThat(data.getTotalEmployees()).isEqualTo(6);
+    assertThat(data.getCompletedAssessments()).isEqualTo(3);
+    assertThat(data.getTeamSummaries()).hasSize(3);
+
+    // Verify team with 100% completion
+    TeamAssessmentSummary perfectTeam = data.getTeamSummaries().stream()
+        .filter(ts -> ts.getCompletionPercentage() == 100.0)
+        .findFirst().orElse(null);
+    assertThat(perfectTeam).isNotNull();
+    assertThat(perfectTeam.getAverageScore()).isNotNull();
+
+    // Verify team with 0% completion
+    TeamAssessmentSummary incompleteTeam = data.getTeamSummaries().stream()
+        .filter(ts -> ts.getCompletionPercentage() == 0.0)
+        .findFirst().orElse(null);
+    assertThat(incompleteTeam).isNotNull();
+    assertThat(incompleteTeam.getAverageScore()).isNull(); // No completed assessments
+  }
+
+  // ========== Dashboard Tests ==========
+
   private void assertUpdatedPotentialScores(AssessmentMatrix assessmentMatrix){
     assertNotNull(assessmentMatrix);
     assertNotNull(assessmentMatrix.getPotentialScore());
@@ -1059,5 +1344,171 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     org.assertj.core.api.Assertions.assertThat(questionScores).usingElementComparatorOnFields("questionId", "score").containsExactlyInAnyOrder(
         q221, q222);
 
+  }
+
+  // ========== Dashboard Test Helper Methods ==========
+
+  private List<EmployeeAssessment> createComplexEmployeeAssessmentScenario(String matrixId, String tenantId) {
+    List<EmployeeAssessment> assessments = new ArrayList<>();
+
+    // Team 1: 2 employees, both completed (100% completion)
+    assessments.add(createEmployeeAssessment("emp1", "Perfect Employee 1", "pe1@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.COMPLETED, 95.0, 15));
+    assessments.add(createEmployeeAssessment("emp2", "Perfect Employee 2", "pe2@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.COMPLETED, 88.0, 14));
+
+    // Team 2: 2 employees, none completed (0% completion)
+    assessments.add(createEmployeeAssessment("emp3", "Slow Employee 1", "se1@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.INVITED, null, 0));
+    assessments.add(createEmployeeAssessment("emp4", "Slow Employee 2", "se2@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.IN_PROGRESS, null, 2));
+
+    // Team 3: 2 employees, 1 completed (50% completion)
+    assessments.add(createEmployeeAssessment("emp5", "Mixed Employee 1", "me1@example.com", matrixId, tenantId, "team-3",
+        AssessmentStatus.COMPLETED, 78.0, 12));
+    assessments.add(createEmployeeAssessment("emp6", "Mixed Employee 2", "me2@example.com", matrixId, tenantId, "team-3",
+        AssessmentStatus.IN_PROGRESS, null, 6));
+
+    return assessments;
+  }
+
+  private EmployeeAssessment createEmployeeAssessment(String id, String name, String email, String matrixId,
+                                                      String tenantId, String teamId, AssessmentStatus status,
+                                                      Double score, Integer answeredQuestions) {
+    EmployeeAssessmentScore assessmentScore = null;
+    if (score != null) {
+      assessmentScore = EmployeeAssessmentScore.builder()
+          .score(score)
+          .build();
+    }
+
+    return EmployeeAssessment.builder()
+        .id(id)
+        .tenantId(tenantId)
+        .assessmentMatrixId(matrixId)
+        .teamId(teamId)
+        .employee(createNaturalPersonWithEmail(name, email))
+        .assessmentStatus(status)
+        .employeeAssessmentScore(assessmentScore)
+        .answeredQuestionCount(answeredQuestions)
+        .build();
+  }
+
+  private List<EmployeeAssessment> createEmployeeAssessmentsWithMixedTeams(String matrixId, String tenantId) {
+    List<EmployeeAssessment> assessments = new ArrayList<>();
+
+    // Team 1: 2 employees
+    assessments.add(createEmployeeAssessment("emp1", "Good Team Member 1", "gtm1@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.COMPLETED, 80.0, 10));
+    assessments.add(createEmployeeAssessment("emp2", "Good Team Member 2", "gtm2@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.IN_PROGRESS, null, 5));
+
+    // Team 2: 2 employees (this team service will fail)
+    assessments.add(createEmployeeAssessment("emp3", "Bad Team Member 1", "btm1@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.COMPLETED, 70.0, 8));
+    assessments.add(createEmployeeAssessment("emp4", "Bad Team Member 2", "btm2@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.INVITED, null, 0));
+
+    return assessments;
+  }
+
+  private List<EmployeeAssessment> createEmployeeAssessmentsWithoutTeams(String matrixId, String tenantId) {
+    List<EmployeeAssessment> assessments = new ArrayList<>();
+
+    assessments.add(createEmployeeAssessment("emp1", "Solo Worker", "solo@example.com", matrixId, tenantId, null,
+        AssessmentStatus.COMPLETED, 75.0, 8));
+    assessments.add(createEmployeeAssessment("emp2", "Freelancer", "freelancer@example.com", matrixId, tenantId, "",
+        AssessmentStatus.IN_PROGRESS, null, 4));
+
+    return assessments;
+  }
+
+  private List<EmployeeAssessment> createMixedStatusEmployeeAssessments(String matrixId, String tenantId) {
+    List<EmployeeAssessment> assessments = new ArrayList<>();
+
+    // Team 1: 3 employees, 2 completed
+    assessments.add(createEmployeeAssessment("emp1", "John Doe", "john@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.COMPLETED, 85.0, 10));
+    assessments.add(createEmployeeAssessment("emp2", "Jane Smith", "jane@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.COMPLETED, 90.0, 12));
+    assessments.add(createEmployeeAssessment("emp3", "Bob Johnson", "bob@example.com", matrixId, tenantId, "team-1",
+        AssessmentStatus.IN_PROGRESS, null, 5));
+
+    // Team 2: 2 employees, 0 completed
+    assessments.add(createEmployeeAssessment("emp4", "Alice Brown", "alice@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.INVITED, null, 0));
+    assessments.add(createEmployeeAssessment("emp5", "Charlie Wilson", "charlie@example.com", matrixId, tenantId, "team-2",
+        AssessmentStatus.IN_PROGRESS, null, 3));
+
+    return assessments;
+  }
+
+  private Team createMockedTeam(String id) {
+    return Team.builder()
+        .id(id)
+        .name("Team " + id)
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+  }
+
+  private com.agilecheckup.persistency.entity.person.NaturalPerson createNaturalPersonWithEmail(String name, String email) {
+    return com.agilecheckup.persistency.entity.person.NaturalPerson.builder()
+        .name(name)
+        .email(email)
+        .documentNumber("1234")
+        .personDocumentType(com.agilecheckup.persistency.entity.person.PersonDocumentType.CPF)
+        .gender(com.agilecheckup.persistency.entity.person.Gender.MALE)
+        .genderPronoun(com.agilecheckup.persistency.entity.person.GenderPronoun.HE)
+        .build();
+  }
+
+  private void setupComplexTeamServiceMocks() {
+    Team team1 = Team.builder()
+        .id("team-1")
+        .name("Perfect Team")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+    Team team2 = Team.builder()
+        .id("team-2")
+        .name("Slow Team")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+    Team team3 = Team.builder()
+        .id("team-3")
+        .name("Mixed Team")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+
+    doReturn(Optional.of(team1)).when(mockTeamService).findById("team-1");
+    doReturn(Optional.of(team2)).when(mockTeamService).findById("team-2");
+    doReturn(Optional.of(team3)).when(mockTeamService).findById("team-3");
+  }
+
+  private void setupTeamServiceMocks() {
+    Team team1 = Team.builder()
+        .id("team-1")
+        .name("Team Alpha")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+    Team team2 = Team.builder()
+        .id("team-2")
+        .name("Team Beta")
+        .description("Test team")
+        .tenantId("test-tenant-123")
+        .departmentId("dept-123")
+        .build();
+
+    doReturn(Optional.of(team1)).when(mockTeamService).findById("team-1");
+    doReturn(Optional.of(team2)).when(mockTeamService).findById("team-2");
   }
 }
