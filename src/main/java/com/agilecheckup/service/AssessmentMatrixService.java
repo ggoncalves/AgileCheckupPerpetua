@@ -378,8 +378,13 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
       currentScore = assessment.getEmployeeAssessmentScore().getScore();
     }
 
-    // Note: EmployeeAssessment extends BaseEntity (not AuditableEntity) so no lastUpdatedDate
-    java.time.LocalDateTime lastModified = null;
+    // Convert lastActivityDate from Date to LocalDateTime
+    java.time.LocalDateTime lastActivityDate = null;
+    if (assessment.getLastActivityDate() != null) {
+      lastActivityDate = assessment.getLastActivityDate().toInstant()
+          .atZone(java.time.ZoneId.systemDefault())
+          .toLocalDateTime();
+    }
 
     return EmployeeAssessmentSummary.builder()
         .employeeAssessmentId(assessment.getId())
@@ -389,7 +394,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
         .assessmentStatus(assessment.getAssessmentStatus())
         .currentScore(currentScore)
         .answeredQuestions(assessment.getAnsweredQuestionCount())
-        .lastModified(lastModified)
+        .lastActivityDate(lastActivityDate)
         .build();
   }
 

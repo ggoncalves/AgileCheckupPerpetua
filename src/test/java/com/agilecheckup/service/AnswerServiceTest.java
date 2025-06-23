@@ -35,6 +35,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion
 import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
@@ -485,11 +486,13 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     
     // Then
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
-    verify(employeeAssessmentService).findById(employeeAssessmentId);
+    verify(employeeAssessmentService, atLeastOnce()).findById(employeeAssessmentId);
     verify(assessmentMatrixService).findById(assessmentMatrixId);
     verify(employeeAssessmentService).save(employeeAssessment);
     verify(employeeAssessmentService).updateEmployeeAssessmentScore(employeeAssessmentId, tenantId);
     assertEquals(AssessmentStatus.COMPLETED, employeeAssessment.getAssessmentStatus());
+    // Verify lastActivityDate is set when assessment becomes COMPLETED
+    assertNotNull(employeeAssessment.getLastActivityDate());
   }
 
   @Test
@@ -524,7 +527,7 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     
     // Then
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
-    verify(employeeAssessmentService).findById(employeeAssessmentId);
+    verify(employeeAssessmentService, atLeastOnce()).findById(employeeAssessmentId);
     verify(assessmentMatrixService).findById(assessmentMatrixId);
     verify(employeeAssessmentService).save(employeeAssessment);
     // Should NOT call updateEmployeeAssessmentScore since status was already COMPLETED
@@ -772,5 +775,79 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     verify(answerRepository).findByEmployeeAssessmentIdAndQuestionId(employeeAssessmentId, questionId, tenantId);
     verify(answerRepository).save(updatedAnswer);
     verify(questionService).findById(questionId);
+  }
+
+  @Test
+  void postCreate_shouldUpdateLastActivityDateForNonCompletedAssessment() {
+    // Given
+    String employeeAssessmentId = "ea123";
+    String assessmentMatrixId = "am123";
+    String tenantId = "tenant123";
+    Question question = createMockedQuestion("q123", QuestionType.YES_NO);
+    Answer savedAnswer = createMockedAnswer("answer123", employeeAssessmentId, question, QuestionType.YES_NO, NOW_DATE_TIME, "Yes", 5.0);
+    
+    EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
+    employeeAssessment.setAnsweredQuestionCount(5);
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    employeeAssessment.setTenantId(tenantId);
+    
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(assessmentMatrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20) // Assessment is not complete yet
+        .build();
+    
+    // Mock service calls
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+    
+    // When
+    answerService.postCreate(savedAnswer);
+    
+    // Then
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
+    verify(employeeAssessmentService).updateLastActivityDate(employeeAssessmentId);
+    verify(employeeAssessmentService, atLeastOnce()).findById(employeeAssessmentId);
+    verify(assessmentMatrixService).findById(assessmentMatrixId);
+  }
+
+  @Test
+  void postUpdate_shouldUpdateLastActivityDateForNonCompletedAssessment() {
+    // Given
+    String employeeAssessmentId = "ea123";
+    String assessmentMatrixId = "am123";
+    String tenantId = "tenant123";
+    Question question = createMockedQuestion("q123", QuestionType.YES_NO);
+    Answer updatedAnswer = createMockedAnswer("answer123", employeeAssessmentId, question, QuestionType.YES_NO, NOW_DATE_TIME, "No", 0.0);
+    
+    EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
+    employeeAssessment.setAnsweredQuestionCount(10);
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    employeeAssessment.setTenantId(tenantId);
+    
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(assessmentMatrixId)
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20) // Assessment is not complete yet
+        .build();
+    
+    // Mock service calls
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+    
+    // When
+    answerService.postUpdate(updatedAnswer);
+    
+    // Then
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
+    verify(employeeAssessmentService).updateLastActivityDate(employeeAssessmentId);
+    verify(employeeAssessmentService, atLeastOnce()).findById(employeeAssessmentId);
+    verify(assessmentMatrixService).findById(assessmentMatrixId);
   }
 }

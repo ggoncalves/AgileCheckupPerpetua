@@ -104,14 +104,22 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     if (employeeAssessment != null) {
       employeeAssessment.setAnsweredQuestionCount(employeeAssessment.getAnsweredQuestionCount() + 1);
       AssessmentStatus currentStatus = employeeAssessment.getAssessmentStatus();
+      boolean statusChanged = false;
+      
       if (currentStatus == null) {
         currentStatus = AssessmentStatus.INVITED;
         employeeAssessment.setAssessmentStatus(currentStatus);
       }
       if (employeeAssessment.getAnsweredQuestionCount() == 1 && currentStatus == AssessmentStatus.INVITED) {
         employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+        statusChanged = true;
       }
       getRepository().save(employeeAssessment);
+      
+      // Update lastActivityDate for status transition
+      if (statusChanged) {
+        updateLastActivityDate(employeeAssessmentId);
+      }
     }
   }
 
@@ -126,7 +134,14 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       }
       AssessmentStatusValidator.validateTransition(currentStatus, status);
       employeeAssessment.setAssessmentStatus(status);
-      return super.update(employeeAssessment);
+      Optional<EmployeeAssessment> result = super.update(employeeAssessment);
+      
+      // Update lastActivityDate for status transitions (except when transitioning TO COMPLETED)
+      // When transitioning TO COMPLETED, the lastActivityDate should remain as the completion timestamp
+      if (result.isPresent() && status != AssessmentStatus.COMPLETED) {
+        updateLastActivityDate(employeeAssessmentId);
+      }
+      return result;
     }
     return Optional.empty();
   }
@@ -335,6 +350,8 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   private void confirmEmployeeAssessment(EmployeeAssessment assessment) {
     assessment.setAssessmentStatus(AssessmentStatus.CONFIRMED);
     employeeAssessmentRepository.save(assessment);
+    // Update lastActivityDate for status transition
+    updateLastActivityDate(assessment.getId());
   }
 
   private EmployeeValidationResponse createEmployeeNotFoundResponse() {
@@ -408,5 +425,19 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
 
   private boolean isEmailMatch(EmployeeAssessment assessment, String email) {
     return assessment.getEmployee().getEmail().equalsIgnoreCase(email);
+  }
+
+  /**
+   * Updates the lastActivityDate for an employee assessment.
+   * This method should only be called for assessments that are not COMPLETED.
+   * 
+   * @param employeeAssessmentId The employee assessment ID to update
+   */
+  public void updateLastActivityDate(@NonNull String employeeAssessmentId) {
+    EmployeeAssessment employeeAssessment = getRepository().findById(employeeAssessmentId);
+    if (employeeAssessment != null && employeeAssessment.getAssessmentStatus() != AssessmentStatus.COMPLETED) {
+      employeeAssessment.setLastActivityDate(new java.util.Date());
+      getRepository().save(employeeAssessment);
+    }
   }
 }

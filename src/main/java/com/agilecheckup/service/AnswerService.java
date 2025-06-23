@@ -18,6 +18,7 @@ import lombok.NonNull;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -108,6 +109,7 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
   @Override
   public void postCreate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+    updateLastActivityIfNotCompleted(saved.getEmployeeAssessmentId());
     checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
   }
 
@@ -115,6 +117,7 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
   @Override
   public void postUpdate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
+    updateLastActivityIfNotCompleted(saved.getEmployeeAssessmentId());
     checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
   }
   
@@ -125,6 +128,12 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
     if (employeeAssessment.getAnsweredQuestionCount() >= assessmentMatrix.getQuestionCount()) {
       AssessmentStatus previousStatus = employeeAssessment.getAssessmentStatus();
       employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+      
+      // Set completion timestamp - this will be the final lastActivityDate
+      if (previousStatus != AssessmentStatus.COMPLETED) {
+        employeeAssessment.setLastActivityDate(new java.util.Date());
+      }
+      
       employeeAssessmentService.save(employeeAssessment);
       
       // Automatically calculate score when assessment becomes COMPLETED
@@ -201,6 +210,21 @@ public class AnswerService extends AbstractCrudService<Answer, AbstractCrudRepos
    */
   public Set<String> findAnsweredQuestionIds(@NonNull String employeeAssessmentId, @NonNull String tenantId) {
     return answerRepository.findAnsweredQuestionIds(employeeAssessmentId, tenantId);
+  }
+
+  /**
+   * Updates the lastActivityDate for an employee assessment only if it's not COMPLETED.
+   * Once an assessment is COMPLETED, the lastActivityDate should not be modified.
+   * 
+   * @param employeeAssessmentId The employee assessment ID to update
+   */
+  private void updateLastActivityIfNotCompleted(@NonNull String employeeAssessmentId) {
+    EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
+    
+    // Only update lastActivityDate if assessment is not completed
+    if (employeeAssessment.getAssessmentStatus() != AssessmentStatus.COMPLETED) {
+      employeeAssessmentService.updateLastActivityDate(employeeAssessmentId);
+    }
   }
 
 }
