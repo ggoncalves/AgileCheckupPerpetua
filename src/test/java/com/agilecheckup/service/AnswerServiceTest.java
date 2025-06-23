@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -448,20 +449,66 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
   }
 
   @Test
-  void postCreate_shouldUpdateAssessmentStatusToCompleted() {
+  void postCreate_shouldUpdateAssessmentStatusToCompletedAndCalculateScore() {
     // Prepare
     String employeeAssessmentId = "ea123";
     String assessmentMatrixId = "am123";
+    String tenantId = "tenant123";
     Question question = createMockedQuestion("q123", QuestionType.YES_NO);
     Answer savedAnswer = createMockedAnswer("answer123", employeeAssessmentId, question, QuestionType.YES_NO, NOW_DATE_TIME, "Yes", 5.0);
     
     EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
     employeeAssessment.setAnsweredQuestionCount(20);
     employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    employeeAssessment.setTenantId(tenantId);
     
     AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
         .id(assessmentMatrixId)
-        .tenantId("tenant123")
+        .tenantId(tenantId)
+        .name("Test Matrix")
+        .description("Test Description")
+        .performanceCycleId("pc123")
+        .questionCount(20)
+        .build();
+    
+    EmployeeAssessment updatedAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
+    updatedAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+    updatedAssessment.setTenantId(tenantId);
+    
+    // Mock service calls
+    doReturn(Optional.of(employeeAssessment)).when(employeeAssessmentService).findById(employeeAssessmentId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+    doReturn(updatedAssessment).when(employeeAssessmentService).updateEmployeeAssessmentScore(employeeAssessmentId, tenantId);
+    
+    // When
+    answerService.postCreate(savedAnswer);
+    
+    // Then
+    verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
+    verify(employeeAssessmentService).findById(employeeAssessmentId);
+    verify(assessmentMatrixService).findById(assessmentMatrixId);
+    verify(employeeAssessmentService).save(employeeAssessment);
+    verify(employeeAssessmentService).updateEmployeeAssessmentScore(employeeAssessmentId, tenantId);
+    assertEquals(AssessmentStatus.COMPLETED, employeeAssessment.getAssessmentStatus());
+  }
+
+  @Test
+  void postCreate_shouldNotCalculateScoreWhenAssessmentAlreadyCompleted() {
+    // Prepare
+    String employeeAssessmentId = "ea123";
+    String assessmentMatrixId = "am123";
+    String tenantId = "tenant123";
+    Question question = createMockedQuestion("q123", QuestionType.YES_NO);
+    Answer savedAnswer = createMockedAnswer("answer123", employeeAssessmentId, question, QuestionType.YES_NO, NOW_DATE_TIME, "Yes", 5.0);
+    
+    EmployeeAssessment employeeAssessment = createMockedEmployeeAssessment(employeeAssessmentId, EMPLOYEE_NAME_JOHN, assessmentMatrixId);
+    employeeAssessment.setAnsweredQuestionCount(20);
+    employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED); // Already completed
+    employeeAssessment.setTenantId(tenantId);
+    
+    AssessmentMatrix assessmentMatrix = AssessmentMatrix.builder()
+        .id(assessmentMatrixId)
+        .tenantId(tenantId)
         .name("Test Matrix")
         .description("Test Description")
         .performanceCycleId("pc123")
@@ -480,6 +527,8 @@ class AnswerServiceTest extends AbstractCrudServiceTest<Answer, AbstractCrudRepo
     verify(employeeAssessmentService).findById(employeeAssessmentId);
     verify(assessmentMatrixService).findById(assessmentMatrixId);
     verify(employeeAssessmentService).save(employeeAssessment);
+    // Should NOT call updateEmployeeAssessmentScore since status was already COMPLETED
+    verify(employeeAssessmentService, never()).updateEmployeeAssessmentScore(employeeAssessmentId, tenantId);
     assertEquals(AssessmentStatus.COMPLETED, employeeAssessment.getAssessmentStatus());
   }
 
