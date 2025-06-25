@@ -27,4 +27,6 @@ public interface ServiceComponent {
   AnswerService buildAnswerService();
   
   AssessmentNavigationService buildAssessmentNavigationService();
+
+  DashboardAnalyticsService buildDashboardAnalyticsService();
 }

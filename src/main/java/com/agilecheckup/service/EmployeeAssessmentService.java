@@ -141,6 +141,8 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       if (result.isPresent() && status != AssessmentStatus.COMPLETED) {
         updateLastActivityDate(employeeAssessmentId);
       }
+      
+      
       return result;
     }
     return Optional.empty();
@@ -440,4 +442,5 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       getRepository().save(employeeAssessment);
     }
   }
+
 }

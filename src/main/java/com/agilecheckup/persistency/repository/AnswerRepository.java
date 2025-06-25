@@ -112,4 +112,39 @@ public class AnswerRepository extends AbstractCrudRepository<Answer> {
         .filter(answer -> questionId.equals(answer.getQuestionId()))
         .findFirst();
   }
+
+  /**
+   * Efficiently retrieves all answers for multiple employee assessments.
+   * Used for dashboard analytics to collect answer notes for word cloud generation.
+   * Performance optimized: Uses batch queries for multiple employee assessments.
+   * 
+   * @param employeeAssessmentIds List of employee assessment IDs
+   * @return List of all answers across the specified employee assessments
+   */
+  public List<Answer> findByEmployeeAssessmentIds(List<String> employeeAssessmentIds) {
+    if (employeeAssessmentIds == null || employeeAssessmentIds.isEmpty()) {
+      return List.of();
+    }
+
+    // Use scan with filter expression for multiple employee assessment IDs
+    Map<String, AttributeValue> eav = new HashMap<>();
+    StringBuilder filterExpression = new StringBuilder();
+    
+    for (int i = 0; i < employeeAssessmentIds.size(); i++) {
+      String paramName = ":empAssessId" + i;
+      eav.put(paramName, new AttributeValue().withS(employeeAssessmentIds.get(i)));
+      
+      if (i > 0) {
+        filterExpression.append(" OR ");
+      }
+      filterExpression.append("employeeAssessmentId = ").append(paramName);
+    }
+
+    DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+        .withFilterExpression(filterExpression.toString())
+        .withExpressionAttributeValues(eav)
+        .withProjectionExpression("id, employeeAssessmentId, questionId, notes"); // Only fetch necessary fields
+
+    return getDynamoDBMapper().scan(Answer.class, scanExpression);
+  }
 }
