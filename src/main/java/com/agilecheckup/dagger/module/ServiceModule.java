@@ -25,4 +25,11 @@ public abstract class ServiceModule {
   @Binds
   abstract AbstractCrudService provideAssessmentMatrix(AssessmentMatrixService assessmentMatrixService);
 
+  @Binds
+  abstract AbstractCrudService provideEmployeeAssessmentService(EmployeeAssessmentService employeeAssessmentService);
+
+  @Binds
+  abstract AbstractCrudService provideAnswerService(AnswerService answerService);
+
+
 }
