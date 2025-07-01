@@ -1,5 +1,6 @@
 package com.agilecheckup.persistency.repository;
 
+import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.DashboardAnalytics;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
@@ -45,13 +46,24 @@ public class DashboardAnalyticsRepository extends AbstractCrudRepository<Dashboa
     }
 
     /**
-     * Find specific analytics by composite key
+     * Find analytics overview (assessment matrix scope) by composite key
      */
-    public Optional<DashboardAnalytics> findByCompanyPerformanceCycleAndTeam(String companyId, String performanceCycleId, String assessmentMatrixId, String teamId) {
+    public Optional<DashboardAnalytics> findAssessmentMatrixOverview(String companyId, String performanceCycleId, String assessmentMatrixId) {
         String companyPerformanceCycleId = companyId + "#" + performanceCycleId;
-        String assessmentMatrixTeamId = assessmentMatrixId + "#" + teamId;
+        String assessmentMatrixScopeId = assessmentMatrixId + "#" + AnalyticsScope.ASSESSMENT_MATRIX.name();
         
-        DashboardAnalytics analytics = dynamoDBMapper.load(DashboardAnalytics.class, companyPerformanceCycleId, assessmentMatrixTeamId);
+        DashboardAnalytics analytics = dynamoDBMapper.load(DashboardAnalytics.class, companyPerformanceCycleId, assessmentMatrixScopeId);
+        return Optional.ofNullable(analytics);
+    }
+
+    /**
+     * Find team-specific analytics by composite key
+     */
+    public Optional<DashboardAnalytics> findTeamAnalytics(String companyId, String performanceCycleId, String assessmentMatrixId, String teamId) {
+        String companyPerformanceCycleId = companyId + "#" + performanceCycleId;
+        String assessmentMatrixScopeId = assessmentMatrixId + "#" + AnalyticsScope.TEAM.name() + "#" + teamId;
+        
+        DashboardAnalytics analytics = dynamoDBMapper.load(DashboardAnalytics.class, companyPerformanceCycleId, assessmentMatrixScopeId);
         return Optional.ofNullable(analytics);
     }
 
