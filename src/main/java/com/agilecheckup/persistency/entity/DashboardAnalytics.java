@@ -1,61 +1,76 @@
 package com.agilecheckup.persistency.entity;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import com.agilecheckup.persistency.entity.base.BaseEntity;
 import com.agilecheckup.persistency.entity.question.Answer.LocalDateTimeConverter;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Entity for storing precomputed dashboard analytics data.
  */
 @Data
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@DynamoDBTable(tableName = "dashboard_analytics")
-public class DashboardAnalytics extends BaseEntity {
+@DynamoDBTable(tableName = "DashboardAnalytics")
+public class DashboardAnalytics implements Serializable {
 
-  @DynamoDBHashKey(attributeName = "company_performance_cycle_id")
+  @DynamoDBHashKey(attributeName = "companyPerformanceCycleId")
   private String companyPerformanceCycleId; // Format: companyId#performanceCycleId
 
-  @DynamoDBRangeKey(attributeName = "assessment_matrix_team_id")
+  @DynamoDBRangeKey(attributeName = "assessmentMatrixTeamId")
   private String assessmentMatrixTeamId; // Format: assessmentMatrixId#teamId (or "OVERVIEW" for summary)
 
-  @DynamoDBAttribute(attributeName = "company_id")
+  @DynamoDBAttribute(attributeName = "companyId")
   @DynamoDBIndexHashKey(globalSecondaryIndexName = "company-cycle-index")
   private String companyId;
 
-  @DynamoDBAttribute(attributeName = "performance_cycle_id")
+  @DynamoDBAttribute(attributeName = "performanceCycleId")
   @DynamoDBIndexRangeKey(globalSecondaryIndexName = "company-cycle-index")
   private String performanceCycleId;
 
-  @DynamoDBAttribute(attributeName = "assessment_matrix_id")
+  @DynamoDBAttribute(attributeName = "assessmentMatrixId")
   private String assessmentMatrixId;
 
-  @DynamoDBAttribute(attributeName = "team_id")
+  @DynamoDBAttribute(attributeName = "teamId")
   private String teamId;
 
-  @DynamoDBAttribute(attributeName = "team_name")
+  @DynamoDBAttribute(attributeName = "teamName")
   private String teamName;
 
-  @DynamoDBAttribute(attributeName = "general_average")
+  @DynamoDBAttribute(attributeName = "companyName")
+  private String companyName;
+
+  @DynamoDBAttribute(attributeName = "performanceCycleName")
+  private String performanceCycleName;
+
+  @DynamoDBAttribute(attributeName = "assessmentMatrixName")
+  private String assessmentMatrixName;
+
+  @DynamoDBAttribute(attributeName = "generalAverage")
   private Double generalAverage;
 
-  @DynamoDBAttribute(attributeName = "employee_count")
+  @DynamoDBAttribute(attributeName = "employeeCount")
   private Integer employeeCount;
 
-  @DynamoDBAttribute(attributeName = "completion_percentage")
+  @DynamoDBAttribute(attributeName = "completionPercentage")
   private Double completionPercentage;
 
   @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
-  @DynamoDBAttribute(attributeName = "last_updated")
+  @DynamoDBAttribute(attributeName = "lastUpdated")
   private LocalDateTime lastUpdated;
 
-  @DynamoDBAttribute(attributeName = "analytics_data")
+  @DynamoDBAttribute(attributeName = "analyticsDataJson")
   private String analyticsDataJson;
 }

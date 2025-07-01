@@ -38,7 +38,7 @@ public class DashboardAnalyticsRepository extends AbstractCrudRepository<Dashboa
         DynamoDBQueryExpression<DashboardAnalytics> queryExpression = new DynamoDBQueryExpression<DashboardAnalytics>()
                 .withIndexName("company-cycle-index")
                 .withConsistentRead(false)
-                .withKeyConditionExpression("company_id = :companyId AND performance_cycle_id = :performanceCycleId")
+            .withKeyConditionExpression("companyId = :companyId AND performanceCycleId = :performanceCycleId")
                 .withExpressionAttributeValues(eav);
 
         return dynamoDBMapper.query(DashboardAnalytics.class, queryExpression);
@@ -65,7 +65,7 @@ public class DashboardAnalyticsRepository extends AbstractCrudRepository<Dashboa
         DynamoDBQueryExpression<DashboardAnalytics> queryExpression = new DynamoDBQueryExpression<DashboardAnalytics>()
                 .withIndexName("company-cycle-index")
                 .withConsistentRead(false)
-                .withKeyConditionExpression("company_id = :companyId")
+            .withKeyConditionExpression("companyId = :companyId")
                 .withExpressionAttributeValues(eav);
 
         return dynamoDBMapper.query(DashboardAnalytics.class, queryExpression);
