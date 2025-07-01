@@ -1,10 +1,8 @@
 package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.persistency.entity.DashboardAnalytics;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,14 +12,17 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardAnalytics> {
@@ -78,7 +79,7 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
         DynamoDBQueryExpression<DashboardAnalytics> query = queryCaptor.getValue();
         assertEquals("company-cycle-index", query.getIndexName());
         assertFalse(query.isConsistentRead());
-        assertEquals("company_id = :companyId AND performance_cycle_id = :performanceCycleId", 
+      assertEquals("companyId = :companyId AND performanceCycleId = :performanceCycleId",
                 query.getKeyConditionExpression());
     }
 
@@ -135,7 +136,7 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
         
         DynamoDBQueryExpression<DashboardAnalytics> query = queryCaptor.getValue();
         assertEquals("company-cycle-index", query.getIndexName());
-        assertEquals("company_id = :companyId", query.getKeyConditionExpression());
+      assertEquals("companyId = :companyId", query.getKeyConditionExpression());
     }
 
     @Test

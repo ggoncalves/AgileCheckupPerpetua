@@ -1,9 +1,21 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.*;
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.DashboardAnalytics;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
+import com.agilecheckup.persistency.entity.PerformanceCycle;
+import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.score.*;
-import com.agilecheckup.persistency.repository.*;
+import com.agilecheckup.persistency.entity.score.CategoryScore;
+import com.agilecheckup.persistency.entity.score.PillarScore;
+import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
+import com.agilecheckup.persistency.repository.TeamRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +25,14 @@ import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +57,8 @@ public class DashboardAnalyticsService {
     private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
     private final AssessmentMatrixService assessmentMatrixService;
     private final EmployeeAssessmentService employeeAssessmentService;
+  private final CompanyService companyService;
+  private final PerformanceCycleService performanceCycleService;
     private final TeamRepository teamRepository;
     private final AnswerRepository answerRepository;
     private final ObjectMapper objectMapper;
@@ -47,11 +68,15 @@ public class DashboardAnalyticsService {
             DashboardAnalyticsRepository dashboardAnalyticsRepository,
             AssessmentMatrixService assessmentMatrixService,
             EmployeeAssessmentService employeeAssessmentService,
+            CompanyService companyService,
+            PerformanceCycleService performanceCycleService,
             TeamRepository teamRepository,
             AnswerRepository answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
         this.assessmentMatrixService = assessmentMatrixService;
         this.employeeAssessmentService = employeeAssessmentService;
+      this.companyService = companyService;
+      this.performanceCycleService = performanceCycleService;
         this.teamRepository = teamRepository;
         this.answerRepository = answerRepository;
         this.objectMapper = new ObjectMapper();
@@ -61,34 +86,76 @@ public class DashboardAnalyticsService {
      * Get analytics overview for an assessment matrix
      */
     public Optional<DashboardAnalytics> getOverview(String assessmentMatrixId) {
-        Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+      log.info("Getting overview for assessmentMatrixId={}", assessmentMatrixId);
+
+      Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
+          log.warn("AssessmentMatrix not found for id={}", assessmentMatrixId);
             return Optional.empty();
         }
         
         AssessmentMatrix matrix = matrixOpt.get();
-        String companyId = matrix.getTenantId(); // Using actual API
         String performanceCycleId = matrix.getPerformanceCycleId();
-        
-        return dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
-                companyId, performanceCycleId, assessmentMatrixId, OVERVIEW_TEAM_ID);
+
+      // Get the real companyId from PerformanceCycle
+      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
+
+      log.info("Found AssessmentMatrix - companyId={}, performanceCycleId={}, assessmentMatrixId={}",
+          companyId, performanceCycleId, assessmentMatrixId);
+
+      try {
+        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+            companyId, performanceCycleId, assessmentMatrixId, OVERVIEW_TEAM_ID);
+
+        log.info("Analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixTeamId={}#{}",
+            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, OVERVIEW_TEAM_ID);
+
+        return result;
+      }
+      catch (Exception e) {
+        log.error("Error querying analytics for assessmentMatrixId={}, companyId={}, performanceCycleId={}",
+            assessmentMatrixId, companyId, performanceCycleId, e);
+        throw e;
+      }
     }
 
     /**
      * Get team-specific analytics
      */
     public Optional<DashboardAnalytics> getTeamAnalytics(String assessmentMatrixId, String teamId) {
-        Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+      log.info("Getting team analytics for assessmentMatrixId={}, teamId={}", assessmentMatrixId, teamId);
+
+      Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
+          log.warn("AssessmentMatrix not found for id={}", assessmentMatrixId);
             return Optional.empty();
         }
         
         AssessmentMatrix matrix = matrixOpt.get();
-        String companyId = matrix.getTenantId();
         String performanceCycleId = matrix.getPerformanceCycleId();
-        
-        return dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
-                companyId, performanceCycleId, assessmentMatrixId, teamId);
+
+      // Get the real companyId from PerformanceCycle
+      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
+
+      log.info("Found AssessmentMatrix for team analytics - companyId={}, performanceCycleId={}, assessmentMatrixId={}, teamId={}",
+          companyId, performanceCycleId, assessmentMatrixId, teamId);
+
+      try {
+        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+            companyId, performanceCycleId, assessmentMatrixId, teamId);
+
+        log.info("Team analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixTeamId={}#{}",
+            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, teamId);
+
+        return result;
+      }
+      catch (Exception e) {
+        log.error("Error querying team analytics for assessmentMatrixId={}, teamId={}, companyId={}, performanceCycleId={}",
+            assessmentMatrixId, teamId, companyId, performanceCycleId, e);
+        throw e;
+      }
     }
 
     /**
@@ -101,8 +168,15 @@ public class DashboardAnalyticsService {
         }
         
         AssessmentMatrix matrix = matrixOpt.get();
-        String companyId = matrix.getTenantId();
         String performanceCycleId = matrix.getPerformanceCycleId();
+
+      // Get the real companyId from PerformanceCycle
+      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
+
+      if (companyId == null) {
+        return Collections.emptyList();
+      }
         
         return dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(companyId, performanceCycleId)
                 .stream()
@@ -123,15 +197,35 @@ public class DashboardAnalyticsService {
         }
         
         AssessmentMatrix matrix = matrixOpt.get();
-        String companyId = matrix.getTenantId();
         String performanceCycleId = matrix.getPerformanceCycleId();
-        
-        // Get all employee assessments for this matrix using actual service method
-        List<EmployeeAssessment> allAssessments = employeeAssessmentService
-                .findByAssessmentMatrix(assessmentMatrixId, companyId);
+
+      // Get performance cycle first to extract the real companyId
+      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
+      String performanceCycleName = cycleOpt.map(PerformanceCycle::getName).orElse("Unknown Cycle");
+
+      log.info("Retrieved performance cycle: companyId={}, performanceCycleName={}", companyId, performanceCycleName);
+
+      // Get company name using the correct companyId from PerformanceCycle
+      Optional<Company> companyOpt = companyId != null ?
+          companyService.findById(companyId) : Optional.empty();
+      String companyName = companyOpt.map(Company::getName).orElse("Unknown Company");
+
+      log.info("Retrieved company: companyName={}", companyName);
+
+      String assessmentMatrixName = matrix.getName();
+
+      // Get all employee assessments for this matrix using tenantId (not companyId)
+      String tenantId = matrix.getTenantId();
+      log.info("Searching for employee assessments with assessmentMatrixId={}, tenantId={}", assessmentMatrixId, tenantId);
+
+      List<EmployeeAssessment> allAssessments = employeeAssessmentService
+          .findByAssessmentMatrix(assessmentMatrixId, tenantId);
+
+      log.info("Found {} employee assessments for matrix: {}", allAssessments.size(), assessmentMatrixId);
         
         if (allAssessments.isEmpty()) {
-            log.info("No assessments found for matrix: {}", assessmentMatrixId);
+          log.warn("No assessments found for matrix: {} with tenantId: {}. Cannot compute analytics.", assessmentMatrixId, tenantId);
             return;
         }
         
@@ -148,16 +242,18 @@ public class DashboardAnalyticsService {
             List<EmployeeAssessment> teamAssessments = entry.getValue();
             
             DashboardAnalytics teamAnalytics = calculateTeamAnalytics(
-                    companyId, performanceCycleId, assessmentMatrixId, 
-                    teamId, teamAssessments, matrix);
+                    companyId, performanceCycleId, assessmentMatrixId,
+                teamId, teamAssessments, matrix,
+                companyName, performanceCycleName, assessmentMatrixName);
             
             analyticsToSave.add(teamAnalytics);
         }
         
         // Calculate overview analytics
         DashboardAnalytics overviewAnalytics = calculateOverviewAnalytics(
-                companyId, performanceCycleId, assessmentMatrixId, 
-                allAssessments, matrix);
+                companyId, performanceCycleId, assessmentMatrixId,
+            allAssessments, matrix,
+            companyName, performanceCycleName, assessmentMatrixName);
         analyticsToSave.add(overviewAnalytics);
         
         // Save all analytics
@@ -168,49 +264,71 @@ public class DashboardAnalyticsService {
     }
 
     /**
+     * Calculate overview analytics for all teams
+     */
+    private DashboardAnalytics calculateOverviewAnalytics(
+            String companyId, String performanceCycleId, String assessmentMatrixId,
+            List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix,
+            String companyName, String performanceCycleName, String assessmentMatrixName) {
+
+        return calculateTeamAnalytics(
+                companyId, performanceCycleId, assessmentMatrixId,
+            OVERVIEW_TEAM_ID, allAssessments, matrix,
+            companyName, performanceCycleName, assessmentMatrixName);
+    }
+
+    /**
      * Calculate analytics for a specific team
      */
     private DashboardAnalytics calculateTeamAnalytics(
             String companyId, String performanceCycleId, String assessmentMatrixId,
-            String teamId, List<EmployeeAssessment> teamAssessments, AssessmentMatrix matrix) {
-        
+            String teamId, List<EmployeeAssessment> teamAssessments, AssessmentMatrix matrix,
+            String companyName, String performanceCycleName, String assessmentMatrixName) {
+
         // Get team details
         Team team = teamRepository.findById(teamId);
         String teamName = team != null ? team.getName() : "Unknown Team";
-        
+
         // Calculate basic metrics
         int employeeCount = teamAssessments.size();
         long completedCount = teamAssessments.stream()
                 .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
                 .count();
         double completionPercentage = calculatePercentage(completedCount, employeeCount);
-        
-        // Calculate scores from completed assessments
+
+      // Get all completed assessments for counting and completion percentage
         List<EmployeeAssessment> completedAssessments = teamAssessments.stream()
                 .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
+            .collect(Collectors.toList());
+
+      // Get only completed assessments with actual scores for analytics calculations
+      List<EmployeeAssessment> scoredAssessments = completedAssessments.stream()
                 .filter(ea -> ea.getEmployeeAssessmentScore() != null)
                 .collect(Collectors.toList());
-        
-        double generalAverage = 0.0;
+
+      double totalScore = 0.0;
         Map<String, Object> analyticsData = new HashMap<>();
-        
+
         if (!completedAssessments.isEmpty()) {
-            // Calculate average score
-            double totalScore = completedAssessments.stream()
-                    .mapToDouble(ea -> ea.getEmployeeAssessmentScore().getScore())
+          // Calculate average score: include completed assessments without scores as 0.0
+          double sumOfScores = completedAssessments.stream()
+              .mapToDouble(ea -> ea.getEmployeeAssessmentScore() != null ?
+                  ea.getEmployeeAssessmentScore().getScore() : 0.0)
                     .sum();
-            generalAverage = calculatePercentage(totalScore, completedAssessments.size() * 100);
-            
-            // Calculate pillar analytics
-            analyticsData.put("pillars", calculatePillarAnalytics(completedAssessments, matrix));
-            
-            // Generate word cloud from answers
+          totalScore = sumOfScores / completedAssessments.size();
+
+          // Calculate pillar analytics only from assessments with actual scores
+          if (!scoredAssessments.isEmpty()) {
+            analyticsData.put("pillars", calculatePillarAnalytics(scoredAssessments, matrix));
+          }
+
+          // Generate word cloud from all team assessments
             analyticsData.put("wordCloud", generateWordCloud(teamAssessments));
         }
-        
+
         // Convert analytics data to JSON
         String analyticsDataJson = convertToJson(analyticsData);
-        
+
         return DashboardAnalytics.builder()
                 .companyPerformanceCycleId(companyId + "#" + performanceCycleId)
                 .assessmentMatrixTeamId(assessmentMatrixId + "#" + teamId)
@@ -219,24 +337,15 @@ public class DashboardAnalyticsService {
                 .assessmentMatrixId(assessmentMatrixId)
                 .teamId(teamId)
                 .teamName(teamName)
-                .generalAverage(generalAverage)
+            .companyName(companyName)
+            .performanceCycleName(performanceCycleName)
+            .assessmentMatrixName(assessmentMatrixName)
+            .generalAverage(totalScore)
                 .employeeCount(employeeCount)
                 .completionPercentage(completionPercentage)
                 .lastUpdated(LocalDateTime.now())
                 .analyticsDataJson(analyticsDataJson)
                 .build();
-    }
-
-    /**
-     * Calculate overview analytics for all teams
-     */
-    private DashboardAnalytics calculateOverviewAnalytics(
-            String companyId, String performanceCycleId, String assessmentMatrixId,
-            List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix) {
-        
-        return calculateTeamAnalytics(
-                companyId, performanceCycleId, assessmentMatrixId,
-                OVERVIEW_TEAM_ID, allAssessments, matrix);
     }
 
     /**
