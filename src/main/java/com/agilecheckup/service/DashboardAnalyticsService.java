@@ -1,5 +1,6 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Company;
@@ -43,7 +44,6 @@ import java.util.stream.Collectors;
 @Singleton
 public class DashboardAnalyticsService {
 
-    private static final String OVERVIEW_TEAM_ID = "OVERVIEW";
     private static final int MIN_WORD_FREQUENCY = 2;
     private static final int MAX_WORD_CLOUD_WORDS = 50;
     private static final Set<String> STOP_WORDS = Set.of(
@@ -105,11 +105,11 @@ public class DashboardAnalyticsService {
           companyId, performanceCycleId, assessmentMatrixId);
 
       try {
-        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
-            companyId, performanceCycleId, assessmentMatrixId, OVERVIEW_TEAM_ID);
+        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+            companyId, performanceCycleId, assessmentMatrixId);
 
-        log.info("Analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixTeamId={}#{}",
-            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, OVERVIEW_TEAM_ID);
+        log.info("Analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixScopeId={}#{}",
+            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.ASSESSMENT_MATRIX.name());
 
         return result;
       }
@@ -143,11 +143,11 @@ public class DashboardAnalyticsService {
           companyId, performanceCycleId, assessmentMatrixId, teamId);
 
       try {
-        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
             companyId, performanceCycleId, assessmentMatrixId, teamId);
 
-        log.info("Team analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixTeamId={}#{}",
-            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, teamId);
+        log.info("Team analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixScopeId={}#{}#{}",
+            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.TEAM.name(), teamId);
 
         return result;
       }
@@ -241,10 +241,10 @@ public class DashboardAnalyticsService {
             String teamId = entry.getKey();
             List<EmployeeAssessment> teamAssessments = entry.getValue();
             
-            DashboardAnalytics teamAnalytics = calculateTeamAnalytics(
+            DashboardAnalytics teamAnalytics = calculateAnalytics(
                     companyId, performanceCycleId, assessmentMatrixId,
-                teamId, teamAssessments, matrix,
-                companyName, performanceCycleName, assessmentMatrixName);
+                    AnalyticsScope.TEAM, teamId, teamAssessments, matrix,
+                    companyName, performanceCycleName, assessmentMatrixName);
             
             analyticsToSave.add(teamAnalytics);
         }
@@ -271,33 +271,36 @@ public class DashboardAnalyticsService {
             List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix,
             String companyName, String performanceCycleName, String assessmentMatrixName) {
 
-        return calculateTeamAnalytics(
+        return calculateAnalytics(
                 companyId, performanceCycleId, assessmentMatrixId,
-            OVERVIEW_TEAM_ID, allAssessments, matrix,
-            companyName, performanceCycleName, assessmentMatrixName);
+                AnalyticsScope.ASSESSMENT_MATRIX, null, allAssessments, matrix,
+                companyName, performanceCycleName, assessmentMatrixName);
     }
 
     /**
-     * Calculate analytics for a specific team
+     * Calculate analytics for a specific scope (team or assessment matrix)
      */
-    private DashboardAnalytics calculateTeamAnalytics(
+    private DashboardAnalytics calculateAnalytics(
             String companyId, String performanceCycleId, String assessmentMatrixId,
-            String teamId, List<EmployeeAssessment> teamAssessments, AssessmentMatrix matrix,
+            AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix,
             String companyName, String performanceCycleName, String assessmentMatrixName) {
 
-        // Get team details
-        Team team = teamRepository.findById(teamId);
-        String teamName = team != null ? team.getName() : "Unknown Team";
+        // Get team details (only for TEAM scope)
+        String teamName = null;
+        if (scope == AnalyticsScope.TEAM && teamId != null) {
+            Team team = teamRepository.findById(teamId);
+            teamName = team != null ? team.getName() : "Unknown Team";
+        }
 
         // Calculate basic metrics
-        int employeeCount = teamAssessments.size();
-        long completedCount = teamAssessments.stream()
+        int employeeCount = assessments.size();
+        long completedCount = assessments.stream()
                 .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
                 .count();
         double completionPercentage = calculatePercentage(completedCount, employeeCount);
 
       // Get all completed assessments for counting and completion percentage
-        List<EmployeeAssessment> completedAssessments = teamAssessments.stream()
+        List<EmployeeAssessment> completedAssessments = assessments.stream()
                 .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
             .collect(Collectors.toList());
 
@@ -322,8 +325,8 @@ public class DashboardAnalyticsService {
             analyticsData.put("pillars", calculatePillarAnalytics(scoredAssessments, matrix));
           }
 
-          // Generate word cloud from all team assessments
-            analyticsData.put("wordCloud", generateWordCloud(teamAssessments));
+          // Generate word cloud from all assessments
+            analyticsData.put("wordCloud", generateWordCloud(assessments));
         }
 
         // Convert analytics data to JSON
@@ -331,10 +334,11 @@ public class DashboardAnalyticsService {
 
         return DashboardAnalytics.builder()
                 .companyPerformanceCycleId(companyId + "#" + performanceCycleId)
-                .assessmentMatrixTeamId(assessmentMatrixId + "#" + teamId)
+                .assessmentMatrixScopeId(buildAssessmentMatrixScopeId(assessmentMatrixId, scope, teamId))
                 .companyId(companyId)
                 .performanceCycleId(performanceCycleId)
                 .assessmentMatrixId(assessmentMatrixId)
+                .scope(scope)
                 .teamId(teamId)
                 .teamName(teamName)
             .companyName(companyName)
@@ -566,6 +570,17 @@ public class DashboardAnalyticsService {
         } catch (Exception e) {
             log.error("Failed to convert to JSON", e);
             return "{}";
+        }
+    }
+
+    /**
+     * Build composite key for assessment matrix scope analytics
+     */
+    private String buildAssessmentMatrixScopeId(String assessmentMatrixId, AnalyticsScope scope, String teamId) {
+        if (scope == AnalyticsScope.ASSESSMENT_MATRIX) {
+            return assessmentMatrixId + "#" + scope.name();
+        } else {
+            return assessmentMatrixId + "#" + scope.name() + "#" + teamId;
         }
     }
 }

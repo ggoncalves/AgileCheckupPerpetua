@@ -8,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +31,7 @@ public class DashboardAnalytics implements Serializable {
   private String companyPerformanceCycleId; // Format: companyId#performanceCycleId
 
   @DynamoDBRangeKey(attributeName = "assessmentMatrixTeamId")
-  private String assessmentMatrixTeamId; // Format: assessmentMatrixId#teamId (or "OVERVIEW" for summary)
+  private String assessmentMatrixScopeId; // Format: assessmentMatrixId#scope#teamId (teamId is null for ASSESSMENT_MATRIX scope)
 
   @DynamoDBAttribute(attributeName = "companyId")
   @DynamoDBIndexHashKey(globalSecondaryIndexName = "company-cycle-index")
@@ -42,6 +43,10 @@ public class DashboardAnalytics implements Serializable {
 
   @DynamoDBAttribute(attributeName = "assessmentMatrixId")
   private String assessmentMatrixId;
+
+  @DynamoDBTypeConvertedEnum
+  @DynamoDBAttribute(attributeName = "scope")
+  private AnalyticsScope scope;
 
   @DynamoDBAttribute(attributeName = "teamId")
   private String teamId;

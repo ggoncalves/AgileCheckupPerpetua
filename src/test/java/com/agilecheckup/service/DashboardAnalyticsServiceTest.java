@@ -1,5 +1,6 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Company;
@@ -96,8 +97,8 @@ class DashboardAnalyticsServiceTest {
         // Given
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
         when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
-        when(dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
-                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, "OVERVIEW"))
+        when(dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID))
                 .thenReturn(Optional.of(mockDashboardAnalytics));
 
         // When
@@ -107,8 +108,8 @@ class DashboardAnalyticsServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(mockDashboardAnalytics);
         verify(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
-        verify(dashboardAnalyticsRepository).findByCompanyPerformanceCycleAndTeam(
-                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, "OVERVIEW");
+        verify(dashboardAnalyticsRepository).findAssessmentMatrixOverview(
+                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
     }
 
     @Test
@@ -130,7 +131,7 @@ class DashboardAnalyticsServiceTest {
         // Given
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
         when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
-        when(dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+        when(dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID))
                 .thenReturn(Optional.of(mockDashboardAnalytics));
 
@@ -141,7 +142,7 @@ class DashboardAnalyticsServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(mockDashboardAnalytics);
         verify(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
-        verify(dashboardAnalyticsRepository).findByCompanyPerformanceCycleAndTeam(
+        verify(dashboardAnalyticsRepository).findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID);
     }
 
@@ -374,11 +375,11 @@ class DashboardAnalyticsServiceTest {
 
         // Then: generalAverage should equal the single employee's score (85.5)
         verify(dashboardAnalyticsRepository, times(2)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId())) {
+            if (AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) {
                 // Overall analytics should have the same score as the single employee
                 assertThat(analytics.getGeneralAverage()).isEqualTo(85.5);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(1);
-            } else if (TEAM_ID.equals(analytics.getTeamId())) {
+            } else if (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId())) {
                 // Team analytics should also have the same score
                 assertThat(analytics.getGeneralAverage()).isEqualTo(85.5);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(1);
@@ -417,7 +418,8 @@ class DashboardAnalyticsServiceTest {
         double expectedAverage = (100.0 + 80.0 + 70.0) / 3.0;
         
         verify(dashboardAnalyticsRepository, times(2)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId()) || TEAM_ID.equals(analytics.getTeamId())) {
+            if ((AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) || 
+                (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId()))) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedAverage);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(3);
             }
@@ -464,13 +466,13 @@ class DashboardAnalyticsServiceTest {
         double expectedTeam2Average = (60.0 + 40.0) / 2.0; // = 50.0
         
         verify(dashboardAnalyticsRepository, times(3)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId())) {
+            if (AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedOverallAverage);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(4);
-            } else if ("team1".equals(analytics.getTeamId())) {
+            } else if (AnalyticsScope.TEAM.equals(analytics.getScope()) && "team1".equals(analytics.getTeamId())) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedTeam1Average);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(2);
-            } else if ("team2".equals(analytics.getTeamId())) {
+            } else if (AnalyticsScope.TEAM.equals(analytics.getScope()) && "team2".equals(analytics.getTeamId())) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedTeam2Average);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(2);
             }
@@ -505,7 +507,8 @@ class DashboardAnalyticsServiceTest {
         double expectedAverage = (150.5 + 200.0) / 2.0;
         
         verify(dashboardAnalyticsRepository, times(2)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId()) || TEAM_ID.equals(analytics.getTeamId())) {
+            if ((AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) || 
+                (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId()))) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedAverage);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(2);
             }
@@ -548,7 +551,8 @@ class DashboardAnalyticsServiceTest {
         double expectedAverage = (90.0 + 70.0) / 2.0;
         
         verify(dashboardAnalyticsRepository, times(2)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId()) || TEAM_ID.equals(analytics.getTeamId())) {
+            if ((AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) || 
+                (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId()))) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedAverage);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(3); // Total employees
                 assertThat(analytics.getCompletionPercentage()).isEqualTo(66.67); // 2/3 * 100 = 66.67%
@@ -583,7 +587,8 @@ class DashboardAnalyticsServiceTest {
 
         // Then: Average should be 0.0 when no completed assessments exist
         verify(dashboardAnalyticsRepository, times(2)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId()) || TEAM_ID.equals(analytics.getTeamId())) {
+            if ((AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) || 
+                (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId()))) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(0.0);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(2);
                 assertThat(analytics.getCompletionPercentage()).isEqualTo(0.0); // 0/2 * 100 = 0%
@@ -630,14 +635,14 @@ class DashboardAnalyticsServiceTest {
         double expectedTeam2Average = (0.0 + 0.0) / 2.0; // = 0.0
         
         verify(dashboardAnalyticsRepository, times(3)).save(argThat(analytics -> {
-            if ("OVERVIEW".equals(analytics.getTeamId())) {
+            if (AnalyticsScope.ASSESSMENT_MATRIX.equals(analytics.getScope()) && analytics.getTeamId() == null) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedOverallAverage);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(3);
                 assertThat(analytics.getCompletionPercentage()).isEqualTo(100.0); // All completed
-            } else if (TEAM_ID.equals(analytics.getTeamId())) {
+            } else if (AnalyticsScope.TEAM.equals(analytics.getScope()) && TEAM_ID.equals(analytics.getTeamId())) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedTeam1Average);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(1);
-            } else if ("team2".equals(analytics.getTeamId())) {
+            } else if (AnalyticsScope.TEAM.equals(analytics.getScope()) && "team2".equals(analytics.getTeamId())) {
                 assertThat(analytics.getGeneralAverage()).isEqualTo(expectedTeam2Average);
                 assertThat(analytics.getEmployeeCount()).isEqualTo(2);
                 assertThat(analytics.getCompletionPercentage()).isEqualTo(100.0); // Both completed but no scores
@@ -728,10 +733,11 @@ class DashboardAnalyticsServiceTest {
         // Setup mock dashboard analytics
         mockDashboardAnalytics = DashboardAnalytics.builder()
                 .companyPerformanceCycleId(COMPANY_ID + "#" + PERFORMANCE_CYCLE_ID)
-                .assessmentMatrixTeamId(ASSESSMENT_MATRIX_ID + "#" + TEAM_ID)
+                .assessmentMatrixScopeId(ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.TEAM.name() + "#" + TEAM_ID)
                 .companyId(COMPANY_ID)
                 .performanceCycleId(PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixId(ASSESSMENT_MATRIX_ID)
+                .scope(AnalyticsScope.TEAM)
                 .teamId(TEAM_ID)
                 .teamName("Test Team")
                 .companyName("Test Company")
@@ -806,10 +812,11 @@ class DashboardAnalyticsServiceTest {
     private DashboardAnalytics createMockAnalytics(String matrixId, String teamId) {
         return DashboardAnalytics.builder()
                 .companyPerformanceCycleId(COMPANY_ID + "#" + PERFORMANCE_CYCLE_ID)
-                .assessmentMatrixTeamId(matrixId + "#" + teamId)
+                .assessmentMatrixScopeId(matrixId + "#" + AnalyticsScope.TEAM.name() + "#" + teamId)
                 .companyId(COMPANY_ID)
                 .performanceCycleId(PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixId(matrixId)
+                .scope(AnalyticsScope.TEAM)
                 .teamId(teamId)
                 .teamName("Team " + teamId)
                 .companyName("Test Company")

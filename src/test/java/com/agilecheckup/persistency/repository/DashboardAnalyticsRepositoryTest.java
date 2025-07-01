@@ -1,5 +1,6 @@
 package com.agilecheckup.persistency.repository;
 
+import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.DashboardAnalytics;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
@@ -39,7 +40,8 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
     private static final String ASSESSMENT_MATRIX_ID = "matrix789";
     private static final String TEAM_ID = "team101";
     private static final String COMPANY_PERFORMANCE_CYCLE_ID = COMPANY_ID + "#" + PERFORMANCE_CYCLE_ID;
-    private static final String ASSESSMENT_MATRIX_TEAM_ID = ASSESSMENT_MATRIX_ID + "#" + TEAM_ID;
+  private static final String ASSESSMENT_MATRIX_SCOPE_ID_TEAM = ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.TEAM.name() + "#" + TEAM_ID;
+  private static final String ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW = ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.ASSESSMENT_MATRIX.name();
 
     @Override
     AbstractCrudRepository getRepository() {
@@ -48,7 +50,7 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
 
     @Override
     DashboardAnalytics createMockedT() {
-        return createTestAnalytics(TEAM_ID);
+      return createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
     }
 
     @Override
@@ -59,8 +61,8 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
     @Test
     void findByCompanyAndPerformanceCycle_ShouldQueryGSI() {
         // Given
-        DashboardAnalytics analytics1 = createTestAnalytics("team1");
-        DashboardAnalytics analytics2 = createTestAnalytics("team2");
+      DashboardAnalytics analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
+      DashboardAnalytics analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
         List<DashboardAnalytics> expectedResults = Arrays.asList(analytics1, analytics2);
 
         when(dynamoDBMapperMock.query(eq(DashboardAnalytics.class), any(DynamoDBQueryExpression.class)))
@@ -84,41 +86,74 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
     }
 
     @Test
-    void findByCompanyPerformanceCycleAndTeam_ShouldLoadByCompositeKey() {
+    void findTeamAnalytics_ShouldLoadByCompositeKey() {
         // Given
-        DashboardAnalytics expectedAnalytics = createTestAnalytics(TEAM_ID);
-        when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_TEAM_ID))
+      DashboardAnalytics expectedAnalytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
+      when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM))
                 .thenReturn(expectedAnalytics);
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+      Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
         assertTrue(result.isPresent());
         assertEquals(expectedAnalytics, result.get());
-        verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_TEAM_ID);
+      verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM);
     }
 
     @Test
-    void findByCompanyPerformanceCycleAndTeam_WhenNotFound_ShouldReturnEmpty() {
+    void findTeamAnalytics_WhenNotFound_ShouldReturnEmpty() {
         // Given
-        when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_TEAM_ID))
+      when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM))
                 .thenReturn(null);
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findByCompanyPerformanceCycleAndTeam(
+      Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
         assertFalse(result.isPresent());
+      verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM);
+    }
+
+  @Test
+  void findAssessmentMatrixOverview_ShouldLoadByCompositeKey() {
+    // Given
+    DashboardAnalytics expectedAnalytics = createTestAnalytics(null, AnalyticsScope.ASSESSMENT_MATRIX);
+    when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW))
+        .thenReturn(expectedAnalytics);
+
+    // When
+    Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+        COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
+
+    // Then
+    assertTrue(result.isPresent());
+    assertEquals(expectedAnalytics, result.get());
+    verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW);
+  }
+
+  @Test
+  void findAssessmentMatrixOverview_WhenNotFound_ShouldReturnEmpty() {
+    // Given
+    when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW))
+        .thenReturn(null);
+
+    // When
+    Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+        COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
+
+    // Then
+    assertFalse(result.isPresent());
+    verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW);
     }
 
     @Test
     void findByCompany_ShouldQueryGSIWithCompanyId() {
         // Given
-        DashboardAnalytics analytics1 = createTestAnalytics("team1");
-        DashboardAnalytics analytics2 = createTestAnalytics("team2");
+      DashboardAnalytics analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
+      DashboardAnalytics analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
         List<DashboardAnalytics> expectedResults = Arrays.asList(analytics1, analytics2);
 
         when(dynamoDBMapperMock.query(eq(DashboardAnalytics.class), any(DynamoDBQueryExpression.class)))
@@ -142,7 +177,7 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
     @Test
     void save_ShouldPersistAnalytics() {
         // Given
-        DashboardAnalytics analytics = createTestAnalytics(TEAM_ID);
+      DashboardAnalytics analytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
 
         // When
         dashboardAnalyticsRepository.save(analytics);
@@ -151,15 +186,28 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
         verify(dynamoDBMapperMock).save(analytics);
     }
 
-    private DashboardAnalytics createTestAnalytics(String teamId) {
-        return DashboardAnalytics.builder()
+  private DashboardAnalytics createTestAnalytics(String teamId, AnalyticsScope scope) {
+    String assessmentMatrixScopeId;
+    String teamName = null;
+
+    if (scope == AnalyticsScope.TEAM) {
+      assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name() + "#" + teamId;
+      teamName = "Team " + teamId;
+    }
+    else {
+      assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name();
+      teamId = null; // Assessment matrix scope doesn't have a team ID
+    }
+
+    return DashboardAnalytics.builder()
                 .companyPerformanceCycleId(COMPANY_PERFORMANCE_CYCLE_ID)
-                .assessmentMatrixTeamId(ASSESSMENT_MATRIX_ID + "#" + teamId)
+        .assessmentMatrixScopeId(assessmentMatrixScopeId)
                 .companyId(COMPANY_ID)
                 .performanceCycleId(PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixId(ASSESSMENT_MATRIX_ID)
+        .scope(scope)
                 .teamId(teamId)
-                .teamName("Team " + teamId)
+        .teamName(teamName)
                 .generalAverage(75.5)
                 .employeeCount(10)
                 .completionPercentage(80.0)
