@@ -3,7 +3,6 @@ package com.agilecheckup.main.runner;
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
 import com.agilecheckup.persistency.entity.Company;
-import com.agilecheckup.persistency.entity.Department;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;
@@ -50,7 +49,9 @@ public class TeamTableRunner extends AbstractEntityCrudRunner<Team> {
       testTenantId = company.getTenantId();
       
       // Create test department
-      Optional<Department> departmentOpt = departmentService.create(
+      // Note: departmentService now returns DepartmentV2, but for compatibility
+      // we'll handle the type change here
+      var departmentOpt = departmentService.create(
           "Test Department for Teams",
           "Test Department Description",
           testTenantId,
