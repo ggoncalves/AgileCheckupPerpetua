@@ -24,6 +24,24 @@ public class AwsConfigModule {
   }
 
 
+  // TODO: Note that this method might be kept in here during SDK V2 migration. See details bellow:
+  //
+  // The current V1 implementation uses:
+  //  - AmazonDynamoDBLockClient from AWS SDK V1
+  //  - AmazonDynamoDB client
+  //
+  //  For V2, you would need to either:
+  //
+  //  1. Use a third-party library - Find a V2-compatible distributed locking library that works with DynamoDbClient
+  //  2. Keep this specific dependency on V1 - Since distributed locking might not be critical path functionality, you could keep using the V1 lock client alongside your V2
+  //  implementation temporarily
+  //  3. Implement custom locking - Create your own distributed locking mechanism using V2's DynamoDbClient and conditional writes
+  //  4. Wait for AWS - AWS might eventually provide a V2 equivalent, though there's no guarantee
+  //
+  //  The most practical approach during migration would be option 2 - keep the V1 lock client for now since it's likely used for specific operational scenarios rather than core
+  //  business logic. This allows you to complete the main entity migration to V2 while deferring the locking mechanism upgrade to a later phase.
+  //
+  //  So yes, it's possible but will require additional architectural decisions about how to handle distributed locking in the V2 world.
   @Provides
   @Singleton
   public AmazonDynamoDBLockClient provideDynamoDBLockClient(AmazonDynamoDB amazonDynamoDB) {

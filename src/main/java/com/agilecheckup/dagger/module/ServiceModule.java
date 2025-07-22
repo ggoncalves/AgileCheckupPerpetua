@@ -1,8 +1,20 @@
 package com.agilecheckup.dagger.module;
 
-import com.agilecheckup.service.*;
+import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
+import com.agilecheckup.service.AbstractCrudService;
+import com.agilecheckup.service.AnswerService;
+import com.agilecheckup.service.AssessmentMatrixService;
+import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.EmployeeAssessmentService;
+import com.agilecheckup.service.PerformanceCycleService;
+import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.TeamService;
 import dagger.Binds;
 import dagger.Module;
+import dagger.Provides;
+
+import javax.inject.Singleton;
 
 @Module
 public abstract class ServiceModule {
@@ -13,8 +25,12 @@ public abstract class ServiceModule {
   @Binds
   abstract AbstractCrudService provideCompanyService(CompanyService companyService);
 
-  @Binds
-  abstract AbstractCrudService provideDepartmentService(DepartmentService departmentService);
+  @Provides
+  @Singleton
+  static DepartmentService provideDepartmentService(DepartmentRepositoryV2 departmentRepositoryV2, 
+                                                    CompanyService companyService) {
+    return new DepartmentService(departmentRepositoryV2, companyService);
+  }
 
   @Binds
   abstract AbstractCrudService provideTeamService(TeamService teamService);
