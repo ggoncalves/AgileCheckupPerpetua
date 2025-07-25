@@ -36,7 +36,7 @@ class DepartmentServiceLegacyTest extends AbstractCrudServiceTest<Department, Ab
   private DepartmentRepository mockDepartmentRepository;
 
   @Mock
-  private CompanyService mockCompanyService;
+  private CompanyServiceLegacy mockCompanyService;
 
   private static Department originalDepartment;
 

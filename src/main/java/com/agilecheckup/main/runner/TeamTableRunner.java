@@ -6,7 +6,7 @@ import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.repository.AbstractCrudRepository;
 import com.agilecheckup.service.AbstractCrudService;
-import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.TeamService;
 import lombok.extern.log4j.Log4j2;
@@ -21,7 +21,7 @@ public class TeamTableRunner extends AbstractEntityCrudRunner<Team> {
 
   private TeamService teamService;
   private DepartmentService departmentService;
-  private CompanyService companyService;
+  private CompanyServiceLegacy companyService;
   private String testDepartmentId;
   private String testTenantId;
 
@@ -32,7 +32,7 @@ public class TeamTableRunner extends AbstractEntityCrudRunner<Team> {
 
   private void setupTestData() {
     ServiceComponent serviceComponent = DaggerServiceComponent.create();
-    companyService = serviceComponent.buildCompanyService();
+    companyService = serviceComponent.buildCompanyServiceLegacy();
     departmentService = serviceComponent.buildDepartmentService();
     
     // Create test company

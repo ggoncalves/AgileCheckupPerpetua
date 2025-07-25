@@ -1,7 +1,7 @@
 package com.agilecheckup.main;
 
+import com.agilecheckup.main.runner.CompanyTableRunner;
 import com.agilecheckup.main.runner.CrudRunner;
-import com.agilecheckup.main.runner.DepartmentTableRunner;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
@@ -22,9 +22,9 @@ public class E2EAllTablesInvoker {
     tableRunnerSet = ImmutableSet.of(
 //        new AnswerTableRunner(true),
 //        new QuestionTableRunner(true),
-//        new CompanyTableRunner(true),
-        new DepartmentTableRunner(true)
-//        new TeamTableRunner(true),
+        new CompanyTableRunner(true)
+//        new DepartmentTableRunner(true),
+//        new TeamTableRunner(true)
 //        new PerformanceCycleTableRunner(true),
 //        new AssessmentMatrixTableRunner(true),
 //        new EmployeeAssessmentTableRunner(true)

@@ -43,7 +43,7 @@ class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCyc
   private PerformanceCycleRepository mockPerformanceCycleRepository;
 
   @Mock
-  private CompanyService mockCompanyService;
+  private CompanyServiceLegacy mockCompanyService;
 
   private static PerformanceCycle originalPerformanceCycle;
 

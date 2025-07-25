@@ -17,10 +17,10 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
 
   private final PerformanceCycleRepository performanceCycleRepository;
 
-  private final CompanyService companyService;
+  private final CompanyServiceLegacy companyService;
 
   @Inject
-  public PerformanceCycleService(PerformanceCycleRepository performanceCycleRepository, CompanyService companyService) {
+  public PerformanceCycleService(PerformanceCycleRepository performanceCycleRepository, CompanyServiceLegacy companyService) {
     this.performanceCycleRepository = performanceCycleRepository;
     this.companyService = companyService;
   }

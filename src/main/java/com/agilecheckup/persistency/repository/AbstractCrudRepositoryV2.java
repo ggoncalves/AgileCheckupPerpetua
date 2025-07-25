@@ -31,6 +31,7 @@ public abstract class AbstractCrudRepositoryV2<T extends BaseEntityV2> {
     
     public Optional<T> save(T entity) {
         try {
+                
             if (entity.getId() == null) {
                 entity.generateId();
             }
@@ -43,7 +44,7 @@ public abstract class AbstractCrudRepositoryV2<T extends BaseEntityV2> {
             log.debug("Successfully saved entity with id: {}", entity.getId());
             return Optional.of(entity);
         } catch (Exception e) {
-            log.error("Error saving entity: {}", e.getMessage(), e);
+            log.error("Error saving entity of type {}: {}", entity.getClass().getSimpleName(), e.getMessage(), e);
             return Optional.empty();
         }
     }

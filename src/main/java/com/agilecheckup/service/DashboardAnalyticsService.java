@@ -57,7 +57,7 @@ public class DashboardAnalyticsService {
     private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
     private final AssessmentMatrixService assessmentMatrixService;
     private final EmployeeAssessmentService employeeAssessmentService;
-  private final CompanyService companyService;
+  private final CompanyServiceLegacy companyService;
   private final PerformanceCycleService performanceCycleService;
     private final TeamRepository teamRepository;
     private final AnswerRepository answerRepository;
@@ -68,7 +68,7 @@ public class DashboardAnalyticsService {
             DashboardAnalyticsRepository dashboardAnalyticsRepository,
             AssessmentMatrixService assessmentMatrixService,
             EmployeeAssessmentService employeeAssessmentService,
-            CompanyService companyService,
+            CompanyServiceLegacy companyService,
             PerformanceCycleService performanceCycleService,
             TeamRepository teamRepository,
             AnswerRepository answerRepository) {
