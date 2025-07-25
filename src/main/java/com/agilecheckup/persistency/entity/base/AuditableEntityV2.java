@@ -24,14 +24,14 @@ public abstract class AuditableEntityV2 extends BaseEntityV2 implements Auditabl
   @Getter(onMethod_ = @__({@DynamoDbAttribute("createdDate"), @DynamoDbConvertedBy(InstantAttributeConverter.class)}))
   private Instant createdDate;
 
-  @Getter(onMethod_ = @__({@DynamoDbAttribute("lastModifiedDate"), @DynamoDbConvertedBy(InstantAttributeConverter.class)}))
-  private Instant lastModifiedDate;
+  @Getter(onMethod_ = @__({@DynamoDbAttribute("lastUpdatedDate"), @DynamoDbConvertedBy(InstantAttributeConverter.class)}))
+  private Instant lastUpdatedDate;
 
   public void updateTimestamps() {
     Instant now = Instant.now();
     if (this.createdDate == null) {
       this.createdDate = now;
     }
-    this.lastModifiedDate = now;
+    this.lastUpdatedDate = now;
   }
 }

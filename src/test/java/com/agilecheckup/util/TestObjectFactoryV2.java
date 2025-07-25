@@ -31,7 +31,7 @@ public class TestObjectFactoryV2 {
     department.setTenantId(GENERIC_TENANT_ID);
     department.setCompanyId(GENERIC_COMPANY_ID);
     department.setCreatedDate(Instant.now().minusSeconds(86400));
-    department.setLastModifiedDate(Instant.now());
+    department.setLastUpdatedDate(Instant.now());
     return department;
   }
 
@@ -55,7 +55,7 @@ public class TestObjectFactoryV2 {
     department.setTenantId(tenantId);
     department.setCompanyId(companyId);
     department.setCreatedDate(Instant.now().minusSeconds(86400));
-    department.setLastModifiedDate(Instant.now());
+    department.setLastUpdatedDate(Instant.now());
     return department;
   }
 
@@ -67,7 +67,7 @@ public class TestObjectFactoryV2 {
     copy.setTenantId(department.getTenantId());
     copy.setCompanyId(department.getCompanyId());
     copy.setCreatedDate(department.getCreatedDate());
-    copy.setLastModifiedDate(department.getLastModifiedDate());
+    copy.setLastUpdatedDate(department.getLastUpdatedDate());
     return copy;
   }
 
@@ -88,7 +88,7 @@ public class TestObjectFactoryV2 {
         .contactPerson(createMockedNaturalPersonV2())
         .address(createMockedAddressV2())
         .createdDate(Instant.now().minusSeconds(86400))
-        .lastModifiedDate(Instant.now())
+        .lastUpdatedDate(Instant.now())
         .build();
   }
 
@@ -110,7 +110,7 @@ public class TestObjectFactoryV2 {
         .size(CompanySize.STARTUP)
         .industry(Industry.OTHER)
         .createdDate(Instant.now().minusSeconds(86400))
-        .lastModifiedDate(Instant.now())
+        .lastUpdatedDate(Instant.now())
         .build();
   }
 
@@ -131,7 +131,7 @@ public class TestObjectFactoryV2 {
         .address(company.getAddress())
         .phone(company.getPhone())
         .createdDate(company.getCreatedDate())
-        .lastModifiedDate(company.getLastModifiedDate())
+        .lastUpdatedDate(company.getLastUpdatedDate())
         .build();
   }
 
@@ -165,7 +165,7 @@ public class TestObjectFactoryV2 {
         .genderPronoun(GenderPronoun.HE)
         .address(createMockedAddressV2())
         .createdDate(Instant.now().minusSeconds(86400))
-        .lastModifiedDate(Instant.now())
+        .lastUpdatedDate(Instant.now())
         .build();
   }
 }
