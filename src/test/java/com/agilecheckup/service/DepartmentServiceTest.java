@@ -32,7 +32,7 @@ class DepartmentServiceTest extends AbstractCrudServiceTestV2<DepartmentV2, Depa
     private DepartmentRepositoryV2 mockDepartmentRepositoryV2;
     
     @Mock
-    private CompanyService mockCompanyService;
+    private CompanyServiceLegacy mockCompanyService;
     
     private DepartmentService departmentService;
     

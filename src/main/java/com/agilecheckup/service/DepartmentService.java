@@ -17,10 +17,10 @@ import java.util.Optional;
 public class DepartmentService extends AbstractCrudServiceV2<DepartmentV2, AbstractCrudRepositoryV2<DepartmentV2>> {
     
     private final DepartmentRepositoryV2 departmentRepositoryV2;
-    private final CompanyService companyService;
+    private final CompanyServiceLegacy companyService;
     
     @Inject
-    public DepartmentService(DepartmentRepositoryV2 departmentRepositoryV2, CompanyService companyService) {
+    public DepartmentService(DepartmentRepositoryV2 departmentRepositoryV2, CompanyServiceLegacy companyService) {
         this.departmentRepositoryV2 = departmentRepositoryV2;
         this.companyService = companyService;
     }

@@ -14,10 +14,10 @@ public class DepartmentServiceLegacy extends AbstractCrudService<Department, Abs
 
   private final DepartmentRepository departmentRepository;
 
-  private final CompanyService companyService;
+  private final CompanyServiceLegacy companyService;
 
   @Inject
-  public DepartmentServiceLegacy(DepartmentRepository departmentRepository, CompanyService companyService) {
+  public DepartmentServiceLegacy(DepartmentRepository departmentRepository, CompanyServiceLegacy companyService) {
     this.departmentRepository = departmentRepository;
     this.companyService = companyService;
   }

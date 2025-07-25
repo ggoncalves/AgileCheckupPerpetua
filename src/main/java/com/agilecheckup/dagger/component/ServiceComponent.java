@@ -8,6 +8,7 @@ import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentNavigationService;
 import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.EmployeeAssessmentService;
@@ -24,6 +25,8 @@ public interface ServiceComponent {
   QuestionService buildQuestionService();
 
   CompanyService buildCompanyService();
+
+  CompanyServiceLegacy buildCompanyServiceLegacy();
 
   DepartmentService buildDepartmentService();
 

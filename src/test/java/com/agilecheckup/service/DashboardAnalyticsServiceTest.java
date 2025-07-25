@@ -58,7 +58,7 @@ class DashboardAnalyticsServiceTest {
     private EmployeeAssessmentService employeeAssessmentService;
     
     @Mock
-    private CompanyService companyService;
+    private CompanyServiceLegacy companyService;
     
     @Mock
     private PerformanceCycleService performanceCycleService;
