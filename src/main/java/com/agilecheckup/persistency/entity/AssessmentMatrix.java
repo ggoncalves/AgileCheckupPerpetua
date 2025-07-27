@@ -2,8 +2,10 @@ package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.converter.PillarV2MapConverter;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +31,8 @@ public class AssessmentMatrix extends TenantDescribableEntity {
   private String performanceCycleId;
 
   @DynamoDBAttribute(attributeName = "pillarMap")
-  private Map<String, Pillar> pillarMap;
+  @DynamoDBTypeConverted(converter = PillarV2MapConverter.class)
+  private Map<String, PillarV2> pillarMap;
 
   @DynamoDBAttribute(attributeName = "questionCount")
   @Builder.Default

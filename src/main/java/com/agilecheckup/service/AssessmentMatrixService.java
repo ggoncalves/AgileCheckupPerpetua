@@ -3,10 +3,10 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.Category;
+import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
@@ -79,22 +79,22 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
-                                           Map<String, Pillar> pillarMap) {
+                                           Map<String, PillarV2> pillarMap) {
     return create(name, description, tenantId, performanceCycleId, pillarMap, null);
   }
 
   public Optional<AssessmentMatrix> create(String name, String description, String tenantId, String performanceCycleId,
-                                           Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
+                                           Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
     return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap, configuration));
   }
 
   public Optional<AssessmentMatrix> update(String id, String name, String description, String tenantId, String performanceCycleId,
-                                           Map<String, Pillar> pillarMap) {
+                                           Map<String, PillarV2> pillarMap) {
     return update(id, name, description, tenantId, performanceCycleId, pillarMap, null);
   }
 
   public Optional<AssessmentMatrix> update(String id, String name, String description, String tenantId, String performanceCycleId,
-                                           Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
+                                           Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
     Optional<AssessmentMatrix> optionalAssessmentMatrix = findById(id);
     if (optionalAssessmentMatrix.isPresent()) {
       AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.get();
@@ -116,17 +116,17 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     }
   }
 
-  private void validateCategoryDeletion(AssessmentMatrix currentMatrix, Map<String, Pillar> newPillarMap, String tenantId) {
-    Map<String, Pillar> currentPillarMap = currentMatrix.getPillarMap();
+  private void validateCategoryDeletion(AssessmentMatrix currentMatrix, Map<String, PillarV2> newPillarMap, String tenantId) {
+    Map<String, PillarV2> currentPillarMap = currentMatrix.getPillarMap();
     
     // Check for removed pillars
-    for (Map.Entry<String, Pillar> currentPillarEntry : currentPillarMap.entrySet()) {
+    for (Map.Entry<String, PillarV2> currentPillarEntry : currentPillarMap.entrySet()) {
       String pillarId = currentPillarEntry.getKey();
-      Pillar currentPillar = currentPillarEntry.getValue();
+      PillarV2 currentPillar = currentPillarEntry.getValue();
       
       if (!newPillarMap.containsKey(pillarId)) {
         // Pillar is being removed - check all its categories for questions
-        for (Map.Entry<String, Category> categoryEntry : currentPillar.getCategoryMap().entrySet()) {
+        for (Map.Entry<String, CategoryV2> categoryEntry : currentPillar.getCategoryMap().entrySet()) {
           String categoryId = categoryEntry.getKey();
           if (getQuestionService().hasCategoryQuestions(currentMatrix.getId(), categoryId, tenantId)) {
             throw new ValidationException("Cannot delete pillar '" + currentPillar.getName() + "' because it contains categories with questions");
@@ -134,10 +134,10 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
         }
       } else {
         // Pillar exists - check for removed categories
-        Pillar newPillar = newPillarMap.get(pillarId);
-        for (Map.Entry<String, Category> currentCategoryEntry : currentPillar.getCategoryMap().entrySet()) {
+        PillarV2 newPillar = newPillarMap.get(pillarId);
+        for (Map.Entry<String, CategoryV2> currentCategoryEntry : currentPillar.getCategoryMap().entrySet()) {
           String categoryId = currentCategoryEntry.getKey();
-          Category currentCategory = currentCategoryEntry.getValue();
+          CategoryV2 currentCategory = currentCategoryEntry.getValue();
           
           if (!newPillar.getCategoryMap().containsKey(categoryId)) {
             // Category is being removed - check for questions
@@ -196,7 +196,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
-                                                  Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
+                                                  Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
     return AssessmentMatrix.builder()
         .name(name)
         .description(StringUtils.defaultIfBlank(description, DEFAULT_WHEN_NULL))

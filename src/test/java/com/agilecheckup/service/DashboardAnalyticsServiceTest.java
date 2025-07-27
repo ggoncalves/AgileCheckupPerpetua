@@ -8,7 +8,8 @@ import com.agilecheckup.persistency.entity.DashboardAnalytics;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
+import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
@@ -686,8 +687,8 @@ class DashboardAnalyticsServiceTest {
     private void setupMockEntities() {
         // Setup mock matrix with potential score
         mockPotentialScore = createMockPotentialScore();
-        Map<String, Pillar> pillarMap = new HashMap<>();
-        pillarMap.put(PILLAR_ID, Pillar.builder()
+        Map<String, PillarV2> pillarMap = new HashMap<>();
+        pillarMap.put(PILLAR_ID, PillarV2.builder()
                 .id(PILLAR_ID)
                 .name("Test Pillar")
                 .description("Test Pillar Description")

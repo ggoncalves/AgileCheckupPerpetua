@@ -6,7 +6,7 @@ import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
@@ -42,7 +42,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatr
 import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithDependenciesId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedPerformanceCycle;
-import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMapV2;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -90,7 +90,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void setUpBefore() {
     originalAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(
         DEFAULT_ID,
-        createMockedPillarMap(3, 4, "Pillar", "Category"));
+        createMockedPillarMapV2(3, 4, "Pillar", "Category"));
     originalAssessmentMatrix = cloneWithId(originalAssessmentMatrix, DEFAULT_ID);
 
     mockQuestionService = Mockito.mock(QuestionService.class);
@@ -517,8 +517,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void update_existingAssessmentMatrix_shouldSucceed() {
     // Prepare
     @SuppressWarnings("unchecked")
-    Map<String, Pillar> mockedPillarMap = mock(Map.class);
-    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    Map<String, PillarV2> mockedPillarMap = mock(Map.class);
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMapV2(1, 1, "pillar", "category"));
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
     AssessmentMatrix updatedAssessmentMatrixDetails = createMockedAssessmentMatrixWithDependenciesId("updatedCycleId", mockedPillarMap);
     updatedAssessmentMatrixDetails.setName("Updated Matrix Name");
@@ -563,7 +563,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     // Prepare
     String nonExistingId = "nonExistingId";
     @SuppressWarnings("unchecked")
-    Map<String, Pillar> mockedPillarMap = mock(Map.class);
+    Map<String, PillarV2> mockedPillarMap = mock(Map.class);
 
     // Mock repository calls
     doReturn(null).when(mockAssessmentMatrixRepository).findById(nonExistingId);
@@ -655,8 +655,8 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void update_withNullDescription_shouldSetEmptyString() {
     // Prepare
     @SuppressWarnings("unchecked")
-    Map<String, Pillar> mockedPillarMap = mock(Map.class);
-    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    Map<String, PillarV2> mockedPillarMap = mock(Map.class);
+    AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMapV2(1, 1, "pillar", "category"));
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
     
     AssessmentMatrix updatedAssessmentMatrixDetails = createMockedAssessmentMatrixWithDependenciesId("updatedCycleId", mockedPillarMap);
@@ -693,12 +693,12 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void update_withCategoryWithQuestions_shouldThrowValidationException() {
     // Prepare
-    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    Map<String, PillarV2> currentPillarMap = createMockedPillarMapV2(1, 1, "pillar", "category");
     AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
 
     // New pillar map without the existing category (simulating deletion)
-    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 0, "pillar", "category"); // No categories
+    Map<String, PillarV2> newPillarMap = createMockedPillarMapV2(1, 0, "pillar", "category"); // No categories
 
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
@@ -722,12 +722,12 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void update_withPillarWithQuestions_shouldThrowValidationException() {
     // Prepare
-    Map<String, Pillar> currentPillarMap = createMockedPillarMap(2, 1, "pillar", "category");
+    Map<String, PillarV2> currentPillarMap = createMockedPillarMapV2(2, 1, "pillar", "category");
     AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
 
     // New pillar map with only one pillar (simulating deletion of a pillar)
-    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    Map<String, PillarV2> newPillarMap = createMockedPillarMapV2(1, 1, "pillar", "category");
 
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
@@ -751,12 +751,12 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void update_withoutDeletingAnything_shouldSucceed() {
     // Prepare - create consistent pillar maps using the same entities
-    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    Map<String, PillarV2> currentPillarMap = createMockedPillarMapV2(1, 1, "pillar", "category");
     AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
 
     // Use the SAME pillar map instance (no deletion)
-    Map<String, Pillar> newPillarMap = existingAssessmentMatrix.getPillarMap();
+    Map<String, PillarV2> newPillarMap = existingAssessmentMatrix.getPillarMap();
 
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);
@@ -781,12 +781,12 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   @Test
   void update_deletingCategoryWithoutQuestions_shouldSucceed() {
     // Prepare - use a more controlled test setup
-    Map<String, Pillar> currentPillarMap = createMockedPillarMap(1, 2, "pillar", "category");
+    Map<String, PillarV2> currentPillarMap = createMockedPillarMapV2(1, 2, "pillar", "category");
     AssessmentMatrix existingAssessmentMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, currentPillarMap);
     existingAssessmentMatrix = cloneWithId(existingAssessmentMatrix, DEFAULT_ID);
 
     // Create new pillar map manually to control the difference
-    Map<String, Pillar> newPillarMap = createMockedPillarMap(1, 1, "pillar", "category");
+    Map<String, PillarV2> newPillarMap = createMockedPillarMapV2(1, 1, "pillar", "category");
     
     doReturn(existingAssessmentMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doReturn(mockQuestionService).when(assessmentMatrixService).getQuestionService();
@@ -831,7 +831,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void getEffectiveConfiguration_withNullConfiguration_shouldReturnDefault() {
     // Given
     AssessmentMatrix matrixWithoutConfig = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234,
-        createMockedPillarMap(1, 1, "pillar", "category"));
+        createMockedPillarMapV2(1, 1, "pillar", "category"));
     matrixWithoutConfig.setConfiguration(null);
 
     // When
@@ -850,7 +850,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
     // Given
     AssessmentConfiguration customConfig = createCustomAssessmentConfiguration(false, false, false, QuestionNavigationType.SEQUENTIAL);
     AssessmentMatrix matrixWithConfig = createMockedAssessmentMatrixWithConfiguration(GENERIC_ID_1234,
-        createMockedPillarMap(1, 1, "pillar", "category"), customConfig);
+        createMockedPillarMapV2(1, 1, "pillar", "category"), customConfig);
 
     // When
     AssessmentConfiguration effectiveConfig = assessmentMatrixService.getEffectiveConfiguration(matrixWithConfig);
@@ -925,7 +925,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void updateWithConfiguration_shouldUpdateConfiguration() {
     // Given
     AssessmentConfiguration newConfig = createCustomAssessmentConfiguration(true, false, true, QuestionNavigationType.SEQUENTIAL);
-    AssessmentMatrix existingMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMap(1, 1, "pillar", "category"));
+    AssessmentMatrix existingMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234, createMockedPillarMapV2(1, 1, "pillar", "category"));
     existingMatrix = cloneWithId(existingMatrix, DEFAULT_ID);
 
     doReturn(existingMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
@@ -984,9 +984,9 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   void backwardCompatibility_updateWithoutConfiguration_shouldStillWork() {
     // Given - use the same pillar map to avoid validation logic (no categories are being removed)
     AssessmentMatrix existingMatrix = createMockedAssessmentMatrixWithDependenciesId(GENERIC_ID_1234,
-        createMockedPillarMap(1, 1, "pillar", "category"));
+        createMockedPillarMapV2(1, 1, "pillar", "category"));
     existingMatrix = cloneWithId(existingMatrix, DEFAULT_ID);
-    Map<String, Pillar> samePillarMap = existingMatrix.getPillarMap(); // Same map = no validation needed
+    Map<String, PillarV2> samePillarMap = existingMatrix.getPillarMap(); // Same map = no validation needed
 
     doReturn(existingMatrix).when(mockAssessmentMatrixRepository).findById(DEFAULT_ID);
     doReturn(Optional.of(performanceCycle)).when(mockPerformanceCycleService).findById(GENERIC_ID_1234);

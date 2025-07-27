@@ -5,7 +5,12 @@
       "Bash(mvn dependency:*)",
       "Bash(mvn clean:*)",
       "Bash(mv:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   },

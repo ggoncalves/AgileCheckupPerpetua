@@ -1,9 +1,11 @@
 package com.agilecheckup.util;
 
+import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.entity.Industry;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.person.AddressV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
@@ -12,6 +14,8 @@ import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import lombok.NonNull;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestObjectFactoryV2 {
 
@@ -167,5 +171,79 @@ public class TestObjectFactoryV2 {
         .createdDate(Instant.now().minusSeconds(86400))
         .lastUpdatedDate(Instant.now())
         .build();
+  }
+
+  public static CategoryV2 createMockedCategoryV2() {
+    return CategoryV2.builder()
+        .name("Test Category")
+        .description("Test category description")
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static CategoryV2 createMockedCategoryV2(String name, String description) {
+    return CategoryV2.builder()
+        .name(name)
+        .description(description)
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static PillarV2 createMockedPillarV2() {
+    Map<String, CategoryV2> categoryMap = new HashMap<>();
+    categoryMap.put("cat1", createMockedCategoryV2("Category 1", "First category"));
+    categoryMap.put("cat2", createMockedCategoryV2("Category 2", "Second category"));
+    categoryMap.put("cat3", createMockedCategoryV2("Category 3", "Third category"));
+
+    return PillarV2.builder()
+        .name("Test Pillar")
+        .description("Test pillar description")
+        .categoryMap(categoryMap)
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static PillarV2 createMockedPillarV2(String name, String description) {
+    Map<String, CategoryV2> categoryMap = new HashMap<>();
+    categoryMap.put("default", createMockedCategoryV2("Default Category", "Default category for " + name));
+
+    return PillarV2.builder()
+        .name(name)
+        .description(description)
+        .categoryMap(categoryMap)
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static PillarV2 createMockedPillarV2WithCategories(String name, String description, Map<String, CategoryV2> categories) {
+    return PillarV2.builder()
+        .name(name)
+        .description(description)
+        .categoryMap(categories)
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static Map<String, CategoryV2> createMockedCategoryMap(int categoryCount) {
+    Map<String, CategoryV2> categoryMap = new HashMap<>();
+    for (int i = 1; i <= categoryCount; i++) {
+      String key = "category" + i;
+      categoryMap.put(key, createMockedCategoryV2("Category " + i, "Description for category " + i));
+    }
+    return categoryMap;
+  }
+
+  public static Map<String, PillarV2> createMockedPillarMap(int pillarCount) {
+    Map<String, PillarV2> pillarMap = new HashMap<>();
+    for (int i = 1; i <= pillarCount; i++) {
+      String key = "pillar" + i;
+      pillarMap.put(key, createMockedPillarV2("Pillar " + i, "Description for pillar " + i));
+    }
+    return pillarMap;
   }
 }

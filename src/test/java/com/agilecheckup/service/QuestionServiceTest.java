@@ -2,7 +2,8 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Category;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
+import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.Question;
@@ -32,7 +33,7 @@ import java.util.stream.IntStream;
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_ID_1234;
 import static com.agilecheckup.util.TestObjectFactory.copyQuestionAndAddId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrix;
-import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMapV2;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionOptionList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -66,7 +67,7 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   private AssessmentMatrixService assessmentMatrixService;
 
   private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID,
-      createMockedPillarMap(1, 2, PILLAR_PREFIX, CATEGORY_PREFIX));
+      createMockedPillarMapV2(1, 2, PILLAR_PREFIX, CATEGORY_PREFIX));
 
   private Question originalQuestion;
   private Question originalCustomQuestion;
@@ -81,15 +82,15 @@ class QuestionServiceTest extends AbstractCrudServiceTest<Question, AbstractCrud
   private void setPillarAndCategoryToAssessmentMatrix(AssessmentMatrix assessmentMatrix) {
     int index = 0;
     String[] categoryIds = {CATEGORY_ID_1, CATEGORY_ID_2};
-    Map<String, Pillar> newPillarMap = new HashMap<>();
-    Map<String, Category> newCategoryMap = new HashMap<>();
-    for (Map.Entry<String, Pillar> pillarEntry : assessmentMatrix.getPillarMap().entrySet()) {
-      for (Map.Entry<String, Category> categoryEntry : pillarEntry.getValue().getCategoryMap().entrySet()) {
-        Category category = categoryEntry.getValue();
+    Map<String, PillarV2> newPillarMap = new HashMap<>();
+    Map<String, CategoryV2> newCategoryMap = new HashMap<>();
+    for (Map.Entry<String, PillarV2> pillarEntry : assessmentMatrix.getPillarMap().entrySet()) {
+      for (Map.Entry<String, CategoryV2> categoryEntry : pillarEntry.getValue().getCategoryMap().entrySet()) {
+        CategoryV2 category = categoryEntry.getValue();
         category.setId(categoryIds[index++]);
         newCategoryMap.put(category.getId(), category);
       }
-      Pillar pillar = pillarEntry.getValue();
+      PillarV2 pillar = pillarEntry.getValue();
       pillar.setId(PILLAR_ID_1);
       pillar.setCategoryMap(newCategoryMap);
       newPillarMap.put(pillar.getId(), pillar);
