@@ -8,7 +8,7 @@ import com.agilecheckup.persistency.entity.DashboardAnalytics;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -382,7 +382,7 @@ public class DashboardAnalyticsService {
             Map<String, Object> pillarData = new HashMap<>();
             
             // Get pillar name from matrix
-            Pillar pillar = matrix.getPillarMap().get(pillarId);
+            PillarV2 pillar = matrix.getPillarMap().get(pillarId);
             String pillarName = pillar != null ? pillar.getName() : pillarId;
             
             // Calculate average actual score

@@ -1,8 +1,8 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.Category;
-import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.CategoryV2;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.Question;
@@ -62,8 +62,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
       AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-      Pillar pillar = getPillar(assessmentMatrix, pillarId);
-      Category category = getCategory(pillar, categoryId);
+      PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
+      CategoryV2 category = getCategory(pillar, categoryId);
       
       question.setAssessmentMatrixId(assessmentMatrix.getId());
       question.setPillarId(pillar.getId());
@@ -89,8 +89,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
       Question question = optionalQuestion.get();
       validateQuestionOptions(options);
       AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-      Pillar pillar = getPillar(assessmentMatrix, pillarId);
-      Category category = getCategory(pillar, categoryId);
+      PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
+      CategoryV2 category = getCategory(pillar, categoryId);
       
       question.setAssessmentMatrixId(assessmentMatrix.getId());
       question.setPillarId(pillar.getId());
@@ -134,8 +134,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
   private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points,
                                           String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-    Pillar pillar = getPillar(assessmentMatrix, pillarId);
-    Category category = getCategory(pillar, categoryId);
+    PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
+    CategoryV2 category = getCategory(pillar, categoryId);
     return Question.builder()
         .assessmentMatrixId(assessmentMatrix.getId())
         .pillarId(pillar.getId())
@@ -156,8 +156,8 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
                                                 String pillarId, String categoryId, String extraDescription) {
     validateQuestionOptions(options);
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-    Pillar pillar = getPillar(assessmentMatrix, pillarId);
-    Category category = getCategory(pillar, categoryId);
+    PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
+    CategoryV2 category = getCategory(pillar, categoryId);
     return Question.builder()
         .assessmentMatrixId(assessmentMatrix.getId())
         .pillarId(pillar.getId())
@@ -251,13 +251,13 @@ public class QuestionService extends AbstractCrudService<Question, AbstractCrudR
     return assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
   }
 
-  private Pillar getPillar(AssessmentMatrix assessmentMatrix, String pillarId) {
+  private PillarV2 getPillar(AssessmentMatrix assessmentMatrix, String pillarId) {
     return assessmentMatrix.getPillarMap().computeIfAbsent(pillarId, s -> {
       throw new InvalidIdReferenceException(pillarId, getClass().getName(), "Pillar");
     });
   }
 
-  private Category getCategory(Pillar pillar, String categoryId) {
+  private CategoryV2 getCategory(PillarV2 pillar, String categoryId) {
     return pillar.getCategoryMap().computeIfAbsent(categoryId, s -> {
       throw new InvalidIdReferenceException(categoryId, getClass().getName(), "Category");
     });

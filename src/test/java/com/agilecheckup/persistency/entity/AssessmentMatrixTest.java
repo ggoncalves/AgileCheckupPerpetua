@@ -7,9 +7,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.agilecheckup.persistency.entity.PillarV2;
+
 import static com.agilecheckup.util.TestObjectFactory.createCustomAssessmentConfiguration;
 import static com.agilecheckup.util.TestObjectFactory.createDefaultAssessmentConfiguration;
-import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMapV2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
@@ -19,7 +21,7 @@ class AssessmentMatrixTest {
     void shouldCreateAssessmentMatrixWithConfiguration() {
         // Given
         AssessmentConfiguration configuration = createDefaultAssessmentConfiguration();
-        Map<String, Pillar> pillarMap = createMockedPillarMap(2, 3, "Pillar", "Category");
+        Map<String, PillarV2> pillarMap = createMockedPillarMapV2(2, 3, "Pillar", "Category");
 
         // When
         AssessmentMatrix matrix = AssessmentMatrix.builder()
@@ -45,7 +47,7 @@ class AssessmentMatrixTest {
     @Test
     void shouldCreateAssessmentMatrixWithoutConfiguration() {
         // Given
-        Map<String, Pillar> pillarMap = createMockedPillarMap(1, 2, "Pillar", "Category");
+        Map<String, PillarV2> pillarMap = createMockedPillarMapV2(1, 2, "Pillar", "Category");
 
         // When
         AssessmentMatrix matrix = AssessmentMatrix.builder()
@@ -70,7 +72,7 @@ class AssessmentMatrixTest {
         // Given
         AssessmentConfiguration configuration = createCustomAssessmentConfiguration(
             false, true, false, QuestionNavigationType.SEQUENTIAL);
-        Map<String, Pillar> pillarMap = new HashMap<>();
+        Map<String, PillarV2> pillarMap = new HashMap<>();
 
         // When
         AssessmentMatrix matrix = AssessmentMatrix.builder()
@@ -160,7 +162,7 @@ class AssessmentMatrixTest {
         // Given
         AssessmentConfiguration config1 = createDefaultAssessmentConfiguration();
         AssessmentConfiguration config2 = createDefaultAssessmentConfiguration();
-        Map<String, Pillar> pillarMap = new HashMap<>();
+        Map<String, PillarV2> pillarMap = new HashMap<>();
 
         AssessmentMatrix matrix1 = AssessmentMatrix.builder()
             .id("matrix-1")

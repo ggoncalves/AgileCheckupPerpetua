@@ -44,7 +44,7 @@ import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatr
 import static com.agilecheckup.util.TestObjectFactory.createMockedAssessmentMatrixWithDependenciesId;
 import static com.agilecheckup.util.TestObjectFactory.createMockedCustomQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedEmployeeAssessment;
-import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMap;
+import static com.agilecheckup.util.TestObjectFactory.createMockedPillarMapV2;
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static com.agilecheckup.util.TestObjectFactory.createMockedTeam;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,7 +83,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
 
   private EmployeeAssessment originalEmployeeAssessment;
 
-  private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID, createMockedPillarMap(1, 2, "P", "C"));
+  private final AssessmentMatrix assessmentMatrix = createMockedAssessmentMatrix(GENERIC_ID_1234, DEFAULT_ID, createMockedPillarMapV2(1, 2, "P", "C"));
 
   private final Team team = createMockedTeam(DEFAULT_ID);
 
@@ -474,7 +474,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     updatedEmployeeAssessmentDetails.setTeamId("updatedTeamId");
     updatedEmployeeAssessmentDetails.setEmployeeEmailNormalized("name@company.com"); // Set normalized email
 
-    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMap(1, 1, "pillar", "category"));
+    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMapV2(1, 1, "pillar", "category"));
     Team team1 = createMockedTeam("updatedTeamId");
 
     // Mock repository calls
@@ -565,7 +565,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
     );
 
 
-    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMap(1, 1, "pillar", "category"));
+    AssessmentMatrix assessmentMatrix1 = createMockedAssessmentMatrixWithDependenciesId("updatedMatrixId", createMockedPillarMapV2(1, 1, "pillar", "category"));
     Team team1 = createMockedTeam("updatedTeamId");
 
     // Mock repository calls

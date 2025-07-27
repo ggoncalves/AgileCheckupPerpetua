@@ -16,7 +16,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDbBean
-public abstract class TenantDescribableEntityV2 extends TenantableEntityV2 implements DescribableV2 {
+public abstract class DescribableEntityV2 extends AuditableEntityV2 implements DescribableV2 {
 
   @NonNull
   @Getter(onMethod_ = @__({@DynamoDbAttribute("name")}))

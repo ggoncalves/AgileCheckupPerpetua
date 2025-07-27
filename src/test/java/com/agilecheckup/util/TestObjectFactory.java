@@ -4,6 +4,7 @@ import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Category;
+import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.Department;
@@ -11,6 +12,7 @@ import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.Industry;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.Team;
@@ -33,6 +35,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.agilecheckup.util.TestObjectFactoryV2.createMockedCategoryV2;
+import static com.agilecheckup.util.TestObjectFactoryV2.createMockedPillarV2WithCategories;
 
 public class TestObjectFactory {
 
@@ -379,11 +384,11 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static AssessmentMatrix createMockedAssessmentMatrix(String dependenciesId, String id, Map<String, Pillar> pillarMap) {
+  public static AssessmentMatrix createMockedAssessmentMatrix(String dependenciesId, String id, Map<String, PillarV2> pillarMap) {
     return cloneWithId(createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillarMap), id);
   }
 
-  public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Map<String, Pillar> pillarMap) {
+  public static AssessmentMatrix createMockedAssessmentMatrixWithDependenciesId(String dependenciesId, Map<String, PillarV2> pillarMap) {
     return AssessmentMatrix.builder()
         .id(dependenciesId)
         .name("AsssessmentMatrixName")
@@ -417,6 +422,24 @@ public class TestObjectFactory {
                     strDescription(categoryPrefix + i, ci)))
                 .collect(Collectors.toMap(Category::getId, Function.identity()))
         )).collect(Collectors.toMap(Pillar::getId, Function.identity()));
+  }
+
+  public static Map<String, PillarV2> createMockedPillarMapV2(Integer pillarSize, Integer categorySize, String pillarPrefix, String categoryPrefix) {
+    return IntStream.range(1, pillarSize + 1)
+        .mapToObj(i -> createMockedPillarV2WithCategories(
+            "Pillar Name", // strName(pillarPrefix, i),
+            strDescription(pillarPrefix, i),
+            IntStream.range(1, categorySize + 1)
+                .mapToObj(ci -> createMockedCategoryV2(
+                    "Category Name", //strName(categoryPrefix + i, ci),
+                    strDescription(categoryPrefix + i, ci)))
+                .collect(Collectors.toMap(CategoryV2::getId, Function.identity()))
+        )).collect(Collectors.toMap(PillarV2::getId, Function.identity()));
+  }
+
+  // Default PillarV2 map factory method for convenience in tests
+  public static Map<String, PillarV2> createDefaultPillarMapV2() {
+    return createMockedPillarMapV2(2, 2, "Pillar", "Category");
   }
 
   @SuppressWarnings("unused")
@@ -476,7 +499,7 @@ public class TestObjectFactory {
    * Creates an AssessmentMatrix with configuration
    */
   public static AssessmentMatrix createMockedAssessmentMatrixWithConfiguration(String dependenciesId,
-                                                                               Map<String, Pillar> pillarMap,
+                                                                               Map<String, PillarV2> pillarMap,
                                                                                AssessmentConfiguration configuration) {
     AssessmentMatrix matrix = createMockedAssessmentMatrixWithDependenciesId(dependenciesId, pillarMap);
     matrix.setConfiguration(configuration);

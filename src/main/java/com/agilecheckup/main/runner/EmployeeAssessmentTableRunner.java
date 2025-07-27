@@ -26,7 +26,7 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
   private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
 
   private final List<Optional<AssessmentMatrix>> assessmentMatrices = new ArrayList<>();
-  private Map<String, Pillar> pillarMap;
+  private Map<String, PillarV2> pillarMap;
 
   public EmployeeAssessmentTableRunner(boolean shouldCleanAfterComplete) {
     super(shouldCleanAfterComplete);
@@ -83,14 +83,14 @@ public class EmployeeAssessmentTableRunner extends AbstractEntityCrudRunner<Empl
     }));
   }
 
-  private Map<String, Pillar> getPillarMap() {
+  private Map<String, PillarV2> getPillarMap() {
     if (pillarMap == null) {
-      pillarMap = tableRunnerHelper.createPillarsWithCategoriesMap();
+      pillarMap = tableRunnerHelper.createPillarsWithCategoriesMapV2();
     }
     return pillarMap;
   }
 
-  private Optional<Question> createQuestion(EmployeeAssessment entity, Pillar pillar, Category category) {
+  private Optional<Question> createQuestion(EmployeeAssessment entity, PillarV2 pillar, CategoryV2 category) {
     Optional<Question> question = tableRunnerHelper.getQuestionService().create(
         "Pergunta oficial",
         QuestionType.STAR_THREE,
