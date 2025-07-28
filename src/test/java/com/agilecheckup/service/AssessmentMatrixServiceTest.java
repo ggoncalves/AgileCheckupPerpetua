@@ -80,7 +80,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   private EmployeeAssessmentService mockEmployeeAssessmentService;
 
   @Mock
-  private TeamService mockTeamService;
+  private TeamServiceLegacy mockTeamService;
 
   private AssessmentMatrix originalAssessmentMatrix;
 

@@ -1,72 +1,59 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.Department;
-import com.agilecheckup.persistency.entity.Team;
-import com.agilecheckup.persistency.repository.AbstractCrudRepository;
-import com.agilecheckup.persistency.repository.TeamRepository;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
+import com.agilecheckup.persistency.entity.TeamV2;
+import com.agilecheckup.persistency.repository.TeamRepositoryV2;
+import com.agilecheckup.service.exception.EntityNotFoundException;
+import lombok.extern.log4j.Log4j2;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class TeamService extends AbstractCrudService<Team, AbstractCrudRepository<Team>> {
+@Log4j2
+@Singleton
+public class TeamService extends AbstractCrudServiceV2<TeamV2, TeamRepositoryV2> {
 
-  private final TeamRepository teamRepository;
-  private final DepartmentService departmentService;
+    private final TeamRepositoryV2 teamRepository;
 
-  @Inject
-  public TeamService(TeamRepository teamRepository, DepartmentService departmentService) {
-    this.teamRepository = teamRepository;
-    this.departmentService = departmentService;
-  }
-
-  public Optional<Team> create(String name, String description, String tenantId, String departmentId) {
-    return super.create(createTeam(name, description, tenantId, departmentId));
-  }
-
-  public Optional<Team> update(String id, String name, String description, String tenantId, String departmentId) {
-    Optional<Team> optionalTeam = findById(id);
-    if (optionalTeam.isPresent()) {
-      Team team = optionalTeam.get();
-      // Validate that department exists
-      departmentService.findById(departmentId)
-          .orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department"));
-      team.setName(name);
-      team.setDescription(description);
-      team.setTenantId(tenantId);
-      team.setDepartmentId(departmentId);
-      return super.update(team);
-    } else {
-      return Optional.empty();
+    @Inject
+    public TeamService(TeamRepositoryV2 teamRepository) {
+        this.teamRepository = teamRepository;
     }
-  }
 
-  private Team createTeam(String name, String description, String tenantId, String departmentId) {
-    // Validate that department exists
-    departmentService.findById(departmentId)
-        .orElseThrow(() -> new InvalidIdReferenceException(departmentId, "Team", "Department"));
-    return Team.builder()
-        .name(name)
-        .description(description)
-        .tenantId(tenantId)
-        .departmentId(departmentId)
-        .build();
-  }
+    @Override
+    TeamRepositoryV2 getRepository() {
+        return teamRepository;
+    }
 
-  public List<Team> findAllByTenantId(String tenantId) {
-    PaginatedQueryList<Team> paginatedList = teamRepository.findAllByTenantId(tenantId);
-    return paginatedList.stream().collect(Collectors.toList());
-  }
+    public Optional<TeamV2> create(String tenantId, String name, String description, String departmentId) {
+        TeamV2 team = TeamV2.builder()
+                .tenantId(tenantId)
+                .name(name)
+                .description(description)
+                .departmentId(departmentId)
+                .build();
+        
+        return create(team);
+    }
 
-  public List<Team> findByDepartmentId(String departmentId, String tenantId) {
-    return teamRepository.findByDepartmentId(departmentId, tenantId);
-  }
+    public Optional<TeamV2> update(String id, String tenantId, String name, String description, String departmentId) {
+        TeamV2 existing = teamRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
+        
+        existing.setTenantId(tenantId);
+        existing.setName(name);
+        existing.setDescription(description);
+        existing.setDepartmentId(departmentId);
+        
+        return update(existing);
+    }
 
-  @Override
-  AbstractCrudRepository<Team> getRepository() {
-    return teamRepository;
-  }
+    public List<TeamV2> findByDepartmentId(String departmentId) {
+        return teamRepository.findByDepartmentId(departmentId);
+    }
+
+    public List<TeamV2> findAllByTenantId(String tenantId) {
+        return teamRepository.findAllByTenantId(tenantId);
+    }
 }

@@ -76,7 +76,7 @@ class EmployeeAssessmentServiceTest extends AbstractCrudServiceTest<EmployeeAsse
   private AnswerRepository answerRepository;
 
   @Mock
-  private TeamService teamService;
+  private TeamServiceLegacy teamService;
 
   @Mock
   private EmployeeAssessmentRepository employeeAssessmentRepository;

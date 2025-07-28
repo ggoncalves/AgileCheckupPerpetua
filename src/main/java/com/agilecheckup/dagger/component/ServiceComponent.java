@@ -15,6 +15,7 @@ import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.TeamService;
+import com.agilecheckup.service.TeamServiceLegacy;
 import dagger.Component;
 
 import javax.inject.Singleton;
@@ -31,6 +32,8 @@ public interface ServiceComponent {
   DepartmentService buildDepartmentService();
 
   TeamService buildTeamService();
+  
+  TeamServiceLegacy buildTeamServiceLegacy();
 
   PerformanceCycleService buildPerformanceCycleService();
 

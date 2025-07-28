@@ -2,6 +2,7 @@ package com.agilecheckup.dagger.module;
 
 import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
+import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import dagger.Module;
 import dagger.Provides;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -21,5 +22,11 @@ public class RepositoryModuleV2 {
     @Singleton
     public CompanyRepositoryV2 provideCompanyRepositoryV2(DynamoDbEnhancedClient enhancedClient) {
         return new CompanyRepositoryV2(enhancedClient);
+    }
+
+    @Provides
+    @Singleton
+    public TeamRepositoryV2 provideTeamRepositoryV2(DynamoDbEnhancedClient enhancedClient) {
+        return new TeamRepositoryV2(enhancedClient);
     }
 }

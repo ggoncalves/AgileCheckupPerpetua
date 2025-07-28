@@ -34,11 +34,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
+class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
 
   @InjectMocks
   @Spy
-  private TeamService teamService;
+  private TeamServiceLegacy teamService;
 
   @Mock
   private TeamRepository mockedTeamRepository;
