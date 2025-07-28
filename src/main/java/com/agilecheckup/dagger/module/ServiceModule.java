@@ -2,6 +2,11 @@ package com.agilecheckup.dagger.module;
 
 import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
+import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
+import com.agilecheckup.persistency.repository.TeamRepository;
+import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AssessmentMatrixService;
@@ -12,7 +17,9 @@ import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.TeamService;
+import com.agilecheckup.service.TeamServiceLegacy;
 import dagger.Binds;
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 
@@ -34,17 +41,43 @@ public abstract class ServiceModule {
     return new DepartmentService(departmentRepositoryV2, companyServiceLegacy);
   }
 
-  @Binds
-  abstract AbstractCrudService provideTeamService(TeamService teamService);
+  @Provides
+  @Singleton
+  static TeamService provideTeamService(TeamRepositoryV2 teamRepositoryV2) {
+    return new TeamService(teamRepositoryV2);
+  }
+
+  @Provides
+  @Singleton
+  static TeamServiceLegacy provideTeamServiceLegacy(TeamRepository teamRepository, DepartmentService departmentService) {
+    return new TeamServiceLegacy(teamRepository, departmentService);
+  }
 
   @Binds
   abstract AbstractCrudService providePerformanceCycleService(PerformanceCycleService performanceCycleService);
 
-  @Binds
-  abstract AbstractCrudService provideAssessmentMatrix(AssessmentMatrixService assessmentMatrixService);
+  @Provides
+  @Singleton
+  static AssessmentMatrixService provideAssessmentMatrixService(
+      AssessmentMatrixRepository assessmentMatrixRepository,
+      PerformanceCycleService performanceCycleService,
+      Lazy<QuestionService> questionService,
+      Lazy<EmployeeAssessmentService> employeeAssessmentService,
+      Lazy<TeamServiceLegacy> teamServiceLegacy) {
+    return new AssessmentMatrixService(assessmentMatrixRepository, performanceCycleService, 
+        questionService, employeeAssessmentService, teamServiceLegacy);
+  }
 
-  @Binds
-  abstract AbstractCrudService provideEmployeeAssessmentService(EmployeeAssessmentService employeeAssessmentService);
+  @Provides
+  @Singleton  
+  static EmployeeAssessmentService provideEmployeeAssessmentService(
+      EmployeeAssessmentRepository employeeAssessmentRepository,
+      AssessmentMatrixService assessmentMatrixService,
+      TeamServiceLegacy teamServiceLegacy,
+      AnswerRepository answerRepository) {
+    return new EmployeeAssessmentService(employeeAssessmentRepository, assessmentMatrixService, 
+        teamServiceLegacy, answerRepository);
+  }
 
   @Binds
   abstract AbstractCrudService provideAnswerService(AnswerService answerService);

@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.entity.Industry;
+import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.person.AddressV2;
 import com.agilecheckup.persistency.entity.person.Gender;
@@ -72,6 +73,57 @@ public class TestObjectFactoryV2 {
     copy.setCompanyId(department.getCompanyId());
     copy.setCreatedDate(department.getCreatedDate());
     copy.setLastUpdatedDate(department.getLastUpdatedDate());
+    return copy;
+  }
+
+  // === Team V2 Factory Methods ===
+
+  public static final String DEFAULT_DEPARTMENT_ID = "dept-789";
+
+  public static TeamV2 createMockedTeamV2() {
+    TeamV2 team = new TeamV2();
+    team.setName("Team Name");
+    team.setDescription("Team description");
+    team.setTenantId(GENERIC_TENANT_ID);
+    team.setDepartmentId(DEFAULT_DEPARTMENT_ID);
+    team.setCreatedDate(Instant.now().minusSeconds(86400));
+    team.setLastUpdatedDate(Instant.now());
+    return team;
+  }
+
+  public static TeamV2 createMockedTeamV2WithDependenciesId(String departmentId) {
+    TeamV2 team = createMockedTeamV2();
+    team.setDepartmentId(departmentId);
+    return team;
+  }
+
+  public static TeamV2 createMockedTeamV2(String id) {
+    TeamV2 team = createMockedTeamV2();
+    team.setId(id);
+    return team;
+  }
+
+  public static TeamV2 createMockedTeamV2(@NonNull String name, @NonNull String description,
+                                         @NonNull String tenantId, @NonNull String departmentId) {
+    TeamV2 team = new TeamV2();
+    team.setName(name);
+    team.setDescription(description);
+    team.setTenantId(tenantId);
+    team.setDepartmentId(departmentId);
+    team.setCreatedDate(Instant.now().minusSeconds(86400));
+    team.setLastUpdatedDate(Instant.now());
+    return team;
+  }
+
+  public static TeamV2 copyTeamV2AndAddId(TeamV2 team, String id) {
+    TeamV2 copy = new TeamV2();
+    copy.setId(id);
+    copy.setName(team.getName());
+    copy.setDescription(team.getDescription());
+    copy.setTenantId(team.getTenantId());
+    copy.setDepartmentId(team.getDepartmentId());
+    copy.setCreatedDate(team.getCreatedDate());
+    copy.setLastUpdatedDate(team.getLastUpdatedDate());
     return copy;
   }
 
