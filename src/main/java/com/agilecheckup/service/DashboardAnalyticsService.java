@@ -58,7 +58,7 @@ public class DashboardAnalyticsService {
     private final AssessmentMatrixService assessmentMatrixService;
     private final EmployeeAssessmentService employeeAssessmentService;
   private final CompanyServiceLegacy companyService;
-  private final PerformanceCycleService performanceCycleService;
+  private final PerformanceCycleServiceLegacy performanceCycleService;
     private final TeamRepository teamRepository;
     private final AnswerRepository answerRepository;
     private final ObjectMapper objectMapper;
@@ -69,7 +69,7 @@ public class DashboardAnalyticsService {
             AssessmentMatrixService assessmentMatrixService,
             EmployeeAssessmentService employeeAssessmentService,
             CompanyServiceLegacy companyService,
-            PerformanceCycleService performanceCycleService,
+            PerformanceCycleServiceLegacy performanceCycleService,
             TeamRepository teamRepository,
             AnswerRepository answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;

@@ -40,7 +40,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private final AssessmentMatrixRepository assessmentMatrixRepository;
 
-  private final PerformanceCycleService performanceCycleService;
+  private final PerformanceCycleServiceLegacy performanceCycleService;
 
   private final Lazy<QuestionService> questionService;
 
@@ -52,7 +52,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   @Inject
   public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository,
-                                 PerformanceCycleService performanceCycleService,
+                                 PerformanceCycleServiceLegacy performanceCycleService,
                                  Lazy<QuestionService> questionService,
                                  Lazy<EmployeeAssessmentService> employeeAssessmentService,
                                  Lazy<TeamServiceLegacy> teamService) {

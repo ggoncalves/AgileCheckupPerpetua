@@ -13,6 +13,7 @@ import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.PerformanceCycleService;
+import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.TeamService;
 import com.agilecheckup.service.TeamServiceLegacy;
@@ -36,6 +37,8 @@ public interface ServiceComponent {
   TeamServiceLegacy buildTeamServiceLegacy();
 
   PerformanceCycleService buildPerformanceCycleService();
+  
+  PerformanceCycleServiceLegacy buildPerformanceCycleServiceLegacy();
 
   AssessmentMatrixService buildAssessmentMatrixService();
 
