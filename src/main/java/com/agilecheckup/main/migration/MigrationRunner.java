@@ -42,6 +42,10 @@ public class MigrationRunner {
                     EmployeeAssessmentStatusMigration.main(migrationArgs);
                     break;
                     
+                case "PerformanceCycleDataMigration":
+                    PerformanceCycleDataMigration.main(migrationArgs);
+                    break;
+                    
                 default:
                     log.error("Unknown migration: {}", migrationName);
                     printUsage();
@@ -63,6 +67,7 @@ public class MigrationRunner {
         log.info("  EmployeeAssessmentDataMigration    - Migrate EmployeeAssessment from embedded team to teamId");
         log.info("  TeamDataMigration                  - Migrate Team data structure");
         log.info("  EmployeeAssessmentStatusMigration  - Migrate EmployeeAssessment status fields");
+        log.info("  PerformanceCycleDataMigration      - Migrate PerformanceCycle from V1 Date fields to V2 LocalDate");
         log.info("");
         log.info("Example:");
         log.info("  mvn exec:java -Dexec.mainClass=\"com.agilecheckup.main.migration.MigrationRunner\" -Dexec.args=\"AssessmentMatrixPillarV2Migration\"");

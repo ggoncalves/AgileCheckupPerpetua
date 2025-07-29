@@ -1,81 +1,100 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.Company;
-import com.agilecheckup.persistency.entity.PerformanceCycle;
-import com.agilecheckup.persistency.repository.AbstractCrudRepository;
-import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
+import com.agilecheckup.persistency.entity.CompanyV2;
+import com.agilecheckup.persistency.entity.PerformanceCycleV2;
+import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
+import lombok.extern.log4j.Log4j2;
 
 import javax.inject.Inject;
-import java.util.Date;
+import javax.inject.Singleton;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class PerformanceCycleService extends AbstractCrudService<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
+@Log4j2
+@Singleton
+public class PerformanceCycleService extends AbstractCrudServiceV2<PerformanceCycleV2, PerformanceCycleRepositoryV2> {
 
-  private final PerformanceCycleRepository performanceCycleRepository;
+    private final PerformanceCycleRepositoryV2 performanceCycleRepository;
+    private final CompanyService companyService;
 
-  private final CompanyServiceLegacy companyService;
-
-  @Inject
-  public PerformanceCycleService(PerformanceCycleRepository performanceCycleRepository, CompanyServiceLegacy companyService) {
-    this.performanceCycleRepository = performanceCycleRepository;
-    this.companyService = companyService;
-  }
-
-  public Optional<PerformanceCycle> create(String name, String description, String tenantId, String companyId,
-                                           Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
-    // Business rule: isTimeSensitive is true only if endDate is present
-    Boolean calculatedIsTimeSensitive = (endDate != null);
-    return super.create(createPerformanceCycle(name, description, tenantId, companyId, isActive, calculatedIsTimeSensitive, startDate, endDate));
-  }
-
-  public Optional<PerformanceCycle> update(String id, String name, String description, String tenantId, String companyId,
-                                           Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
-    Optional<PerformanceCycle> optionalPerformanceCycle = findById(id);
-    if (optionalPerformanceCycle.isPresent()) {
-      PerformanceCycle performanceCycle = optionalPerformanceCycle.get();
-      Optional<Company> company = companyService.findById(companyId);
-      
-      performanceCycle.setName(name);
-      performanceCycle.setDescription(description);
-      performanceCycle.setTenantId(tenantId);
-      performanceCycle.setCompanyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId());
-      performanceCycle.setIsActive(isActive);
-      // Business rule: isTimeSensitive is true only if endDate is present
-      performanceCycle.setIsTimeSensitive(endDate != null);
-      performanceCycle.setStartDate(startDate);
-      performanceCycle.setEndDate(endDate);
-      return super.update(performanceCycle);
-    } else {
-      return Optional.empty();
+    @Inject
+    public PerformanceCycleService(PerformanceCycleRepositoryV2 performanceCycleRepository, CompanyService companyService) {
+        this.performanceCycleRepository = performanceCycleRepository;
+        this.companyService = companyService;
     }
-  }
 
-  private PerformanceCycle createPerformanceCycle(String name, String description, String tenantId, String companyId,
-                                                  Boolean isActive, Boolean isTimeSensitive, Date startDate, Date endDate) {
-    Optional<Company> company = companyService.findById(companyId);
-    return PerformanceCycle.builder()
-        .name(name)
-        .description(description)
-        .tenantId(tenantId)
-        .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId())
-        .isActive(isActive)
-        .isTimeSensitive(isTimeSensitive)
-        .startDate(startDate)
-        .endDate(endDate)
-        .build();
-  }
+    public Optional<PerformanceCycleV2> create(String tenantId, String name, String description, String companyId,
+                                               Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
+        log.info("PerformanceCycleService.create called with tenantId: {}, name: {}", tenantId, name);
+        // Business rule: isTimeSensitive is true only if endDate is present
+        Boolean calculatedIsTimeSensitive = (endDate != null);
+        return super.create(createPerformanceCycle(tenantId, name, description, companyId, isActive, calculatedIsTimeSensitive, startDate, endDate));
+    }
 
-  public List<PerformanceCycle> findAllByTenantId(String tenantId) {
-    PaginatedQueryList<PerformanceCycle> paginatedList = performanceCycleRepository.findAllByTenantId(tenantId);
-    return paginatedList.stream().collect(Collectors.toList());
-  }
+    public Optional<PerformanceCycleV2> update(String id, String tenantId, String name, String description, String companyId,
+                                               Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
+        log.info("PerformanceCycleService.update called with id: {}, tenantId: {}, name: {}", id, tenantId, name);
+        Optional<PerformanceCycleV2> optionalPerformanceCycle = findById(id);
+        if (optionalPerformanceCycle.isPresent()) {
+            PerformanceCycleV2 performanceCycle = optionalPerformanceCycle.get();
+            Optional<CompanyV2> company = companyService.findById(companyId);
+            
+            // Business rule: isTimeSensitive is true only if endDate is present
+            Boolean calculatedIsTimeSensitive = (endDate != null);
+            
+            PerformanceCycleV2 updatedCycle = PerformanceCycleV2.builder()
+                    .id(performanceCycle.getId())
+                    .createdDate(performanceCycle.getCreatedDate())
+                    .lastUpdatedDate(performanceCycle.getLastUpdatedDate())
+                    .tenantId(tenantId)
+                    .name(name)
+                    .description(description)
+                    .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId())
+                    .isActive(isActive)
+                    .isTimeSensitive(calculatedIsTimeSensitive)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .build();
+            return super.update(updatedCycle);
+        } else {
+            return Optional.empty();
+        }
+    }
 
-  @Override
-  AbstractCrudRepository<PerformanceCycle> getRepository() {
-    return performanceCycleRepository;
-  }
+    private PerformanceCycleV2 createPerformanceCycle(String tenantId, String name, String description, String companyId,
+                                                      Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
+        Optional<CompanyV2> company = companyService.findById(companyId);
+        return PerformanceCycleV2.builder()
+                .tenantId(tenantId)
+                .name(name)
+                .description(description)
+                .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId())
+                .isActive(isActive)
+                .isTimeSensitive(isTimeSensitive)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+    }
+
+    public List<PerformanceCycleV2> findAllByTenantId(String tenantId) {
+        log.info("PerformanceCycleService.findAllByTenantId called with tenantId: {}", tenantId);
+        return performanceCycleRepository.findAllByTenantId(tenantId);
+    }
+
+    public List<PerformanceCycleV2> findByCompanyId(String companyId) {
+        log.info("PerformanceCycleService.findByCompanyId called with companyId: {}", companyId);
+        return performanceCycleRepository.findByCompanyId(companyId);
+    }
+
+    public List<PerformanceCycleV2> findActiveByTenantId(String tenantId) {
+        log.info("PerformanceCycleService.findActiveByTenantId called with tenantId: {}", tenantId);
+        return performanceCycleRepository.findActiveByTenantId(tenantId);
+    }
+
+    @Override
+    PerformanceCycleRepositoryV2 getRepository() {
+        return performanceCycleRepository;
+    }
 }

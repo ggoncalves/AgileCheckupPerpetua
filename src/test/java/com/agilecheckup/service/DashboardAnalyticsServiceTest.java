@@ -62,7 +62,7 @@ class DashboardAnalyticsServiceTest {
     private CompanyServiceLegacy companyService;
     
     @Mock
-    private PerformanceCycleService performanceCycleService;
+    private PerformanceCycleServiceLegacy performanceCycleService;
     
     @Mock
     private TeamRepository teamRepository;

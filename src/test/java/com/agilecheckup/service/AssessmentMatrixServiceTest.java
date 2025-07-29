@@ -72,7 +72,7 @@ class AssessmentMatrixServiceTest extends AbstractCrudServiceTest<AssessmentMatr
   private AssessmentMatrixRepository mockAssessmentMatrixRepository;
 
   @Mock
-  private PerformanceCycleService mockPerformanceCycleService;
+  private PerformanceCycleServiceLegacy mockPerformanceCycleService;
 
   private QuestionService mockQuestionService;
 
