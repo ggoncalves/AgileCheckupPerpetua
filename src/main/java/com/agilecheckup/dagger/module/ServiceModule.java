@@ -1,5 +1,6 @@
 package com.agilecheckup.dagger.module;
 
+import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
 import com.agilecheckup.persistency.repository.AnswerRepository;
@@ -13,6 +14,7 @@ import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
 import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AssessmentMatrixService;
+import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
@@ -114,6 +116,18 @@ public abstract class ServiceModule {
   @Singleton
   static CompanyService provideCompanyService(CompanyRepositoryV2 companyRepositoryV2) {
     return new CompanyService(companyRepositoryV2);
+  }
+
+  @Provides
+  @Singleton
+  static AssessmentMatrixServiceV2 provideAssessmentMatrixServiceV2(
+      AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
+      PerformanceCycleService performanceCycleService,
+      Lazy<QuestionService> questionService,
+      Lazy<EmployeeAssessmentService> employeeAssessmentService,
+      Lazy<TeamServiceLegacy> teamServiceLegacy) {
+    return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleService, 
+        questionService, employeeAssessmentService, teamServiceLegacy);
   }
 
 }
