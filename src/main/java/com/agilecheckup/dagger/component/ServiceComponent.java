@@ -6,6 +6,7 @@ import com.agilecheckup.dagger.module.RepositoryModuleV2;
 import com.agilecheckup.dagger.module.ServiceModule;
 import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AssessmentMatrixService;
+import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationService;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
@@ -40,7 +41,10 @@ public interface ServiceComponent {
   
   PerformanceCycleServiceLegacy buildPerformanceCycleServiceLegacy();
 
+
   AssessmentMatrixService buildAssessmentMatrixService();
+
+  AssessmentMatrixServiceV2 buildAssessmentMatrixServiceV2();
 
   EmployeeAssessmentService buildEmployeeAssessmentService();
 

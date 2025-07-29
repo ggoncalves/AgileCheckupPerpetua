@@ -1,6 +1,7 @@
 package com.agilecheckup.main;
 
 import com.agilecheckup.main.runner.AssessmentMatrixTableRunner;
+import com.agilecheckup.main.runner.AssessmentMatrixTableRunnerV2;
 import com.agilecheckup.main.runner.CompanyTableRunner;
 import com.agilecheckup.main.runner.CrudRunner;
 import com.agilecheckup.main.runner.PerformanceCycleTableRunner;
@@ -23,7 +24,8 @@ public class E2EAllTablesInvoker {
 
   void initTableRunnerSet() {
     tableRunnerSet = ImmutableSet.of(
-        new PerformanceCycleTableRunner(true)
+//        new PerformanceCycleTableRunner(true),
+        new AssessmentMatrixTableRunnerV2(true)
     );
   }
 
