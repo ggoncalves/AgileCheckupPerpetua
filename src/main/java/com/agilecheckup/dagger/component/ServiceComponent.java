@@ -17,6 +17,7 @@ import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamService;
 import com.agilecheckup.service.TeamServiceLegacy;
 import dagger.Component;
@@ -27,6 +28,8 @@ import javax.inject.Singleton;
 @Component(modules = {ServiceModule.class, AwsConfigModule.class, AwsConfigModuleV2.class, RepositoryModuleV2.class})
 public interface ServiceComponent {
   QuestionService buildQuestionService();
+
+  QuestionServiceV2 buildQuestionServiceV2();
 
   CompanyService buildCompanyService();
 

@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
+import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import dagger.Module;
 import dagger.Provides;
@@ -49,5 +50,11 @@ public class RepositoryModuleV2 {
     @Singleton
     public EmployeeAssessmentRepositoryV2 provideEmployeeAssessmentRepositoryV2(DynamoDbEnhancedClient enhancedClient) {
         return new EmployeeAssessmentRepositoryV2(enhancedClient);
+    }
+
+    @Provides
+    @Singleton
+    public QuestionRepositoryV2 provideQuestionRepositoryV2(DynamoDbEnhancedClient enhancedClient) {
+        return new QuestionRepositoryV2(enhancedClient);
     }
 }
