@@ -5,9 +5,11 @@ import com.agilecheckup.dagger.module.AwsConfigModuleV2;
 import com.agilecheckup.dagger.module.RepositoryModuleV2;
 import com.agilecheckup.dagger.module.ServiceModule;
 import com.agilecheckup.service.AnswerService;
+import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationService;
+import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DashboardAnalyticsService;
@@ -55,8 +57,12 @@ public interface ServiceComponent {
   EmployeeAssessmentServiceV2 buildEmployeeAssessmentServiceV2();
 
   AnswerService buildAnswerService();
+
+  AnswerServiceV2 buildAnswerServiceV2();
   
   AssessmentNavigationService buildAssessmentNavigationService();
+
+  AssessmentNavigationServiceV2 buildAssessmentNavigationServiceV2();
 
   DashboardAnalyticsService buildDashboardAnalyticsService();
 }

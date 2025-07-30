@@ -1,5 +1,6 @@
 package com.agilecheckup.dagger.module;
 
+import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
@@ -15,8 +16,10 @@ import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
 import com.agilecheckup.service.AbstractCrudService;
 import com.agilecheckup.service.AnswerService;
+import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
+import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
@@ -151,6 +154,28 @@ public abstract class ServiceModule {
       QuestionRepositoryV2 questionRepositoryV2,
       AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
     return new QuestionServiceV2(questionRepositoryV2, assessmentMatrixServiceV2);
+  }
+
+  @Provides
+  @Singleton
+  static AnswerServiceV2 provideAnswerServiceV2(
+      AnswerRepositoryV2 answerRepositoryV2,
+      EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
+      QuestionService questionService,
+      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
+    return new AnswerServiceV2(answerRepositoryV2, employeeAssessmentServiceV2, 
+        questionService, assessmentMatrixServiceV2);
+  }
+
+  @Provides
+  @Singleton
+  static AssessmentNavigationServiceV2 provideAssessmentNavigationServiceV2(
+      QuestionService questionService,
+      AnswerServiceV2 answerServiceV2,
+      EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
+      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
+    return new AssessmentNavigationServiceV2(questionService, answerServiceV2, 
+        employeeAssessmentServiceV2, assessmentMatrixServiceV2);
   }
 
 }
