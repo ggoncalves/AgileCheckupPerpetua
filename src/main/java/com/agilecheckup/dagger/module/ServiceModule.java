@@ -8,6 +8,7 @@ import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
+import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
@@ -25,6 +26,7 @@ import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamService;
 import com.agilecheckup.service.TeamServiceLegacy;
 import dagger.Binds;
@@ -141,6 +143,14 @@ public abstract class ServiceModule {
       AnswerRepository answerRepository) {
     return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2, 
         teamServiceLegacy, answerRepository);
+  }
+
+  @Provides
+  @Singleton
+  static QuestionServiceV2 provideQuestionServiceV2(
+      QuestionRepositoryV2 questionRepositoryV2,
+      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
+    return new QuestionServiceV2(questionRepositoryV2, assessmentMatrixServiceV2);
   }
 
 }
