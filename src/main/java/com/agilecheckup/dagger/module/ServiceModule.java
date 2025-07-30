@@ -7,6 +7,7 @@ import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
+import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
@@ -20,6 +21,7 @@ import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.EmployeeAssessmentService;
+import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
@@ -128,6 +130,17 @@ public abstract class ServiceModule {
       Lazy<TeamServiceLegacy> teamServiceLegacy) {
     return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleService, 
         questionService, employeeAssessmentService, teamServiceLegacy);
+  }
+
+  @Provides
+  @Singleton  
+  static EmployeeAssessmentServiceV2 provideEmployeeAssessmentServiceV2(
+      EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2,
+      AssessmentMatrixServiceV2 assessmentMatrixServiceV2,
+      TeamServiceLegacy teamServiceLegacy,
+      AnswerRepository answerRepository) {
+    return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2, 
+        teamServiceLegacy, answerRepository);
   }
 
 }

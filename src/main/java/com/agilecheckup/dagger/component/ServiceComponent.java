@@ -13,6 +13,7 @@ import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.EmployeeAssessmentService;
+import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
@@ -47,6 +48,8 @@ public interface ServiceComponent {
   AssessmentMatrixServiceV2 buildAssessmentMatrixServiceV2();
 
   EmployeeAssessmentService buildEmployeeAssessmentService();
+
+  EmployeeAssessmentServiceV2 buildEmployeeAssessmentServiceV2();
 
   AnswerService buildAnswerService();
   
