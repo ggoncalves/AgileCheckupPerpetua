@@ -97,7 +97,6 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
             Optional<Team> team = teamService.findById(teamId);
             Team teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
             finalTeamId = teamEntity.getId();
-            tenantId = teamEntity.getTenantId();
         }
         
         return EmployeeAssessmentV2.builder()
