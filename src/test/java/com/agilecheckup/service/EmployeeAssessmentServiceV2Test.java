@@ -588,4 +588,58 @@ class EmployeeAssessmentServiceV2Test {
         assertThat(updatedAssessment.getEmployee().getName()).isEqualTo(name);
         assertThat(updatedAssessment.getEmployee().getEmail()).isEqualTo(email);
     }
+
+    @Test
+    void testCreateEmployeeAssessment_ShouldSaveTeamIdWhenTeamProvided() {
+        // Given
+        String assessmentMatrixId = ASSESSMENT_MATRIX_ID;
+        String teamId = TEAM_ID;
+        String name = EMPLOYEE_NAME;
+        String email = EMPLOYEE_EMAIL;
+        
+        // Setup mock team with DIFFERENT tenant ID to expose bug
+        Team mockTeam = Team.builder()
+            .id(teamId)
+            .tenantId("team-tenant-123") // Different from matrix tenant
+            .name("Test Team")
+            .description("Test team description")
+            .departmentId("dept-123")
+            .build();
+        doReturn(Optional.of(mockTeam)).when(teamService).findById(teamId);
+        
+        // Setup mock assessment matrix
+        AssessmentMatrixV2 mockMatrix = AssessmentMatrixV2.builder()
+            .id(assessmentMatrixId)
+            .tenantId(TENANT_ID) // Matrix tenant should be used
+            .name("Test Matrix")
+            .description("Test matrix description")
+            .performanceCycleId("cycle-123")
+            .pillarMap(new HashMap<>())
+            .build();
+        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixServiceV2).findById(assessmentMatrixId);
+        
+        doReturn(false).when(employeeAssessmentRepositoryV2).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, email);
+        doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessmentV2.class));
+        
+        // When
+        Optional<EmployeeAssessmentV2> result = service.create(
+            assessmentMatrixId, teamId, name, email,
+            "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+        );
+        
+        // Then
+        assertThat(result).isPresent();
+        
+        ArgumentCaptor<EmployeeAssessmentV2> captor = ArgumentCaptor.forClass(EmployeeAssessmentV2.class);
+        verify(employeeAssessmentRepositoryV2).save(captor.capture());
+        
+        EmployeeAssessmentV2 createdAssessment = captor.getValue();
+        
+        // BUG EXPOSED: These assertions should pass but will fail due to the bug
+        assertThat(createdAssessment.getTeamId()).isEqualTo(teamId); // teamId should be saved
+        assertThat(createdAssessment.getTenantId()).isEqualTo(TENANT_ID); // should use matrix tenantId, not team tenantId
+        assertThat(createdAssessment.getAssessmentMatrixId()).isEqualTo(assessmentMatrixId);
+        assertThat(createdAssessment.getEmployee().getName()).isEqualTo(name);
+        assertThat(createdAssessment.getEmployee().getEmail()).isEqualTo(email);
+    }
 }
