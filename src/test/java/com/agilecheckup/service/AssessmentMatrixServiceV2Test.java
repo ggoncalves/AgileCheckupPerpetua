@@ -38,7 +38,7 @@ class AssessmentMatrixServiceV2Test {
     private Lazy<QuestionService> questionService;
 
     @Mock
-    private Lazy<EmployeeAssessmentService> employeeAssessmentService;
+    private Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
     @Mock
     private Lazy<TeamServiceLegacy> teamService;
@@ -47,7 +47,7 @@ class AssessmentMatrixServiceV2Test {
     private QuestionService mockQuestionService;
 
     @Mock
-    private EmployeeAssessmentService mockEmployeeAssessmentService;
+    private EmployeeAssessmentServiceV2 mockEmployeeAssessmentServiceV2;
 
     @Mock
     private TeamServiceLegacy mockTeamServiceLegacy;
@@ -58,14 +58,14 @@ class AssessmentMatrixServiceV2Test {
     void setUp() {
         // Set up lazy mocks
         lenient().doReturn(mockQuestionService).when(questionService).get();
-        lenient().doReturn(mockEmployeeAssessmentService).when(employeeAssessmentService).get();
+        lenient().doReturn(mockEmployeeAssessmentServiceV2).when(employeeAssessmentServiceV2).get();
         lenient().doReturn(mockTeamServiceLegacy).when(teamService).get();
         
         service = new AssessmentMatrixServiceV2(
                 assessmentMatrixRepositoryV2,
                 performanceCycleService,
                 questionService,
-                employeeAssessmentService,
+                employeeAssessmentServiceV2,
                 teamService
         );
     }
@@ -290,7 +290,7 @@ class AssessmentMatrixServiceV2Test {
                 .score(85.0)
                 .build();
 
-        EmployeeAssessment assessment1 = EmployeeAssessment.builder()
+        EmployeeAssessmentV2 assessment1 = EmployeeAssessmentV2.builder()
                 .id("assessment-1")
                 .tenantId(tenantId)
                 .assessmentMatrixId(matrixId)
@@ -302,7 +302,7 @@ class AssessmentMatrixServiceV2Test {
                 .lastActivityDate(new Date())
                 .build();
 
-        EmployeeAssessment assessment2 = EmployeeAssessment.builder()
+        EmployeeAssessmentV2 assessment2 = EmployeeAssessmentV2.builder()
                 .id("assessment-2")
                 .tenantId(tenantId)
                 .assessmentMatrixId(matrixId)
@@ -313,7 +313,7 @@ class AssessmentMatrixServiceV2Test {
                 .lastActivityDate(new Date())
                 .build();
 
-        List<EmployeeAssessment> employeeAssessments = Arrays.asList(assessment1, assessment2);
+        List<EmployeeAssessmentV2> employeeAssessments = Arrays.asList(assessment1, assessment2);
 
         // Mock team
         Team team = Team.builder()
@@ -326,7 +326,7 @@ class AssessmentMatrixServiceV2Test {
 
         // Set up mocks
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
         doReturn(Optional.of(team)).when(mockTeamServiceLegacy).findById("team-1");
 
         // Execute
@@ -408,7 +408,7 @@ class AssessmentMatrixServiceV2Test {
                 .build();
                 
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(Collections.emptyList()).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(Collections.emptyList()).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         
@@ -438,7 +438,7 @@ class AssessmentMatrixServiceV2Test {
                 .email("john@example.com")
                 .build();
 
-        EmployeeAssessment assessment = EmployeeAssessment.builder()
+        EmployeeAssessmentV2 assessment = EmployeeAssessmentV2.builder()
                 .id("assessment-1")
                 .tenantId(tenantId)
                 .assessmentMatrixId(matrixId)
@@ -447,10 +447,10 @@ class AssessmentMatrixServiceV2Test {
                 .assessmentStatus(AssessmentStatus.COMPLETED)
                 .build();
 
-        List<EmployeeAssessment> employeeAssessments = Arrays.asList(assessment);
+        List<EmployeeAssessmentV2> employeeAssessments = Arrays.asList(assessment);
         
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
         doReturn(Optional.empty()).when(mockTeamServiceLegacy).findById("nonexistent-team");
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);

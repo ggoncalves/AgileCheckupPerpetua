@@ -4,7 +4,7 @@ import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.CategoryV2;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
@@ -42,7 +42,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
 
     private final Lazy<QuestionService> questionService;
 
-    private final Lazy<EmployeeAssessmentService> employeeAssessmentService;
+    private final Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
     private final Lazy<TeamServiceLegacy> teamService;
 
@@ -52,12 +52,12 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     public AssessmentMatrixServiceV2(AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
                                      PerformanceCycleService performanceCycleService,
                                      Lazy<QuestionService> questionService,
-                                     Lazy<EmployeeAssessmentService> employeeAssessmentService,
+                                     Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
                                      Lazy<TeamServiceLegacy> teamService) {
         this.assessmentMatrixRepositoryV2 = assessmentMatrixRepositoryV2;
         this.performanceCycleService = performanceCycleService;
         this.questionService = questionService;
-        this.employeeAssessmentService = employeeAssessmentService;
+        this.employeeAssessmentServiceV2 = employeeAssessmentServiceV2;
         this.teamService = teamService;
     }
 
@@ -72,8 +72,8 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     @VisibleForTesting
-    protected EmployeeAssessmentService getEmployeeAssessmentService() {
-        return employeeAssessmentService.get();
+    protected EmployeeAssessmentServiceV2 getEmployeeAssessmentServiceV2() {
+        return employeeAssessmentServiceV2.get();
     }
 
     @VisibleForTesting
@@ -216,7 +216,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         
         // Get all employee assessments for this matrix using existing GSI
         // This is cost-effective as it uses assessmentMatrixId-employeeEmail-index
-        List<EmployeeAssessment> employeeAssessments = getEmployeeAssessmentService()
+        List<EmployeeAssessmentV2> employeeAssessments = getEmployeeAssessmentServiceV2()
             .findByAssessmentMatrix(matrixId, tenantId);
 
         // Build team summaries using in-memory aggregation (low cost)
@@ -345,7 +345,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     /**
      * Builds employee summaries with efficient data conversion.
      */
-    private List<EmployeeAssessmentSummary> buildEmployeeSummaries(List<EmployeeAssessment> assessments) {
+    private List<EmployeeAssessmentSummary> buildEmployeeSummaries(List<EmployeeAssessmentV2> assessments) {
         return assessments.stream()
             .map(this::buildEmployeeSummary)
             .collect(Collectors.toList());
@@ -354,7 +354,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     /**
      * Builds individual employee assessment summary.
      */
-    private EmployeeAssessmentSummary buildEmployeeSummary(EmployeeAssessment assessment) {
+    private EmployeeAssessmentSummary buildEmployeeSummary(EmployeeAssessmentV2 assessment) {
         Double currentScore = null;
         if (assessment.getEmployeeAssessmentScore() != null) {
             currentScore = assessment.getEmployeeAssessmentScore().getScore();
@@ -384,11 +384,11 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
      * Builds team summaries by grouping employee assessments and fetching team details.
      * Uses batch processing for team lookups to minimize DynamoDB calls.
      */
-    private List<TeamAssessmentSummary> buildTeamSummaries(List<EmployeeAssessment> assessments, String tenantId) {
+    private List<TeamAssessmentSummary> buildTeamSummaries(List<EmployeeAssessmentV2> assessments, String tenantId) {
         // Group assessments by team ID (in-memory operation - no additional DynamoDB cost)
-        Map<String, List<EmployeeAssessment>> assessmentsByTeam = assessments.stream()
+        Map<String, List<EmployeeAssessmentV2>> assessmentsByTeam = assessments.stream()
             .filter(ea -> StringUtils.isNotBlank(ea.getTeamId()))
-            .collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
+            .collect(Collectors.groupingBy(EmployeeAssessmentV2::getTeamId));
 
         return assessmentsByTeam.entrySet().stream()
             .map(entry -> buildTeamSummary(entry.getKey(), entry.getValue()))
@@ -400,7 +400,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     /**
      * Builds a team summary for a specific team with aggregated metrics.
      */
-    private Optional<TeamAssessmentSummary> buildTeamSummary(String teamId, List<EmployeeAssessment> assessments) {
+    private Optional<TeamAssessmentSummary> buildTeamSummary(String teamId, List<EmployeeAssessmentV2> assessments) {
         try {
             Optional<Team> teamOpt = getTeamService().findById(teamId);
             if (!teamOpt.isPresent()) {
@@ -434,7 +434,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     /**
      * Calculates average score for completed assessments.
      */
-    private Double calculateAverageScore(List<EmployeeAssessment> assessments) {
+    private Double calculateAverageScore(List<EmployeeAssessmentV2> assessments) {
         List<Double> completedScores = assessments.stream()
             .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
             .filter(ea -> ea.getEmployeeAssessmentScore() != null && ea.getEmployeeAssessmentScore().getScore() != null)
@@ -454,7 +454,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     /**
      * Counts completed assessments efficiently.
      */
-    private int calculateCompletedCount(List<EmployeeAssessment> assessments) {
+    private int calculateCompletedCount(List<EmployeeAssessmentV2> assessments) {
         return (int) assessments.stream()
             .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
             .count();
