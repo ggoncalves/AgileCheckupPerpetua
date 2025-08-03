@@ -1,22 +1,22 @@
 package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AnalyticsScope;
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DashboardAnalytics;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
-import com.agilecheckup.persistency.entity.PerformanceCycle;
+import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
-import com.agilecheckup.persistency.entity.Team;
-import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.TeamV2;
+import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
-import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
-import com.agilecheckup.persistency.repository.TeamRepository;
+import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -55,23 +55,23 @@ public class DashboardAnalyticsService {
     );
 
     private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
-    private final AssessmentMatrixService assessmentMatrixService;
-    private final EmployeeAssessmentService employeeAssessmentService;
-  private final CompanyServiceLegacy companyService;
-  private final PerformanceCycleServiceLegacy performanceCycleService;
-    private final TeamRepository teamRepository;
-    private final AnswerRepository answerRepository;
+    private final AssessmentMatrixServiceV2 assessmentMatrixService;
+    private final EmployeeAssessmentServiceV2 employeeAssessmentService;
+    private final CompanyService companyService;
+    private final PerformanceCycleService performanceCycleService;
+    private final TeamRepositoryV2 teamRepository;
+    private final AnswerRepositoryV2 answerRepository;
     private final ObjectMapper objectMapper;
 
     @Inject
     public DashboardAnalyticsService(
             DashboardAnalyticsRepository dashboardAnalyticsRepository,
-            AssessmentMatrixService assessmentMatrixService,
-            EmployeeAssessmentService employeeAssessmentService,
-            CompanyServiceLegacy companyService,
-            PerformanceCycleServiceLegacy performanceCycleService,
-            TeamRepository teamRepository,
-            AnswerRepository answerRepository) {
+            AssessmentMatrixServiceV2 assessmentMatrixService,
+            EmployeeAssessmentServiceV2 employeeAssessmentService,
+            CompanyService companyService,
+            PerformanceCycleService performanceCycleService,
+            TeamRepositoryV2 teamRepository,
+            AnswerRepositoryV2 answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
         this.assessmentMatrixService = assessmentMatrixService;
         this.employeeAssessmentService = employeeAssessmentService;
@@ -86,30 +86,22 @@ public class DashboardAnalyticsService {
      * Get analytics overview for an assessment matrix
      */
     public Optional<DashboardAnalytics> getOverview(String assessmentMatrixId) {
-      log.info("Getting overview for assessmentMatrixId={}", assessmentMatrixId);
-
-      Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+      Optional<AssessmentMatrixV2> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
           log.warn("AssessmentMatrix not found for id={}", assessmentMatrixId);
             return Optional.empty();
         }
         
-        AssessmentMatrix matrix = matrixOpt.get();
+        AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
-      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
-
-      log.info("Found AssessmentMatrix - companyId={}, performanceCycleId={}, assessmentMatrixId={}",
-          companyId, performanceCycleId, assessmentMatrixId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       try {
         Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
             companyId, performanceCycleId, assessmentMatrixId);
-
-        log.info("Analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixScopeId={}#{}",
-            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.ASSESSMENT_MATRIX.name());
 
         return result;
       }
@@ -124,30 +116,22 @@ public class DashboardAnalyticsService {
      * Get team-specific analytics
      */
     public Optional<DashboardAnalytics> getTeamAnalytics(String assessmentMatrixId, String teamId) {
-      log.info("Getting team analytics for assessmentMatrixId={}, teamId={}", assessmentMatrixId, teamId);
-
-      Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+      Optional<AssessmentMatrixV2> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
           log.warn("AssessmentMatrix not found for id={}", assessmentMatrixId);
             return Optional.empty();
         }
         
-        AssessmentMatrix matrix = matrixOpt.get();
+        AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
-      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
-
-      log.info("Found AssessmentMatrix for team analytics - companyId={}, performanceCycleId={}, assessmentMatrixId={}, teamId={}",
-          companyId, performanceCycleId, assessmentMatrixId, teamId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       try {
         Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
             companyId, performanceCycleId, assessmentMatrixId, teamId);
-
-        log.info("Team analytics query result - found={} for composite key: companyPerformanceCycleId={}#{}, assessmentMatrixScopeId={}#{}#{}",
-            result.isPresent(), companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.TEAM.name(), teamId);
 
         return result;
       }
@@ -162,17 +146,17 @@ public class DashboardAnalyticsService {
      * Get all analytics for an assessment matrix
      */
     public List<DashboardAnalytics> getAllAnalytics(String assessmentMatrixId) {
-        Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+        Optional<AssessmentMatrixV2> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
             return Collections.emptyList();
         }
         
-        AssessmentMatrix matrix = matrixOpt.get();
+        AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
-      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       if (companyId == null) {
         return Collections.emptyList();
@@ -188,41 +172,32 @@ public class DashboardAnalyticsService {
      * Update analytics for an entire assessment matrix
      */
     public void updateAssessmentMatrixAnalytics(String assessmentMatrixId) {
-        log.info("Updating analytics for assessment matrix: {}", assessmentMatrixId);
-        
-        Optional<AssessmentMatrix> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
+        Optional<AssessmentMatrixV2> matrixOpt = assessmentMatrixService.findById(assessmentMatrixId);
         if (matrixOpt.isEmpty()) {
             log.error("Assessment matrix not found: {}", assessmentMatrixId);
             return;
         }
         
-        AssessmentMatrix matrix = matrixOpt.get();
+        AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get performance cycle first to extract the real companyId
-      Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
-      String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
-      String performanceCycleName = cycleOpt.map(PerformanceCycle::getName).orElse("Unknown Cycle");
-
-      log.info("Retrieved performance cycle: companyId={}, performanceCycleName={}", companyId, performanceCycleName);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
+      String performanceCycleName = cycleOpt.map(PerformanceCycleV2::getName).orElse("Unknown Cycle");
 
       // Get company name using the correct companyId from PerformanceCycle
-      Optional<Company> companyOpt = companyId != null ?
+      Optional<CompanyV2> companyOpt = companyId != null ?
           companyService.findById(companyId) : Optional.empty();
-      String companyName = companyOpt.map(Company::getName).orElse("Unknown Company");
-
-      log.info("Retrieved company: companyName={}", companyName);
+      String companyName = companyOpt.map(CompanyV2::getName).orElse("Unknown Company");
 
       String assessmentMatrixName = matrix.getName();
 
       // Get all employee assessments for this matrix using tenantId (not companyId)
       String tenantId = matrix.getTenantId();
-      log.info("Searching for employee assessments with assessmentMatrixId={}, tenantId={}", assessmentMatrixId, tenantId);
 
-      List<EmployeeAssessment> allAssessments = employeeAssessmentService
+      List<EmployeeAssessmentV2> allAssessments = employeeAssessmentService
           .findByAssessmentMatrix(assessmentMatrixId, tenantId);
-
-      log.info("Found {} employee assessments for matrix: {}", allAssessments.size(), assessmentMatrixId);
         
         if (allAssessments.isEmpty()) {
           log.warn("No assessments found for matrix: {} with tenantId: {}. Cannot compute analytics.", assessmentMatrixId, tenantId);
@@ -230,16 +205,16 @@ public class DashboardAnalyticsService {
         }
         
         // Group assessments by team
-        Map<String, List<EmployeeAssessment>> assessmentsByTeam = allAssessments.stream()
+        Map<String, List<EmployeeAssessmentV2>> assessmentsByTeam = allAssessments.stream()
                 .filter(ea -> ea.getTeamId() != null)
-                .collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
+                .collect(Collectors.groupingBy(EmployeeAssessmentV2::getTeamId));
         
         List<DashboardAnalytics> analyticsToSave = new ArrayList<>();
         
         // Calculate analytics for each team
-        for (Map.Entry<String, List<EmployeeAssessment>> entry : assessmentsByTeam.entrySet()) {
+        for (Map.Entry<String, List<EmployeeAssessmentV2>> entry : assessmentsByTeam.entrySet()) {
             String teamId = entry.getKey();
-            List<EmployeeAssessment> teamAssessments = entry.getValue();
+            List<EmployeeAssessmentV2> teamAssessments = entry.getValue();
             
             DashboardAnalytics teamAnalytics = calculateAnalytics(
                     companyId, performanceCycleId, assessmentMatrixId,
@@ -258,9 +233,6 @@ public class DashboardAnalyticsService {
         
         // Save all analytics
         analyticsToSave.forEach(dashboardAnalyticsRepository::save);
-        
-        log.info("Updated {} analytics records for assessment matrix: {}", 
-                analyticsToSave.size(), assessmentMatrixId);
     }
 
     /**
@@ -268,7 +240,7 @@ public class DashboardAnalyticsService {
      */
     private DashboardAnalytics calculateOverviewAnalytics(
             String companyId, String performanceCycleId, String assessmentMatrixId,
-            List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix,
+            List<EmployeeAssessmentV2> allAssessments, AssessmentMatrixV2 matrix,
             String companyName, String performanceCycleName, String assessmentMatrixName) {
 
         return calculateAnalytics(
@@ -282,14 +254,14 @@ public class DashboardAnalyticsService {
      */
     private DashboardAnalytics calculateAnalytics(
             String companyId, String performanceCycleId, String assessmentMatrixId,
-            AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix,
+            AnalyticsScope scope, String teamId, List<EmployeeAssessmentV2> assessments, AssessmentMatrixV2 matrix,
             String companyName, String performanceCycleName, String assessmentMatrixName) {
 
         // Get team details (only for TEAM scope)
         String teamName = null;
         if (scope == AnalyticsScope.TEAM && teamId != null) {
-            Team team = teamRepository.findById(teamId);
-            teamName = team != null ? team.getName() : "Unknown Team";
+            Optional<TeamV2> teamOpt = teamRepository.findById(teamId);
+            teamName = teamOpt.map(TeamV2::getName).orElse("Unknown Team");
         }
 
         // Calculate basic metrics
@@ -300,12 +272,12 @@ public class DashboardAnalyticsService {
         double completionPercentage = calculatePercentage(completedCount, employeeCount);
 
       // Get all completed assessments for counting and completion percentage
-        List<EmployeeAssessment> completedAssessments = assessments.stream()
+        List<EmployeeAssessmentV2> completedAssessments = assessments.stream()
                 .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
             .collect(Collectors.toList());
 
       // Get only completed assessments with actual scores for analytics calculations
-      List<EmployeeAssessment> scoredAssessments = completedAssessments.stream()
+      List<EmployeeAssessmentV2> scoredAssessments = completedAssessments.stream()
                 .filter(ea -> ea.getEmployeeAssessmentScore() != null)
                 .collect(Collectors.toList());
 
@@ -356,7 +328,7 @@ public class DashboardAnalyticsService {
      * Calculate pillar-level analytics
      */
     private Map<String, Object> calculatePillarAnalytics(
-            List<EmployeeAssessment> completedAssessments, AssessmentMatrix matrix) {
+            List<EmployeeAssessmentV2> completedAssessments, AssessmentMatrixV2 matrix) {
         
         Map<String, Object> pillarAnalytics = new HashMap<>();
         PotentialScore potentialScore = matrix.getPotentialScore();
@@ -368,7 +340,7 @@ public class DashboardAnalyticsService {
         // Aggregate scores by pillar
         Map<String, List<PillarScore>> pillarScores = new HashMap<>();
         
-        for (EmployeeAssessment assessment : completedAssessments) {
+        for (EmployeeAssessmentV2 assessment : completedAssessments) {
             EmployeeAssessmentScore score = assessment.getEmployeeAssessmentScore();
             if (score != null && score.getPillarIdToPillarScoreMap() != null) {
                 score.getPillarIdToPillarScoreMap().forEach((pillarId, pillarScore) -> {
@@ -472,18 +444,18 @@ public class DashboardAnalyticsService {
     /**
      * Generate word cloud from answer notes
      */
-    private Map<String, Object> generateWordCloud(List<EmployeeAssessment> assessments) {
+    private Map<String, Object> generateWordCloud(List<EmployeeAssessmentV2> assessments) {
         Map<String, Object> wordCloudData = new HashMap<>();
         List<Map<String, Object>> words = new ArrayList<>();
         
         // Get all answer notes
         List<String> allNotes = new ArrayList<>();
-        for (EmployeeAssessment assessment : assessments) {
-            List<Answer> answers = answerRepository.findByEmployeeAssessmentId(
+        for (EmployeeAssessmentV2 assessment : assessments) {
+            List<AnswerV2> answers = answerRepository.findByEmployeeAssessmentId(
                     assessment.getId(), assessment.getTenantId());
             
             answers.stream()
-                    .map(Answer::getNotes)
+                    .map(AnswerV2::getNotes)
                     .filter(StringUtils::isNotBlank)
                     .forEach(allNotes::add);
         }

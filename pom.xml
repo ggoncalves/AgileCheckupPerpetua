@@ -200,6 +200,15 @@
 							<mainClass>com.agilecheckup.main.migration.EmployeeAssessmentDataMigration</mainClass>
 						</configuration>
 					</execution>
+					<execution>
+						<id>assessmentmatrix-v1-to-v2-migration</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.agilecheckup.main.migration.AssessmentMatrixV1ToV2Migration</mainClass>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>

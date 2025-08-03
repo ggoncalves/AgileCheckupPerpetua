@@ -106,12 +106,12 @@ public abstract class ServiceModule {
   @Singleton  
   static DashboardAnalyticsService provideDashboardAnalyticsService(
       DashboardAnalyticsRepository dashboardAnalyticsRepository,
-      AssessmentMatrixService assessmentMatrixService,
-      EmployeeAssessmentService employeeAssessmentService,
-      CompanyServiceLegacy companyService,
-      PerformanceCycleServiceLegacy performanceCycleService,
-      TeamRepository teamRepository,
-      AnswerRepository answerRepository) {
+      AssessmentMatrixServiceV2 assessmentMatrixService,
+      EmployeeAssessmentServiceV2 employeeAssessmentService,
+      CompanyService companyService,
+      PerformanceCycleService performanceCycleService,
+      TeamRepositoryV2 teamRepository,
+      AnswerRepositoryV2 answerRepository) {
     return new DashboardAnalyticsService(dashboardAnalyticsRepository, assessmentMatrixService, 
         employeeAssessmentService, companyService, performanceCycleService, teamRepository, answerRepository);
   }
@@ -131,10 +131,10 @@ public abstract class ServiceModule {
       AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
       PerformanceCycleService performanceCycleService,
       Lazy<QuestionService> questionService,
-      Lazy<EmployeeAssessmentService> employeeAssessmentService,
+      Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
       Lazy<TeamServiceLegacy> teamServiceLegacy) {
     return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleService, 
-        questionService, employeeAssessmentService, teamServiceLegacy);
+        questionService, employeeAssessmentServiceV2, teamServiceLegacy);
   }
 
   @Provides
