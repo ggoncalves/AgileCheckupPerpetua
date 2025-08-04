@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.repository.AbstractCrudRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
@@ -17,12 +17,12 @@ import java.util.Optional;
 public class DepartmentServiceV2 extends AbstractCrudServiceV2<DepartmentV2, AbstractCrudRepositoryV2<DepartmentV2>> {
     
     private final DepartmentRepositoryV2 departmentRepositoryV2;
-    private final CompanyService companyService;
+    private final CompanyServiceV2 companyServiceV2;
     
     @Inject
-    public DepartmentServiceV2(DepartmentRepositoryV2 departmentRepositoryV2, CompanyService companyService) {
+    public DepartmentServiceV2(DepartmentRepositoryV2 departmentRepositoryV2, CompanyServiceV2 companyServiceV2) {
         this.departmentRepositoryV2 = departmentRepositoryV2;
-        this.companyService = companyService;
+        this.companyServiceV2 = companyServiceV2;
     }
     
     public Optional<DepartmentV2> create(String name, String description, String tenantId, String companyId) {
@@ -33,7 +33,7 @@ public class DepartmentServiceV2 extends AbstractCrudServiceV2<DepartmentV2, Abs
         Optional<DepartmentV2> optionalDepartment = findById(id);
         if (optionalDepartment.isPresent()) {
             DepartmentV2 department = optionalDepartment.get();
-            Optional<Company> company = companyService.findById(companyId);
+            Optional<CompanyV2> company = companyServiceV2.findById(companyId);
             department.setName(name);
             department.setDescription(description);
             department.setTenantId(tenantId);
@@ -47,7 +47,7 @@ public class DepartmentServiceV2 extends AbstractCrudServiceV2<DepartmentV2, Abs
     }
     
     private DepartmentV2 createDepartment(String name, String description, String tenantId, String companyId) {
-        Optional<Company> company = companyService.findById(companyId);
+        Optional<CompanyV2> company = companyServiceV2.findById(companyId);
         DepartmentV2 department = new DepartmentV2();
         department.setName(name);
         department.setDescription(description);

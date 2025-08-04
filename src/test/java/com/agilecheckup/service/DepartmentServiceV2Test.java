@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.Company;
+import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
+import static com.agilecheckup.util.TestObjectFactoryV2.createMockedCompanyV2;
 import static com.agilecheckup.util.TestObjectFactoryV2.GENERIC_COMPANY_ID;
 import static com.agilecheckup.util.TestObjectFactoryV2.GENERIC_TENANT_ID;
 import static com.agilecheckup.util.TestObjectFactoryV2.createMockedDepartmentV2;
@@ -32,13 +32,13 @@ class DepartmentServiceV2Test extends AbstractCrudServiceTestV2<DepartmentV2, De
     private DepartmentRepositoryV2 mockDepartmentRepositoryV2;
     
     @Mock
-    private CompanyService mockCompanyService;
+    private CompanyServiceV2 mockCompanyServiceV2;
     
     private DepartmentServiceV2 departmentServiceV2;
     
     @BeforeEach
     void setUp() {
-        departmentServiceV2 = new DepartmentServiceV2(mockDepartmentRepositoryV2, mockCompanyService);
+        departmentServiceV2 = new DepartmentServiceV2(mockDepartmentRepositoryV2, mockCompanyServiceV2);
     }
     
     @Test
@@ -46,10 +46,10 @@ class DepartmentServiceV2Test extends AbstractCrudServiceTestV2<DepartmentV2, De
     void shouldCreateDepartmentSuccessfully() {
         String name = "Engineering";
         String description = "Engineering Department";
-        Company company = createMockedCompany(GENERIC_COMPANY_ID);
+        CompanyV2 company = createMockedCompanyV2(GENERIC_COMPANY_ID);
         DepartmentV2 expectedDepartment = createMockedDepartmentV2(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
         
-        doReturn(Optional.of(company)).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturn(Optional.of(company)).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
         doReturnForSaveWithRandomEntityId(expectedDepartment, mockDepartmentRepositoryV2);
         
         Optional<DepartmentV2> result = departmentServiceV2.create(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
@@ -65,7 +65,7 @@ class DepartmentServiceV2Test extends AbstractCrudServiceTestV2<DepartmentV2, De
     @Test
     @DisplayName("Should throw exception when company not found during creation")
     void shouldThrowExceptionWhenCompanyNotFoundDuringCreation() {
-        doReturn(Optional.empty()).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturn(Optional.empty()).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
         
         assertThatThrownBy(() -> departmentServiceV2.create("Engineering", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
                 .isInstanceOf(InvalidIdReferenceException.class);
@@ -85,10 +85,10 @@ class DepartmentServiceV2Test extends AbstractCrudServiceTestV2<DepartmentV2, De
         updatedDepartment.setName(newName);
         updatedDepartment.setDescription(newDescription);
         
-        Company company = createMockedCompany(GENERIC_COMPANY_ID);
+        CompanyV2 company = createMockedCompanyV2(GENERIC_COMPANY_ID);
         
         doReturnForFindById(existingDepartment, mockDepartmentRepositoryV2);
-        doReturn(Optional.of(company)).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturn(Optional.of(company)).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
         doReturnForUpdate(updatedDepartment, mockDepartmentRepositoryV2);
         
         Optional<DepartmentV2> result = departmentServiceV2.update(departmentId, newName, newDescription, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
@@ -119,7 +119,7 @@ class DepartmentServiceV2Test extends AbstractCrudServiceTestV2<DepartmentV2, De
         DepartmentV2 existingDepartment = createMockedDepartmentV2(departmentId);
         
         doReturnForFindById(existingDepartment, mockDepartmentRepositoryV2);
-        doReturn(Optional.empty()).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturn(Optional.empty()).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
         
         assertThatThrownBy(() -> departmentServiceV2.update(departmentId, "Name", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
                 .isInstanceOf(InvalidIdReferenceException.class);

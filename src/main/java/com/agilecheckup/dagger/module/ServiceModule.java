@@ -53,8 +53,8 @@ public abstract class ServiceModule {
   @Provides
   @Singleton
   static DepartmentServiceV2 provideDepartmentService(DepartmentRepositoryV2 departmentRepositoryV2,
-                                                      CompanyService companyService) {
-    return new DepartmentServiceV2(departmentRepositoryV2, companyService);
+                                                      CompanyServiceV2 companyServiceV2) {
+    return new DepartmentServiceV2(departmentRepositoryV2, companyServiceV2);
   }
 
   @Provides
