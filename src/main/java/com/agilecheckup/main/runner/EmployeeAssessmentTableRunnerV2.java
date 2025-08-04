@@ -13,12 +13,12 @@ import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.CompanyServiceV2;
+import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
-import com.agilecheckup.service.PerformanceCycleService;
-import com.agilecheckup.service.TeamServiceLegacy;
+import com.agilecheckup.service.PerformanceCycleServiceV2;
+import com.agilecheckup.service.TeamService;
 import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
 import lombok.extern.log4j.Log4j2;
@@ -35,10 +35,10 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
     private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
     private EmployeeAssessmentService employeeAssessmentServiceLegacy;
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
-    private TeamServiceLegacy teamService;
-    private CompanyService companyService;
-    private DepartmentService departmentService;
-    private PerformanceCycleService performanceCycleService;
+    private TeamService teamService;
+    private CompanyServiceV2 companyServiceV2;
+    private DepartmentServiceV2 departmentServiceV2;
+    private PerformanceCycleServiceV2 performanceCycleServiceV2;
     private CompanyV2 testCompany;
     private DepartmentV2 testDepartment;
     private Team testTeam;
@@ -515,7 +515,7 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         return assessmentMatrixServiceV2;
     }
     
-    private TeamServiceLegacy getTeamService() {
+    private TeamService getTeamService() {
         if (teamService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
             teamService = serviceComponent.buildTeamServiceLegacy();
@@ -523,27 +523,27 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         return teamService;
     }
     
-    private CompanyService getCompanyService() {
-        if (companyService == null) {
+    private CompanyServiceV2 getCompanyService() {
+        if (companyServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyService = serviceComponent.buildCompanyService();
+            companyServiceV2 = serviceComponent.buildCompanyService();
         }
-        return companyService;
+        return companyServiceV2;
     }
     
-    private DepartmentService getDepartmentService() {
-        if (departmentService == null) {
+    private DepartmentServiceV2 getDepartmentService() {
+        if (departmentServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            departmentService = serviceComponent.buildDepartmentService();
+            departmentServiceV2 = serviceComponent.buildDepartmentService();
         }
-        return departmentService;
+        return departmentServiceV2;
     }
     
-    private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleService == null) {
+    private PerformanceCycleServiceV2 getPerformanceCycleService() {
+        if (performanceCycleServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleService = serviceComponent.buildPerformanceCycleService();
+            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleService;
+        return performanceCycleServiceV2;
     }
 }

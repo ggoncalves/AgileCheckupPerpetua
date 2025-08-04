@@ -6,10 +6,10 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.TeamV2;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.CompanyServiceV2;
+import com.agilecheckup.service.DepartmentServiceV2;
+import com.agilecheckup.service.TeamServiceV2;
 import com.agilecheckup.service.TeamService;
-import com.agilecheckup.service.TeamServiceLegacy;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -19,10 +19,10 @@ import java.util.Optional;
 @Log4j2
 public class TeamTableRunner implements CrudRunner {
 
+    private TeamServiceV2 teamServiceV2;
     private TeamService teamService;
-    private TeamServiceLegacy teamServiceLegacy;
-    private CompanyService companyService;
-    private DepartmentService departmentService;
+    private CompanyServiceV2 companyServiceV2;
+    private DepartmentServiceV2 departmentServiceV2;
     private final boolean shouldCleanAfterComplete;
     
     // Test data
@@ -307,35 +307,35 @@ public class TeamTableRunner implements CrudRunner {
         }
     }
 
-    private TeamService getTeamService() {
+    private TeamServiceV2 getTeamService() {
+        if (teamServiceV2 == null) {
+            ServiceComponent serviceComponent = DaggerServiceComponent.create();
+            teamServiceV2 = serviceComponent.buildTeamService();
+        }
+        return teamServiceV2;
+    }
+    
+    private TeamService getTeamServiceLegacy() {
         if (teamService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            teamService = serviceComponent.buildTeamService();
+            teamService = serviceComponent.buildTeamServiceLegacy();
         }
         return teamService;
     }
     
-    private TeamServiceLegacy getTeamServiceLegacy() {
-        if (teamServiceLegacy == null) {
+    private CompanyServiceV2 getCompanyService() {
+        if (companyServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            teamServiceLegacy = serviceComponent.buildTeamServiceLegacy();
+            companyServiceV2 = serviceComponent.buildCompanyService();
         }
-        return teamServiceLegacy;
+        return companyServiceV2;
     }
     
-    private CompanyService getCompanyService() {
-        if (companyService == null) {
+    private DepartmentServiceV2 getDepartmentService() {
+        if (departmentServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyService = serviceComponent.buildCompanyService();
+            departmentServiceV2 = serviceComponent.buildDepartmentService();
         }
-        return companyService;
-    }
-    
-    private DepartmentService getDepartmentService() {
-        if (departmentService == null) {
-            ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            departmentService = serviceComponent.buildDepartmentService();
-        }
-        return departmentService;
+        return departmentServiceV2;
     }
 }

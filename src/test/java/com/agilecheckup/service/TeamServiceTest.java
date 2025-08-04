@@ -34,18 +34,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
+class TeamServiceTest extends AbstractCrudServiceTest<Team, AbstractCrudRepository<Team>> {
 
   @InjectMocks
   @Spy
-  private TeamServiceLegacy teamService;
+  private TeamService teamService;
 
   @Mock
   private TeamRepository mockedTeamRepository;
 
 
   @Mock
-  private DepartmentService mockDepartmentService;
+  private DepartmentServiceV2 mockDepartmentServiceV2;
 
   private Team originalTeam;
 
@@ -63,7 +63,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
 
     // Prevent/Stub
     doAnswerForSaveWithRandomEntityId(savedTeam, mockedTeamRepository);
-    doReturn(Optional.of(department)).when(mockDepartmentService).findById(originalTeam.getDepartmentId());
+    doReturn(Optional.of(department)).when(mockDepartmentServiceV2).findById(originalTeam.getDepartmentId());
 
     // When
     Optional<Team> teamOptional = teamService.create(
@@ -83,7 +83,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
   @Test
   void createInvalidCompanyId() {
     // Prevent/Stub
-    doReturn(Optional.empty()).when(mockDepartmentService).findById(originalTeam.getDepartmentId());
+    doReturn(Optional.empty()).when(mockDepartmentServiceV2).findById(originalTeam.getDepartmentId());
 
     // When
     assertThrows(InvalidIdReferenceException.class, () -> teamService.create(
@@ -97,7 +97,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
   @Test
   void createInvalidDepartmentId() {
     // Prevent/Stub
-    doReturn(Optional.empty()).when(mockDepartmentService).findById(originalTeam.getDepartmentId());
+    doReturn(Optional.empty()).when(mockDepartmentServiceV2).findById(originalTeam.getDepartmentId());
 
     // When
     assertThrows(InvalidIdReferenceException.class, () -> teamService.create(
@@ -111,7 +111,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
   @Test
   void create_NullTeamName() {
     // Mock department service to return a valid department
-    doReturn(Optional.of(department)).when(mockDepartmentService).findById(originalTeam.getDepartmentId());
+    doReturn(Optional.of(department)).when(mockDepartmentServiceV2).findById(originalTeam.getDepartmentId());
     
     // When
     assertThrows(NullPointerException.class, () -> teamService.create(
@@ -140,7 +140,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
     // Mock repository calls
     doReturn(existingTeam).when(mockedTeamRepository).findById(DEFAULT_ID);
     doAnswerForUpdate(updatedTeam, mockedTeamRepository);
-    doReturn(Optional.of(updatedDepartment)).when(mockDepartmentService).findById("updatedDepartmentId");
+    doReturn(Optional.of(updatedDepartment)).when(mockDepartmentServiceV2).findById("updatedDepartmentId");
 
     // When
     Optional<Team> resultOptional = teamService.update(
@@ -156,7 +156,7 @@ class TeamServiceLegacyTest extends AbstractCrudServiceTest<Team, AbstractCrudRe
     assertEquals(updatedTeam, resultOptional.get());
     verify(mockedTeamRepository).findById(DEFAULT_ID);
     verify(mockedTeamRepository).save(updatedTeam);
-    verify(mockDepartmentService).findById("updatedDepartmentId");
+    verify(mockDepartmentServiceV2).findById("updatedDepartmentId");
     verify(teamService).update(DEFAULT_ID,
         "Updated Team Name",
         "Updated Description",

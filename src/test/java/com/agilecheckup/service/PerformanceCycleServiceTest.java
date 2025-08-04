@@ -33,17 +33,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PerformanceCycleServiceLegacyTest extends AbstractCrudServiceTest<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
+class PerformanceCycleServiceTest extends AbstractCrudServiceTest<PerformanceCycle, AbstractCrudRepository<PerformanceCycle>> {
 
   @InjectMocks
   @Spy
-  private PerformanceCycleServiceLegacy performanceCycleService;
+  private PerformanceCycleService performanceCycleService;
 
   @Mock
   private PerformanceCycleRepository mockPerformanceCycleRepository;
 
   @Mock
-  private CompanyServiceLegacy mockCompanyService;
+  private CompanyService mockCompanyService;
 
   private static PerformanceCycle originalPerformanceCycle;
 

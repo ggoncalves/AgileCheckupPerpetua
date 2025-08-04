@@ -21,19 +21,19 @@ import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationServiceV2;
+import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DashboardAnalyticsServiceV2;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.CompanyServiceLegacy;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
-import com.agilecheckup.service.PerformanceCycleServiceLegacy;
+import com.agilecheckup.service.PerformanceCycleServiceV2;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamService;
-import com.agilecheckup.service.TeamServiceLegacy;
+import com.agilecheckup.service.TeamServiceV2;
 import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
@@ -48,47 +48,47 @@ public abstract class ServiceModule {
   abstract AbstractCrudService provideQuestionService(QuestionService questionService);
 
   @Binds
-  abstract AbstractCrudService provideCompanyServiceLegacy(CompanyServiceLegacy companyServiceLegacy);
+  abstract AbstractCrudService provideCompanyServiceLegacy(CompanyService companyService);
 
   @Provides
   @Singleton
-  static DepartmentService provideDepartmentService(DepartmentRepositoryV2 departmentRepositoryV2, 
-                                                    CompanyServiceLegacy companyServiceLegacy) {
-    return new DepartmentService(departmentRepositoryV2, companyServiceLegacy);
+  static DepartmentServiceV2 provideDepartmentService(DepartmentRepositoryV2 departmentRepositoryV2,
+                                                      CompanyService companyService) {
+    return new DepartmentServiceV2(departmentRepositoryV2, companyService);
   }
 
   @Provides
   @Singleton
-  static TeamService provideTeamService(TeamRepositoryV2 teamRepositoryV2) {
-    return new TeamService(teamRepositoryV2);
+  static TeamServiceV2 provideTeamService(TeamRepositoryV2 teamRepositoryV2) {
+    return new TeamServiceV2(teamRepositoryV2);
   }
 
   @Provides
   @Singleton
-  static TeamServiceLegacy provideTeamServiceLegacy(TeamRepository teamRepository, DepartmentService departmentService) {
-    return new TeamServiceLegacy(teamRepository, departmentService);
+  static TeamService provideTeamServiceLegacy(TeamRepository teamRepository, DepartmentServiceV2 departmentServiceV2) {
+    return new TeamService(teamRepository, departmentServiceV2);
   }
 
   @Provides
   @Singleton
-  static PerformanceCycleService providePerformanceCycleService(PerformanceCycleRepositoryV2 performanceCycleRepositoryV2, CompanyService companyService) {
-    return new PerformanceCycleService(performanceCycleRepositoryV2, companyService);
+  static PerformanceCycleServiceV2 providePerformanceCycleService(PerformanceCycleRepositoryV2 performanceCycleRepositoryV2, CompanyServiceV2 companyServiceV2) {
+    return new PerformanceCycleServiceV2(performanceCycleRepositoryV2, companyServiceV2);
   }
 
   @Provides
   @Singleton
-  static PerformanceCycleServiceLegacy providePerformanceCycleServiceLegacy(PerformanceCycleRepository performanceCycleRepository, CompanyServiceLegacy companyService) {
-    return new PerformanceCycleServiceLegacy(performanceCycleRepository, companyService);
+  static PerformanceCycleService providePerformanceCycleServiceLegacy(PerformanceCycleRepository performanceCycleRepository, CompanyService companyService) {
+    return new PerformanceCycleService(performanceCycleRepository, companyService);
   }
 
   @Provides
   @Singleton
   static AssessmentMatrixService provideAssessmentMatrixService(
       AssessmentMatrixRepository assessmentMatrixRepository,
-      PerformanceCycleServiceLegacy performanceCycleService,
+      PerformanceCycleService performanceCycleService,
       Lazy<QuestionService> questionService,
       Lazy<EmployeeAssessmentService> employeeAssessmentService,
-      Lazy<TeamServiceLegacy> teamServiceLegacy) {
+      Lazy<TeamService> teamServiceLegacy) {
     return new AssessmentMatrixService(assessmentMatrixRepository, performanceCycleService, 
         questionService, employeeAssessmentService, teamServiceLegacy);
   }
@@ -98,10 +98,10 @@ public abstract class ServiceModule {
   static EmployeeAssessmentService provideEmployeeAssessmentService(
       EmployeeAssessmentRepository employeeAssessmentRepository,
       AssessmentMatrixService assessmentMatrixService,
-      TeamServiceLegacy teamServiceLegacy,
+      TeamService teamService,
       AnswerRepository answerRepository) {
-    return new EmployeeAssessmentService(employeeAssessmentRepository, assessmentMatrixService, 
-        teamServiceLegacy, answerRepository);
+    return new EmployeeAssessmentService(employeeAssessmentRepository, assessmentMatrixService,
+        teamService, answerRepository);
   }
 
   @Provides
@@ -110,12 +110,12 @@ public abstract class ServiceModule {
       DashboardAnalyticsRepository dashboardAnalyticsRepository,
       AssessmentMatrixServiceV2 assessmentMatrixService,
       EmployeeAssessmentServiceV2 employeeAssessmentService,
-      CompanyService companyService,
-      PerformanceCycleService performanceCycleService,
+      CompanyServiceV2 companyServiceV2,
+      PerformanceCycleServiceV2 performanceCycleServiceV2,
       TeamRepositoryV2 teamRepository,
       AnswerRepositoryV2 answerRepository) {
     return new DashboardAnalyticsService(dashboardAnalyticsRepository, assessmentMatrixService, 
-        employeeAssessmentService, companyService, performanceCycleService, teamRepository, answerRepository);
+        employeeAssessmentService, companyServiceV2, performanceCycleServiceV2, teamRepository, answerRepository);
   }
 
   @Provides
@@ -124,12 +124,12 @@ public abstract class ServiceModule {
       DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepositoryV2,
       AssessmentMatrixServiceV2 assessmentMatrixService,
       EmployeeAssessmentServiceV2 employeeAssessmentService,
-      CompanyService companyService,
-      PerformanceCycleService performanceCycleService,
+      CompanyServiceV2 companyServiceV2,
+      PerformanceCycleServiceV2 performanceCycleServiceV2,
       TeamRepositoryV2 teamRepository,
       AnswerRepositoryV2 answerRepository) {
     return new DashboardAnalyticsServiceV2(dashboardAnalyticsRepositoryV2, assessmentMatrixService, 
-        employeeAssessmentService, companyService, performanceCycleService, teamRepository, answerRepository);
+        employeeAssessmentService, companyServiceV2, performanceCycleServiceV2, teamRepository, answerRepository);
   }
 
   @Binds
@@ -137,19 +137,19 @@ public abstract class ServiceModule {
 
   @Provides
   @Singleton
-  static CompanyService provideCompanyService(CompanyRepositoryV2 companyRepositoryV2) {
-    return new CompanyService(companyRepositoryV2);
+  static CompanyServiceV2 provideCompanyService(CompanyRepositoryV2 companyRepositoryV2) {
+    return new CompanyServiceV2(companyRepositoryV2);
   }
 
   @Provides
   @Singleton
   static AssessmentMatrixServiceV2 provideAssessmentMatrixServiceV2(
       AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
-      PerformanceCycleService performanceCycleService,
+      PerformanceCycleServiceV2 performanceCycleServiceV2,
       Lazy<QuestionService> questionService,
       Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
-      Lazy<TeamServiceLegacy> teamServiceLegacy) {
-    return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleService, 
+      Lazy<TeamService> teamServiceLegacy) {
+    return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleServiceV2,
         questionService, employeeAssessmentServiceV2, teamServiceLegacy);
   }
 
@@ -158,10 +158,10 @@ public abstract class ServiceModule {
   static EmployeeAssessmentServiceV2 provideEmployeeAssessmentServiceV2(
       EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2,
       AssessmentMatrixServiceV2 assessmentMatrixServiceV2,
-      TeamServiceLegacy teamServiceLegacy,
+      TeamService teamService,
       AnswerRepository answerRepository) {
-    return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2, 
-        teamServiceLegacy, answerRepository);
+    return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2,
+        teamService, answerRepository);
   }
 
   @Provides

@@ -26,7 +26,6 @@ import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,8 +56,8 @@ public class DashboardAnalyticsServiceV2 {
     private final DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepository;
     private final AssessmentMatrixServiceV2 assessmentMatrixService;
     private final EmployeeAssessmentServiceV2 employeeAssessmentService;
-    private final CompanyService companyService;
-    private final PerformanceCycleService performanceCycleService;
+    private final CompanyServiceV2 companyServiceV2;
+    private final PerformanceCycleServiceV2 performanceCycleServiceV2;
     private final TeamRepositoryV2 teamRepository;
     private final AnswerRepositoryV2 answerRepository;
     private final ObjectMapper objectMapper;
@@ -68,15 +67,15 @@ public class DashboardAnalyticsServiceV2 {
             DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepository,
             AssessmentMatrixServiceV2 assessmentMatrixService,
             EmployeeAssessmentServiceV2 employeeAssessmentService,
-            CompanyService companyService,
-            PerformanceCycleService performanceCycleService,
+            CompanyServiceV2 companyServiceV2,
+            PerformanceCycleServiceV2 performanceCycleServiceV2,
             TeamRepositoryV2 teamRepository,
             AnswerRepositoryV2 answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
         this.assessmentMatrixService = assessmentMatrixService;
         this.employeeAssessmentService = employeeAssessmentService;
-        this.companyService = companyService;
-        this.performanceCycleService = performanceCycleService;
+        this.companyServiceV2 = companyServiceV2;
+        this.performanceCycleServiceV2 = performanceCycleServiceV2;
         this.teamRepository = teamRepository;
         this.answerRepository = answerRepository;
         this.objectMapper = new ObjectMapper();
@@ -96,7 +95,7 @@ public class DashboardAnalyticsServiceV2 {
         AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+        Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
         try {
@@ -125,7 +124,7 @@ public class DashboardAnalyticsServiceV2 {
         AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+        Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
         try {
@@ -153,7 +152,7 @@ public class DashboardAnalyticsServiceV2 {
         AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+        Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
         if (companyId == null) {
@@ -179,12 +178,12 @@ public class DashboardAnalyticsServiceV2 {
         AssessmentMatrixV2 matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+        Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
         String performanceCycleName = cycleOpt.map(PerformanceCycleV2::getName).orElse("Unknown Cycle");
 
         Optional<CompanyV2> companyOpt = companyId != null ?
-                companyService.findById(companyId) : Optional.empty();
+                companyServiceV2.findById(companyId) : Optional.empty();
         String companyName = companyOpt.map(CompanyV2::getName).orElse("Unknown Company");
 
         String assessmentMatrixName = matrix.getName();

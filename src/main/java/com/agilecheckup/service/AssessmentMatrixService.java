@@ -40,22 +40,22 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private final AssessmentMatrixRepository assessmentMatrixRepository;
 
-  private final PerformanceCycleServiceLegacy performanceCycleService;
+  private final PerformanceCycleService performanceCycleService;
 
   private final Lazy<QuestionService> questionService;
 
   private final Lazy<EmployeeAssessmentService> employeeAssessmentService;
 
-  private final Lazy<TeamServiceLegacy> teamService;
+  private final Lazy<TeamService> teamService;
 
   private static final String DEFAULT_WHEN_NULL = "";
 
   @Inject
   public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository,
-                                 PerformanceCycleServiceLegacy performanceCycleService,
+                                 PerformanceCycleService performanceCycleService,
                                  Lazy<QuestionService> questionService,
                                  Lazy<EmployeeAssessmentService> employeeAssessmentService,
-                                 Lazy<TeamServiceLegacy> teamService) {
+                                 Lazy<TeamService> teamService) {
     this.assessmentMatrixRepository = assessmentMatrixRepository;
     this.performanceCycleService = performanceCycleService;
     this.questionService = questionService;
@@ -74,7 +74,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   @VisibleForTesting
-  protected TeamServiceLegacy getTeamService() {
+  protected TeamService getTeamService() {
     return teamService.get();
   }
 

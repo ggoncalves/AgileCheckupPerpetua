@@ -26,13 +26,13 @@ import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
-import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsServiceV2;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
-import com.agilecheckup.service.PerformanceCycleService;
+import com.agilecheckup.service.PerformanceCycleServiceV2;
 import com.agilecheckup.service.QuestionService;
-import com.agilecheckup.service.TeamService;
+import com.agilecheckup.service.TeamServiceV2;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalDate;
@@ -52,10 +52,10 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
     private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
     private AnswerServiceV2 answerServiceV2;
-    private CompanyService companyService;
-    private PerformanceCycleService performanceCycleService;
-    private DepartmentService departmentService;
-    private TeamService teamService;
+    private CompanyServiceV2 companyServiceV2;
+    private PerformanceCycleServiceV2 performanceCycleServiceV2;
+    private DepartmentServiceV2 departmentServiceV2;
+    private TeamServiceV2 teamServiceV2;
     private QuestionService questionService;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
@@ -842,36 +842,36 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         return answerServiceV2;
     }
 
-    private CompanyService getCompanyService() {
-        if (companyService == null) {
+    private CompanyServiceV2 getCompanyService() {
+        if (companyServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyService = serviceComponent.buildCompanyService();
+            companyServiceV2 = serviceComponent.buildCompanyService();
         }
-        return companyService;
+        return companyServiceV2;
     }
 
-    private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleService == null) {
+    private PerformanceCycleServiceV2 getPerformanceCycleService() {
+        if (performanceCycleServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleService = serviceComponent.buildPerformanceCycleService();
+            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleService;
+        return performanceCycleServiceV2;
     }
 
-    private DepartmentService getDepartmentService() {
-        if (departmentService == null) {
+    private DepartmentServiceV2 getDepartmentService() {
+        if (departmentServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            departmentService = serviceComponent.buildDepartmentService();
+            departmentServiceV2 = serviceComponent.buildDepartmentService();
         }
-        return departmentService;
+        return departmentServiceV2;
     }
 
-    private TeamService getTeamService() {
-        if (teamService == null) {
+    private TeamServiceV2 getTeamService() {
+        if (teamServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            teamService = serviceComponent.buildTeamService();
+            teamServiceV2 = serviceComponent.buildTeamService();
         }
-        return teamService;
+        return teamServiceV2;
     }
 
     private QuestionService getQuestionService() {

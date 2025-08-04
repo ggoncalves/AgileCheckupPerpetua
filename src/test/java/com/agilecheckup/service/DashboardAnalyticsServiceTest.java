@@ -9,7 +9,6 @@ import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
-import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
@@ -27,7 +26,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,10 +58,10 @@ class DashboardAnalyticsServiceTest {
     private EmployeeAssessmentServiceV2 employeeAssessmentService;
     
     @Mock
-    private CompanyService companyService;
+    private CompanyServiceV2 companyServiceV2;
     
     @Mock
-    private PerformanceCycleService performanceCycleService;
+    private PerformanceCycleServiceV2 performanceCycleServiceV2;
     
     @Mock
     private TeamRepositoryV2 teamRepository;
@@ -98,7 +96,7 @@ class DashboardAnalyticsServiceTest {
     void getOverview_WhenMatrixExists_ShouldReturnOverviewAnalytics() {
         // Given
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(dashboardAnalyticsRepository.findAssessmentMatrixOverview(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID))
                 .thenReturn(Optional.of(mockDashboardAnalytics));
@@ -132,7 +130,7 @@ class DashboardAnalyticsServiceTest {
     void getTeamAnalytics_WhenMatrixAndTeamExist_ShouldReturnTeamAnalytics() {
         // Given
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID))
                 .thenReturn(Optional.of(mockDashboardAnalytics));
@@ -171,7 +169,7 @@ class DashboardAnalyticsServiceTest {
         List<DashboardAnalyticsV2> allAnalytics = Arrays.asList(analytics1, analytics2, analytics3);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(COMPANY_ID, PERFORMANCE_CYCLE_ID))
                 .thenReturn(allAnalytics);
 
@@ -217,7 +215,7 @@ class DashboardAnalyticsServiceTest {
     void updateAssessmentMatrixAnalytics_WhenNoAssessments_ShouldReturn() {
         // Given
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(Collections.emptyList());
 
@@ -238,8 +236,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(assessment1, assessment2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -263,8 +261,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(assessment1, assessment2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(anyString())).thenReturn(Optional.of(mockTeam));
@@ -289,8 +287,8 @@ class DashboardAnalyticsServiceTest {
         List<AnswerV2> answers = Arrays.asList(answer1, answer2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -318,8 +316,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(completedAssessment, inProgressAssessment);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -341,8 +339,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(assessmentWithoutTeam, assessmentWithTeam);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -364,8 +362,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Collections.singletonList(employee);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -405,8 +403,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(emp1, emp2, emp3);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -451,8 +449,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(team1Emp1, team1Emp2, team2Emp1, team2Emp2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(anyString())).thenReturn(Optional.of(mockTeam));
@@ -494,8 +492,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(emp1, emp2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -537,8 +535,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(completedEmp1, completedEmp2, inProgressEmp);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -577,8 +575,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(inProgressEmp1, invitedEmp2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
@@ -620,8 +618,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Arrays.asList(scoredEmp, unscoredEmp1, unscoredEmp2);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(anyString())).thenReturn(Optional.of(mockTeam));
@@ -670,8 +668,8 @@ class DashboardAnalyticsServiceTest {
         List<EmployeeAssessmentV2> assessments = Collections.singletonList(assessment);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(matrixWithoutPotentialScore));
-        when(companyService.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
-        when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
+        when(companyServiceV2.findById(COMPANY_ID)).thenReturn(Optional.of(createMockCompany()));
+        when(performanceCycleServiceV2.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
         when(employeeAssessmentService.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID))
                 .thenReturn(assessments);
         when(teamRepository.findById(TEAM_ID)).thenReturn(Optional.of(mockTeam));
