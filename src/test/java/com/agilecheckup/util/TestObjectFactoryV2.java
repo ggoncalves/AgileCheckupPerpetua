@@ -12,6 +12,8 @@ import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.entity.QuestionType;
 import lombok.NonNull;
 
 import java.time.Instant;
@@ -297,5 +299,54 @@ public class TestObjectFactoryV2 {
       pillarMap.put(key, createMockedPillarV2("Pillar " + i, "Description for pillar " + i));
     }
     return pillarMap;
+  }
+
+  // === Question V2 Factory Methods ===
+
+  public static QuestionV2 createMockedQuestionV2() {
+    return createMockedQuestionV2(5d);
+  }
+
+  public static QuestionV2 createMockedQuestionV2(Double points) {
+    return createMockedQuestionV2(GENERIC_ID_1234, points);
+  }
+
+  public static QuestionV2 createMockedQuestionV2(String id) {
+    return createMockedQuestionV2(id, 5d);
+  }
+
+  public static QuestionV2 createMockedQuestionV2(String id, Double points) {
+    return createMockedQuestionV2(id, QuestionType.YES_NO, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, 
+        "Category Name", points);
+  }
+
+  public static QuestionV2 createMockedQuestionV2(Double points, QuestionType questionType) {
+    return createMockedQuestionV2(GENERIC_ID_1234, questionType, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, 
+        "Category Name", points);
+  }
+
+  public static QuestionV2 createMockedQuestionV2(String id, QuestionType questionType, @NonNull String pillarId,
+                                              @NonNull String pillarName, @NonNull String categoryId,
+                                              @NonNull String categoryName, Double points) {
+    return QuestionV2.builder()
+        .id(id)
+        .assessmentMatrixId(GENERIC_ID_1234)
+        .pillarId(pillarId)
+        .pillarName(pillarName)
+        .categoryId(categoryId)
+        .categoryName(categoryName)
+        .question("question")
+        .questionType(questionType)
+        .points(points)
+        .tenantId(GENERIC_TENANT_ID)
+        .createdDate(Instant.now().minusSeconds(86400))
+        .lastUpdatedDate(Instant.now())
+        .build();
+  }
+
+  public static QuestionV2 createMockedQuestionV2(String id, QuestionType questionType) {
+    QuestionV2 question = createMockedQuestionV2(id);
+    question.setQuestionType(questionType);
+    return question;
   }
 }

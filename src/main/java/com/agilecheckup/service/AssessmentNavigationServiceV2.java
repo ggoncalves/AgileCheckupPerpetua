@@ -6,7 +6,7 @@ import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.service.dto.AnswerWithProgressResponse;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import lombok.NonNull;
@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 
 public class AssessmentNavigationServiceV2 {
 
-  private final QuestionService questionService;
+  private final QuestionServiceV2 questionService;
   private final AnswerServiceV2 answerService;
   private final EmployeeAssessmentServiceV2 employeeAssessmentService;
   private final AssessmentMatrixServiceV2 assessmentMatrixService;
 
   @Inject
-  public AssessmentNavigationServiceV2(QuestionService questionService, AnswerServiceV2 answerService,
+  public AssessmentNavigationServiceV2(QuestionServiceV2 questionService, AnswerServiceV2 answerService,
                                      EmployeeAssessmentServiceV2 employeeAssessmentService,
                                      AssessmentMatrixServiceV2 assessmentMatrixService) {
     this.questionService = questionService;
@@ -53,7 +53,7 @@ public class AssessmentNavigationServiceV2 {
     EmployeeAssessmentV2 assessment = validateAndUpdateAssessment(employeeAssessmentId);
     AssessmentMatrixV2 matrix = getAssessmentMatrixById(assessment.getAssessmentMatrixId());
     
-    Question nextQuestion = selectNextUnansweredQuestion(assessment, matrix, tenantId);
+    QuestionV2 nextQuestion = selectNextUnansweredQuestion(assessment, matrix, tenantId);
     
     return buildProgressResponse(nextQuestion, assessment, matrix);
   }
@@ -72,9 +72,9 @@ public class AssessmentNavigationServiceV2 {
    * Selects the next unanswered question using efficient database queries.
    * Clean Code: Single responsibility - question selection logic.
    */
-  private Question selectNextUnansweredQuestion(EmployeeAssessmentV2 assessment, AssessmentMatrixV2 matrix, String tenantId) {
+  private QuestionV2 selectNextUnansweredQuestion(EmployeeAssessmentV2 assessment, AssessmentMatrixV2 matrix, String tenantId) {
     Set<String> answeredQuestionIds = getAnsweredQuestionIds(assessment.getId(), tenantId);
-    List<Question> unansweredQuestions = getUnansweredQuestions(matrix.getId(), tenantId, answeredQuestionIds);
+    List<QuestionV2> unansweredQuestions = getUnansweredQuestions(matrix.getId(), tenantId, answeredQuestionIds);
     
     if (unansweredQuestions.isEmpty()) {
       updateStatusToCompletedIfNeeded(assessment);
@@ -97,8 +97,8 @@ public class AssessmentNavigationServiceV2 {
    * Retrieves unanswered questions by filtering at the database level.
    * Performance: Reduces in-memory processing.
    */
-  private List<Question> getUnansweredQuestions(String matrixId, String tenantId, Set<String> answeredQuestionIds) {
-    List<Question> allQuestions = questionService.findByAssessmentMatrixId(matrixId, tenantId);
+  private List<QuestionV2> getUnansweredQuestions(String matrixId, String tenantId, Set<String> answeredQuestionIds) {
+    List<QuestionV2> allQuestions = questionService.findByAssessmentMatrixId(matrixId, tenantId);
     return allQuestions.stream()
         .filter(question -> !answeredQuestionIds.contains(question.getId()))
         .collect(Collectors.toList());
@@ -108,7 +108,7 @@ public class AssessmentNavigationServiceV2 {
    * Selects a question based on the navigation mode configuration.
    * Clean Code: Single responsibility - navigation logic.
    */
-  private Question selectQuestionByNavigationMode(List<Question> questions, QuestionNavigationType navigationType, String seedId) {
+  private QuestionV2 selectQuestionByNavigationMode(List<QuestionV2> questions, QuestionNavigationType navigationType, String seedId) {
     return selectNextQuestion(questions, navigationType, seedId).orElse(null);
   }
   
@@ -116,7 +116,7 @@ public class AssessmentNavigationServiceV2 {
    * Builds the response object with progress information.
    * Clean Code: Single responsibility - response construction.
    */
-  private AnswerWithProgressResponse buildProgressResponse(Question question, EmployeeAssessmentV2 assessment, AssessmentMatrixV2 matrix) {
+  private AnswerWithProgressResponse buildProgressResponse(QuestionV2 question, EmployeeAssessmentV2 assessment, AssessmentMatrixV2 matrix) {
     return AnswerWithProgressResponse.builder()
         .question(question)
         .existingAnswer(null) // Always null - reserved for future partial answers feature
@@ -129,7 +129,7 @@ public class AssessmentNavigationServiceV2 {
    * Selects a question based on navigation type.
    * Clean Code: Simplified method with clear responsibilities.
    */
-  private Optional<Question> selectNextQuestion(List<Question> questions, QuestionNavigationType navigationType, String seedId) {
+  private Optional<QuestionV2> selectNextQuestion(List<QuestionV2> questions, QuestionNavigationType navigationType, String seedId) {
     if (questions.isEmpty()) {
       return Optional.empty();
     }
@@ -148,9 +148,9 @@ public class AssessmentNavigationServiceV2 {
    * Selects a random question using consistent seeding for deterministic results.
    * Clean Code: Clear method name and single responsibility.
    */
-  private Optional<Question> getRandomQuestion(List<Question> questions, String seedId) {
+  private Optional<QuestionV2> getRandomQuestion(List<QuestionV2> questions, String seedId) {
     Random random = new Random(seedId.hashCode());
-    List<Question> shuffled = new java.util.ArrayList<>(questions);
+    List<QuestionV2> shuffled = new java.util.ArrayList<>(questions);
     Collections.shuffle(shuffled, random);
     return Optional.of(shuffled.get(0));
   }
