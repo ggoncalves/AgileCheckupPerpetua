@@ -57,8 +57,8 @@ public class DashboardAnalyticsService {
     private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
     private final AssessmentMatrixServiceV2 assessmentMatrixService;
     private final EmployeeAssessmentServiceV2 employeeAssessmentService;
-    private final CompanyService companyService;
-    private final PerformanceCycleService performanceCycleService;
+    private final CompanyServiceV2 companyServiceV2;
+    private final PerformanceCycleServiceV2 performanceCycleServiceV2;
     private final TeamRepositoryV2 teamRepository;
     private final AnswerRepositoryV2 answerRepository;
     private final ObjectMapper objectMapper;
@@ -68,15 +68,15 @@ public class DashboardAnalyticsService {
             DashboardAnalyticsRepository dashboardAnalyticsRepository,
             AssessmentMatrixServiceV2 assessmentMatrixService,
             EmployeeAssessmentServiceV2 employeeAssessmentService,
-            CompanyService companyService,
-            PerformanceCycleService performanceCycleService,
+            CompanyServiceV2 companyServiceV2,
+            PerformanceCycleServiceV2 performanceCycleServiceV2,
             TeamRepositoryV2 teamRepository,
             AnswerRepositoryV2 answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
         this.assessmentMatrixService = assessmentMatrixService;
         this.employeeAssessmentService = employeeAssessmentService;
-      this.companyService = companyService;
-      this.performanceCycleService = performanceCycleService;
+      this.companyServiceV2 = companyServiceV2;
+      this.performanceCycleServiceV2 = performanceCycleServiceV2;
         this.teamRepository = teamRepository;
         this.answerRepository = answerRepository;
         this.objectMapper = new ObjectMapper();
@@ -96,7 +96,7 @@ public class DashboardAnalyticsService {
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
       String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       try {
@@ -126,7 +126,7 @@ public class DashboardAnalyticsService {
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
       String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       try {
@@ -155,7 +155,7 @@ public class DashboardAnalyticsService {
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get the real companyId from PerformanceCycle
-      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
       String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
 
       if (companyId == null) {
@@ -182,13 +182,13 @@ public class DashboardAnalyticsService {
         String performanceCycleId = matrix.getPerformanceCycleId();
 
       // Get performance cycle first to extract the real companyId
-      Optional<PerformanceCycleV2> cycleOpt = performanceCycleService.findById(performanceCycleId);
+      Optional<PerformanceCycleV2> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
       String companyId = cycleOpt.map(PerformanceCycleV2::getCompanyId).orElse(null);
       String performanceCycleName = cycleOpt.map(PerformanceCycleV2::getName).orElse("Unknown Cycle");
 
       // Get company name using the correct companyId from PerformanceCycle
       Optional<CompanyV2> companyOpt = companyId != null ?
-          companyService.findById(companyId) : Optional.empty();
+          companyServiceV2.findById(companyId) : Optional.empty();
       String companyName = companyOpt.map(CompanyV2::getName).orElse("Unknown Company");
 
       String assessmentMatrixName = matrix.getName();

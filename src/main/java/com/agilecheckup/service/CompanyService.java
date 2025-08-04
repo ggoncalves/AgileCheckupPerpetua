@@ -1,156 +1,123 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.CompanyV2;
+import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.Industry;
-import com.agilecheckup.persistency.entity.person.AddressV2;
-import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
+import com.agilecheckup.persistency.entity.person.Address;
+import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
-import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
-import lombok.extern.slf4j.Slf4j;
+import com.agilecheckup.persistency.repository.AbstractCrudRepository;
+import com.agilecheckup.persistency.repository.CompanyRepository;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
-@Slf4j
-public class CompanyService extends AbstractCrudServiceV2<CompanyV2, CompanyRepositoryV2> {
+public class CompanyService extends AbstractCrudService<Company, AbstractCrudRepository<Company>> {
 
-    private final CompanyRepositoryV2 companyRepository;
+  private final CompanyRepository companyRepository;
 
-    @Inject
-    public CompanyService(CompanyRepositoryV2 companyRepository) {
-        this.companyRepository = companyRepository;
+  @Inject
+  public CompanyService(CompanyRepository companyRepository) {
+    this.companyRepository = companyRepository;
+  }
+
+  @Deprecated
+  public Optional<Company> create(String documentNumber, String name, String email, String description, String tenantId) {
+    return super.create(createCompany(documentNumber, name, email, description, tenantId));
+  }
+
+  public Optional<Company> create(String documentNumber, String name, String email, String description, 
+                                  String tenantId, CompanySize size, Industry industry) {
+    return super.create(createCompany(documentNumber, name, email, description, tenantId, size, industry, null, null, null, null));
+  }
+
+  public Optional<Company> create(String documentNumber, String name, String email, String description, 
+                                  String tenantId, CompanySize size, Industry industry, String website, 
+                                  String legalName, NaturalPerson contactPerson, Address address) {
+    return super.create(createCompany(documentNumber, name, email, description, tenantId, size, industry, website, legalName, contactPerson, address));
+  }
+
+  @Deprecated
+  public Optional<Company> update(String id, String documentNumber, String name, String email, String description, String tenantId) {
+    Optional<Company> optionalCompany = findById(id);
+    if (optionalCompany.isPresent()) {
+      Company company = optionalCompany.get();
+      company.setDocumentNumber(documentNumber);
+      company.setName(name);
+      company.setEmail(email);
+      company.setDescription(description);
+      company.setTenantId(tenantId);
+      return super.update(company);
+    } else {
+      return Optional.empty();
     }
+  }
 
-    @Override
-    CompanyRepositoryV2 getRepository() {
-        return companyRepository;
+  public Optional<Company> update(String id, String documentNumber, String name, String email, String description, 
+                                  String tenantId, CompanySize size, Industry industry) {
+    return updateCompany(id, documentNumber, name, email, description, tenantId, size, industry, null, null, null, null);
+  }
+
+  public Optional<Company> update(String id, String documentNumber, String name, String email, String description, 
+                                  String tenantId, CompanySize size, Industry industry, String website, 
+                                  String legalName, NaturalPerson contactPerson, Address address) {
+    return updateCompany(id, documentNumber, name, email, description, tenantId, size, industry, website, legalName, contactPerson, address);
+  }
+
+  private Company createCompany(String documentNumber, String name, String email, String description, String tenantId) {
+    return Company.builder()
+        .personDocumentType(PersonDocumentType.CNPJ)
+        .documentNumber(documentNumber)
+        .name(name)
+        .email(email)
+        .description(description)
+        .tenantId(tenantId).build();
+  }
+
+  private Company createCompany(String documentNumber, String name, String email, String description, 
+                                String tenantId, CompanySize size, Industry industry, String website, 
+                                String legalName, NaturalPerson contactPerson, Address address) {
+    return Company.builder()
+        .personDocumentType(PersonDocumentType.CNPJ)
+        .documentNumber(documentNumber)
+        .name(name)
+        .email(email)
+        .description(description)
+        .tenantId(tenantId)
+        .size(size)
+        .industry(industry)
+        .website(website)
+        .legalName(legalName)
+        .contactPerson(contactPerson)
+        .address(address)
+        .build();
+  }
+
+  private Optional<Company> updateCompany(String id, String documentNumber, String name, String email, 
+                                          String description, String tenantId, CompanySize size, Industry industry, 
+                                          String website, String legalName, NaturalPerson contactPerson, Address address) {
+    Optional<Company> optionalCompany = findById(id);
+    if (optionalCompany.isPresent()) {
+      Company company = optionalCompany.get();
+      company.setDocumentNumber(documentNumber);
+      company.setName(name);
+      company.setEmail(email);
+      company.setDescription(description);
+      company.setTenantId(tenantId);
+      company.setSize(size);
+      company.setIndustry(industry);
+      company.setWebsite(website);
+      company.setLegalName(legalName);
+      company.setContactPerson(contactPerson);
+      company.setAddress(address);
+      return super.update(company);
+    } else {
+      return Optional.empty();
     }
+  }
 
-    /**
-     * Legacy create method - creates company with basic fields only
-     */
-    @Deprecated
-    public Optional<CompanyV2> create(String documentNumber, String name, String email, String description, String tenantId) {
-        CompanyV2 company = createCompany(documentNumber, name, email, description, tenantId);
-        return super.create(company);
-    }
-
-    /**
-     * Create company with required fields (size and industry)
-     */
-    public Optional<CompanyV2> create(String documentNumber, String name, String email, String description, 
-                                      String tenantId, CompanySize size, Industry industry) {
-        CompanyV2 company = createCompany(documentNumber, name, email, description, tenantId, size, industry, null, null, null, null);
-        return super.create(company);
-    }
-
-    /**
-     * Create company with all fields
-     */
-    public Optional<CompanyV2> create(String documentNumber, String name, String email, String description, 
-                                      String tenantId, CompanySize size, Industry industry, String website, 
-                                      String legalName, NaturalPersonV2 contactPerson, AddressV2 address) {
-        CompanyV2 company = createCompany(documentNumber, name, email, description, tenantId, size, industry, website, legalName, contactPerson, address);
-        return super.create(company);
-    }
-
-    /**
-     * Legacy update method - updates company with basic fields only
-     */
-    @Deprecated
-    public Optional<CompanyV2> update(String id, String documentNumber, String name, String email, String description, String tenantId) {
-        Optional<CompanyV2> optionalCompany = findById(id);
-        if (optionalCompany.isPresent()) {
-            CompanyV2 company = optionalCompany.get();
-            company.setDocumentNumber(documentNumber);
-            company.setName(name);
-            company.setEmail(email);
-            company.setDescription(description);
-            company.setTenantId(tenantId);
-            return super.update(company);
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Update company with required fields (size and industry)
-     */
-    public Optional<CompanyV2> update(String id, String documentNumber, String name, String email, String description, 
-                                      String tenantId, CompanySize size, Industry industry) {
-        return updateCompany(id, documentNumber, name, email, description, tenantId, size, industry, null, null, null, null);
-    }
-
-    /**
-     * Update company with all fields
-     */
-    public Optional<CompanyV2> update(String id, String documentNumber, String name, String email, String description, 
-                                      String tenantId, CompanySize size, Industry industry, String website, 
-                                      String legalName, NaturalPersonV2 contactPerson, AddressV2 address) {
-        return updateCompany(id, documentNumber, name, email, description, tenantId, size, industry, website, legalName, contactPerson, address);
-    }
-
-
-    /**
-     * Create company with basic fields (legacy support)
-     */
-    private CompanyV2 createCompany(String documentNumber, String name, String email, String description, String tenantId) {
-        return CompanyV2.builder()
-            .personDocumentType(PersonDocumentType.CNPJ)
-            .documentNumber(documentNumber)
-            .name(name)
-            .email(email)
-            .description(description)
-            .tenantId(tenantId)
-            .build();
-    }
-
-    /**
-     * Create company with all fields using builder pattern
-     */
-    private CompanyV2 createCompany(String documentNumber, String name, String email, String description, 
-                                    String tenantId, CompanySize size, Industry industry, String website, 
-                                    String legalName, NaturalPersonV2 contactPerson, AddressV2 address) {
-        return CompanyV2.builder()
-            .personDocumentType(PersonDocumentType.CNPJ)
-            .documentNumber(documentNumber)
-            .name(name)
-            .email(email)
-            .description(description)
-            .tenantId(tenantId)
-            .size(size)
-            .industry(industry)
-            .website(website)
-            .legalName(legalName)
-            .contactPerson(contactPerson)
-            .address(address)
-            .build();
-    }
-
-    /**
-     * Update company with all fields
-     */
-    private Optional<CompanyV2> updateCompany(String id, String documentNumber, String name, String email, 
-                                              String description, String tenantId, CompanySize size, Industry industry, 
-                                              String website, String legalName, NaturalPersonV2 contactPerson, AddressV2 address) {
-        Optional<CompanyV2> optionalCompany = findById(id);
-        if (optionalCompany.isPresent()) {
-            CompanyV2 company = optionalCompany.get();
-            
-            company.setDocumentNumber(documentNumber);
-            company.setName(name);
-            company.setEmail(email);
-            company.setDescription(description);
-            company.setTenantId(tenantId);
-            company.setSize(size);
-            company.setIndustry(industry);
-            company.setWebsite(website);
-            company.setLegalName(legalName);
-            company.setContactPerson(contactPerson);
-            company.setAddress(address);
-            
-            return super.update(company);
-        }
-        return Optional.empty();
-    }
+  @Override
+  AbstractCrudRepository<Company> getRepository() {
+    return companyRepository;
+  }
 }

@@ -2,7 +2,6 @@ package com.agilecheckup.main.runner;
 
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
-import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.CompanySize;
 import com.agilecheckup.persistency.entity.Industry;
@@ -12,7 +11,7 @@ import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.CompanyServiceLegacy;
+import com.agilecheckup.service.CompanyServiceV2;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -23,8 +22,8 @@ import java.util.stream.Collectors;
 @Log4j2
 public class CompanyTableRunner implements CrudRunner {
 
+    private CompanyServiceV2 companyServiceV2;
     private CompanyService companyService;
-    private CompanyServiceLegacy companyServiceLegacy;
     private final boolean shouldCleanAfterComplete;
 
     public CompanyTableRunner(boolean shouldCleanAfterComplete) {
@@ -428,19 +427,19 @@ public class CompanyTableRunner implements CrudRunner {
         }
     }
 
-    private CompanyService getCompanyService() {
-        if (companyService == null) {
+    private CompanyServiceV2 getCompanyService() {
+        if (companyServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyService = serviceComponent.buildCompanyService();
+            companyServiceV2 = serviceComponent.buildCompanyService();
         }
-        return companyService;
+        return companyServiceV2;
     }
 
-    private CompanyServiceLegacy getCompanyServiceLegacy() {
-        if (companyServiceLegacy == null) {
+    private CompanyService getCompanyServiceLegacy() {
+        if (companyService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyServiceLegacy = serviceComponent.buildCompanyServiceLegacy();
+            companyService = serviceComponent.buildCompanyServiceLegacy();
         }
-        return companyServiceLegacy;
+        return companyService;
     }
 }

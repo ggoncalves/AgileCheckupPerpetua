@@ -17,7 +17,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,11 +25,11 @@ class TeamServiceV2Test {
     @Mock
     private TeamRepositoryV2 teamRepository;
 
-    private TeamService teamService;
+    private TeamServiceV2 teamServiceV2;
 
     @BeforeEach
     void setUp() {
-        teamService = new TeamService(teamRepository);
+        teamServiceV2 = new TeamServiceV2(teamRepository);
     }
 
     @Test
@@ -47,7 +46,7 @@ class TeamServiceV2Test {
         when(teamRepository.save(any(TeamV2.class))).thenReturn(Optional.of(savedTeam));
 
         // When
-        Optional<TeamV2> result = teamService.create(tenantId, name, description, departmentId);
+        Optional<TeamV2> result = teamServiceV2.create(tenantId, name, description, departmentId);
 
         // Then
         assertThat(result).isPresent();
@@ -75,7 +74,7 @@ class TeamServiceV2Test {
         when(teamRepository.save(any(TeamV2.class))).thenReturn(Optional.of(updatedTeam));
 
         // When
-        Optional<TeamV2> result = teamService.update(teamId, tenantId, name, description, departmentId);
+        Optional<TeamV2> result = teamServiceV2.update(teamId, tenantId, name, description, departmentId);
 
         // Then
         assertThat(result).isPresent();
@@ -94,7 +93,7 @@ class TeamServiceV2Test {
         when(teamRepository.findById(teamId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> teamService.update(teamId, "tenant", "name", "desc", "dept"))
+        assertThatThrownBy(() -> teamServiceV2.update(teamId, "tenant", "name", "desc", "dept"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Team not found with id: nonexistent-team");
 
@@ -113,7 +112,7 @@ class TeamServiceV2Test {
         when(teamRepository.findByDepartmentId(departmentId)).thenReturn(expectedTeams);
 
         // When
-        List<TeamV2> result = teamService.findByDepartmentId(departmentId);
+        List<TeamV2> result = teamServiceV2.findByDepartmentId(departmentId);
 
         // Then
         assertThat(result).hasSize(2);
@@ -132,7 +131,7 @@ class TeamServiceV2Test {
         when(teamRepository.findAllByTenantId(tenantId)).thenReturn(expectedTeams);
 
         // When
-        List<TeamV2> result = teamService.findAllByTenantId(tenantId);
+        List<TeamV2> result = teamServiceV2.findAllByTenantId(tenantId);
 
         // Then
         assertThat(result).hasSize(2);
@@ -149,7 +148,7 @@ class TeamServiceV2Test {
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(expectedTeam));
 
         // When
-        Optional<TeamV2> result = teamService.findById(teamId);
+        Optional<TeamV2> result = teamServiceV2.findById(teamId);
 
         // Then
         assertThat(result).isPresent();
@@ -164,7 +163,7 @@ class TeamServiceV2Test {
         when(teamRepository.deleteById(teamId)).thenReturn(true);
 
         // When
-        boolean result = teamService.deleteById(teamId);
+        boolean result = teamServiceV2.deleteById(teamId);
 
         // Then
         assertThat(result).isTrue();

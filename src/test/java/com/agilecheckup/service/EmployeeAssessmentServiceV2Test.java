@@ -2,7 +2,6 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.person.Gender;
@@ -34,14 +33,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentServiceV2Test {
@@ -53,7 +50,7 @@ class EmployeeAssessmentServiceV2Test {
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
 
     @Mock
-    private TeamServiceLegacy teamService;
+    private TeamService teamService;
 
     @Mock
     private AnswerRepository answerRepository;

@@ -3,7 +3,6 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
@@ -21,7 +20,6 @@ import com.agilecheckup.service.dto.AssessmentDashboardData;
 import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
 import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import com.agilecheckup.service.exception.ValidationException;
 import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
 import org.apache.commons.lang3.StringUtils;
@@ -38,24 +36,24 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
 
     private final AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2;
 
-    private final PerformanceCycleService performanceCycleService;
+    private final PerformanceCycleServiceV2 performanceCycleServiceV2;
 
     private final Lazy<QuestionService> questionService;
 
     private final Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
-    private final Lazy<TeamServiceLegacy> teamService;
+    private final Lazy<TeamService> teamService;
 
     private static final String DEFAULT_WHEN_NULL = "";
 
     @Inject
     public AssessmentMatrixServiceV2(AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
-                                     PerformanceCycleService performanceCycleService,
+                                     PerformanceCycleServiceV2 performanceCycleServiceV2,
                                      Lazy<QuestionService> questionService,
                                      Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
-                                     Lazy<TeamServiceLegacy> teamService) {
+                                     Lazy<TeamService> teamService) {
         this.assessmentMatrixRepositoryV2 = assessmentMatrixRepositoryV2;
-        this.performanceCycleService = performanceCycleService;
+        this.performanceCycleServiceV2 = performanceCycleServiceV2;
         this.questionService = questionService;
         this.employeeAssessmentServiceV2 = employeeAssessmentServiceV2;
         this.teamService = teamService;
@@ -77,7 +75,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     @VisibleForTesting
-    protected TeamServiceLegacy getTeamService() {
+    protected TeamService getTeamService() {
         return teamService.get();
     }
 
@@ -258,7 +256,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
 
     private void validatePerformanceCycle(String performanceCycleId, String tenantId) {
         if (StringUtils.isNotBlank(performanceCycleId)) {
-            Optional<PerformanceCycleV2> performanceCycle = performanceCycleService.findById(performanceCycleId);
+            Optional<PerformanceCycleV2> performanceCycle = performanceCycleServiceV2.findById(performanceCycleId);
             if (performanceCycle.isEmpty() || !performanceCycle.get().getTenantId().equals(tenantId)) {
                 throw new InvalidIdReferenceException("PerformanceCycle not found or does not belong to tenant: " + performanceCycleId);
             }

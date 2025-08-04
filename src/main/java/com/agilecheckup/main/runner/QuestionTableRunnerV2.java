@@ -8,18 +8,16 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.OptionGroup;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
-import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.PerformanceCycleService;
+import com.agilecheckup.service.CompanyServiceV2;
+import com.agilecheckup.service.PerformanceCycleServiceV2;
 import com.agilecheckup.service.QuestionServiceV2;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +29,8 @@ public class QuestionTableRunnerV2 implements CrudRunner {
 
     private QuestionServiceV2 questionServiceV2;
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
-    private PerformanceCycleService performanceCycleService;
-    private CompanyService companyService;
+    private PerformanceCycleServiceV2 performanceCycleServiceV2;
+    private CompanyServiceV2 companyServiceV2;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
     private final boolean shouldCleanAfterComplete;
@@ -654,19 +652,19 @@ public class QuestionTableRunnerV2 implements CrudRunner {
         return assessmentMatrixServiceV2;
     }
 
-    private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleService == null) {
+    private PerformanceCycleServiceV2 getPerformanceCycleService() {
+        if (performanceCycleServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleService = serviceComponent.buildPerformanceCycleService();
+            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleService;
+        return performanceCycleServiceV2;
     }
 
-    private CompanyService getCompanyService() {
-        if (companyService == null) {
+    private CompanyServiceV2 getCompanyService() {
+        if (companyServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyService = serviceComponent.buildCompanyService();
+            companyServiceV2 = serviceComponent.buildCompanyService();
         }
-        return companyService;
+        return companyServiceV2;
     }
 }

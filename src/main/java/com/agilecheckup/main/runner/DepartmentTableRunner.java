@@ -3,7 +3,7 @@ package com.agilecheckup.main.runner;
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
 import com.agilecheckup.persistency.entity.DepartmentV2;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.DepartmentServiceV2;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @Log4j2
 public class DepartmentTableRunner implements CrudRunner {
 
-  private DepartmentService departmentService;
+  private DepartmentServiceV2 departmentServiceV2;
   private final boolean shouldCleanAfterComplete;
 
   public DepartmentTableRunner(boolean shouldCleanAfterComplete) {
@@ -103,11 +103,11 @@ public class DepartmentTableRunner implements CrudRunner {
     }
   }
 
-  private DepartmentService getDepartmentService() {
-    if (departmentService == null) {
+  private DepartmentServiceV2 getDepartmentService() {
+    if (departmentServiceV2 == null) {
       ServiceComponent serviceComponent = DaggerServiceComponent.create();
-      departmentService = serviceComponent.buildDepartmentService();
+      departmentServiceV2 = serviceComponent.buildDepartmentService();
     }
-    return departmentService;
+    return departmentServiceV2;
   }
 }

@@ -15,12 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
@@ -32,7 +30,7 @@ class AssessmentMatrixServiceV2Test {
     private AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2;
 
     @Mock
-    private PerformanceCycleService performanceCycleService;
+    private PerformanceCycleServiceV2 performanceCycleServiceV2;
 
     @Mock
     private Lazy<QuestionService> questionService;
@@ -41,7 +39,7 @@ class AssessmentMatrixServiceV2Test {
     private Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
     @Mock
-    private Lazy<TeamServiceLegacy> teamService;
+    private Lazy<TeamService> teamService;
 
     @Mock
     private QuestionService mockQuestionService;
@@ -50,7 +48,7 @@ class AssessmentMatrixServiceV2Test {
     private EmployeeAssessmentServiceV2 mockEmployeeAssessmentServiceV2;
 
     @Mock
-    private TeamServiceLegacy mockTeamServiceLegacy;
+    private TeamService mockTeamService;
 
     private AssessmentMatrixServiceV2 service;
 
@@ -59,11 +57,11 @@ class AssessmentMatrixServiceV2Test {
         // Set up lazy mocks
         lenient().doReturn(mockQuestionService).when(questionService).get();
         lenient().doReturn(mockEmployeeAssessmentServiceV2).when(employeeAssessmentServiceV2).get();
-        lenient().doReturn(mockTeamServiceLegacy).when(teamService).get();
+        lenient().doReturn(mockTeamService).when(teamService).get();
         
         service = new AssessmentMatrixServiceV2(
                 assessmentMatrixRepositoryV2,
-                performanceCycleService,
+            performanceCycleServiceV2,
                 questionService,
                 employeeAssessmentServiceV2,
                 teamService
@@ -98,7 +96,7 @@ class AssessmentMatrixServiceV2Test {
                 .questionCount(0)
                 .build();
 
-        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleService).findById(performanceCycleId);
+        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleServiceV2).findById(performanceCycleId);
         doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrixV2.class));
 
         Optional<AssessmentMatrixV2> result = service.create(name, description, tenantId, performanceCycleId, pillarMap);
@@ -145,7 +143,7 @@ class AssessmentMatrixServiceV2Test {
                 .questionCount(0)
                 .build();
 
-        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleService).findById(performanceCycleId);
+        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleServiceV2).findById(performanceCycleId);
         doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrixV2.class));
 
         Optional<AssessmentMatrixV2> result = service.create(name, description, tenantId, performanceCycleId, pillarMap, configuration);
@@ -327,7 +325,7 @@ class AssessmentMatrixServiceV2Test {
         // Set up mocks
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
         doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
-        doReturn(Optional.of(team)).when(mockTeamServiceLegacy).findById("team-1");
+        doReturn(Optional.of(team)).when(mockTeamService).findById("team-1");
 
         // Execute
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
@@ -451,7 +449,7 @@ class AssessmentMatrixServiceV2Test {
         
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
         doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
-        doReturn(Optional.empty()).when(mockTeamServiceLegacy).findById("nonexistent-team");
+        doReturn(Optional.empty()).when(mockTeamService).findById("nonexistent-team");
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         

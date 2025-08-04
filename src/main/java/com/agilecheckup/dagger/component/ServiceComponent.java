@@ -11,18 +11,18 @@ import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationService;
 import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.CompanyService;
-import com.agilecheckup.service.CompanyServiceLegacy;
+import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DashboardAnalyticsServiceV2;
-import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
+import com.agilecheckup.service.PerformanceCycleServiceV2;
 import com.agilecheckup.service.PerformanceCycleService;
-import com.agilecheckup.service.PerformanceCycleServiceLegacy;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamService;
-import com.agilecheckup.service.TeamServiceLegacy;
+import com.agilecheckup.service.TeamServiceV2;
 import dagger.Component;
 
 import javax.inject.Singleton;
@@ -34,19 +34,19 @@ public interface ServiceComponent {
 
   QuestionServiceV2 buildQuestionServiceV2();
 
-  CompanyService buildCompanyService();
+  CompanyServiceV2 buildCompanyService();
 
-  CompanyServiceLegacy buildCompanyServiceLegacy();
+  CompanyService buildCompanyServiceLegacy();
 
-  DepartmentService buildDepartmentService();
+  DepartmentServiceV2 buildDepartmentService();
 
-  TeamService buildTeamService();
+  TeamServiceV2 buildTeamService();
   
-  TeamServiceLegacy buildTeamServiceLegacy();
+  TeamService buildTeamServiceLegacy();
 
-  PerformanceCycleService buildPerformanceCycleService();
+  PerformanceCycleServiceV2 buildPerformanceCycleService();
   
-  PerformanceCycleServiceLegacy buildPerformanceCycleServiceLegacy();
+  PerformanceCycleService buildPerformanceCycleServiceLegacy();
 
 
   AssessmentMatrixService buildAssessmentMatrixService();

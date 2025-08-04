@@ -35,7 +35,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
 
     private final AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
 
-    private final TeamServiceLegacy teamService;
+    private final TeamService teamService;
 
     private final EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2;
 
@@ -44,7 +44,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
     @Inject
     public EmployeeAssessmentServiceV2(EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2, 
                                      AssessmentMatrixServiceV2 assessmentMatrixServiceV2, 
-                                     TeamServiceLegacy teamService, 
+                                     TeamService teamService,
                                      AnswerRepository answerRepository) {
         this.employeeAssessmentRepositoryV2 = employeeAssessmentRepositoryV2;
         this.assessmentMatrixServiceV2 = assessmentMatrixServiceV2;
