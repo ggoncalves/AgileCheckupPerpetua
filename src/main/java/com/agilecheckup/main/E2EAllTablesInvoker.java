@@ -5,6 +5,7 @@ import com.agilecheckup.main.runner.AssessmentMatrixTableRunner;
 import com.agilecheckup.main.runner.AssessmentMatrixTableRunnerV2;
 import com.agilecheckup.main.runner.CompanyTableRunner;
 import com.agilecheckup.main.runner.CrudRunner;
+import com.agilecheckup.main.runner.DashboardAnalyticsV2TableRunner;
 import com.agilecheckup.main.runner.EmployeeAssessmentTableRunnerV2;
 import com.agilecheckup.main.runner.PerformanceCycleTableRunner;
 import com.agilecheckup.main.runner.QuestionTableRunnerV2;
@@ -31,7 +32,8 @@ public class E2EAllTablesInvoker {
 //        new AssessmentMatrixTableRunnerV2(true),
 //        new EmployeeAssessmentTableRunnerV2(true),
 //        new QuestionTableRunnerV2(true),
-        new AnswerV2TableRunner(true)
+//        new AnswerV2TableRunner(true),
+        new DashboardAnalyticsV2TableRunner(true)
     );
   }
 
