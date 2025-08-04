@@ -1,7 +1,7 @@
 package com.agilecheckup.service.dto;
 
-import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.AnswerV2;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +20,7 @@ public class AnswerWithProgressResponse {
   /**
    * The next unanswered question to be answered
    */
-  private Question question;
+  private QuestionV2 question;
   
   /**
    * Existing answer for this question, if any.
@@ -30,7 +30,7 @@ public class AnswerWithProgressResponse {
    * partially saved answers (draft answers) that were started but not yet
    * submitted, allowing users to resume incomplete answers.
    */
-  private Answer existingAnswer;
+  private AnswerV2 existingAnswer;
   
   /**
    * The number of questions already answered in this assessment

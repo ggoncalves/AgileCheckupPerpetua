@@ -186,7 +186,7 @@ public abstract class ServiceModule {
   @Provides
   @Singleton
   static AssessmentNavigationServiceV2 provideAssessmentNavigationServiceV2(
-      QuestionService questionService,
+      QuestionServiceV2 questionService,
       AnswerServiceV2 answerServiceV2,
       EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
       AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {

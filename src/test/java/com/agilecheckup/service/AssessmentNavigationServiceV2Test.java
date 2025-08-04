@@ -6,7 +6,7 @@ import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.service.dto.AnswerWithProgressResponse;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import static com.agilecheckup.util.TestObjectFactoryV2.createMockedQuestionV2;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
 class AssessmentNavigationServiceV2Test {
 
     @Mock
-    private QuestionService questionService;
+    private QuestionServiceV2 questionService;
 
     @Mock
     private AnswerServiceV2 answerService;
@@ -69,7 +70,7 @@ class AssessmentNavigationServiceV2Test {
         // Given
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 5);
         AssessmentMatrixV2 matrix = createMockMatrix(10);
-        List<Question> questions = createMockQuestions(3);
+        List<QuestionV2> questions = createMockQuestions(3);
         Set<String> answeredQuestionIds = new HashSet<>(Arrays.asList("q1", "q2"));
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
@@ -100,7 +101,7 @@ class AssessmentNavigationServiceV2Test {
         // Given
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 3);
         AssessmentMatrixV2 matrix = createMockMatrix(3);
-        List<Question> questions = createMockQuestions(3);
+        List<QuestionV2> questions = createMockQuestions(3);
         Set<String> answeredQuestionIds = new HashSet<>(Arrays.asList("q1", "q2", "q3"));
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
@@ -128,7 +129,7 @@ class AssessmentNavigationServiceV2Test {
         // Given
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.CONFIRMED, 0);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
-        List<Question> questions = createMockQuestions(2);
+        List<QuestionV2> questions = createMockQuestions(2);
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.RANDOM);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
@@ -151,7 +152,7 @@ class AssessmentNavigationServiceV2Test {
         // Given
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 2);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
-        List<Question> questions = createMockQuestions(2);
+        List<QuestionV2> questions = createMockQuestions(2);
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
@@ -172,7 +173,7 @@ class AssessmentNavigationServiceV2Test {
         // Given
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 0);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
-        List<Question> questions = createMockQuestions(3);
+        List<QuestionV2> questions = createMockQuestions(3);
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.RANDOM);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
@@ -224,7 +225,7 @@ class AssessmentNavigationServiceV2Test {
         AnswerV2 savedAnswer = createMockAnswerV2();
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 1);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
-        List<Question> questions = createMockQuestions(2);
+        List<QuestionV2> questions = createMockQuestions(2);
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         doReturn(Optional.of(savedAnswer)).when(answerService).create(
@@ -267,10 +268,10 @@ class AssessmentNavigationServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 2);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
         
-        Question q1 = createMockQuestion("q1", "Question 1");
-        Question q2 = createMockQuestion("q2", "Question 2");
-        Question q3 = createMockQuestion("q3", "Question 3");
-        List<Question> allQuestions = Arrays.asList(q1, q2, q3);
+        QuestionV2 q1 = createMockQuestion("q1", "Question 1");
+        QuestionV2 q2 = createMockQuestion("q2", "Question 2");
+        QuestionV2 q3 = createMockQuestion("q3", "Question 3");
+        List<QuestionV2> allQuestions = Arrays.asList(q1, q2, q3);
         
         Set<String> answeredQuestionIds = new HashSet<>(Arrays.asList("q1"));
         AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
@@ -305,27 +306,20 @@ class AssessmentNavigationServiceV2Test {
         return matrix;
     }
 
-    private List<Question> createMockQuestions(int count) {
-        List<Question> questions = new java.util.ArrayList<>();
+    private List<QuestionV2> createMockQuestions(int count) {
+        List<QuestionV2> questions = new java.util.ArrayList<>();
         for (int i = 1; i <= count; i++) {
             questions.add(createMockQuestion("q" + i, "Question " + i));
         }
         return questions;
     }
 
-    private Question createMockQuestion(String id, String text) {
-        return Question.builder()
-            .id(id)
-            .question(text)
-            .questionType(QuestionType.YES_NO)
-            .points(10.0)
-            .tenantId(TENANT_ID)
-            .assessmentMatrixId(MATRIX_ID)
-            .pillarId("pillar-1")
-            .pillarName("Test Pillar")
-            .categoryId("category-1")
-            .categoryName("Test Category")
-            .build();
+    private QuestionV2 createMockQuestion(String id, String text) {
+        QuestionV2 question = createMockedQuestionV2(id, 10.0);
+        question.setQuestion(text);
+        question.setTenantId(TENANT_ID);
+        question.setAssessmentMatrixId(MATRIX_ID);
+        return question;
     }
 
     private AssessmentConfiguration createMockConfiguration(QuestionNavigationType navigationType) {

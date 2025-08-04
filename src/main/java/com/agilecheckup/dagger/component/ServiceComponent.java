@@ -8,7 +8,6 @@ import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
-import com.agilecheckup.service.AssessmentNavigationService;
 import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceV2;
@@ -61,8 +60,6 @@ public interface ServiceComponent {
 
   AnswerServiceV2 buildAnswerServiceV2();
   
-  AssessmentNavigationService buildAssessmentNavigationService();
-
   AssessmentNavigationServiceV2 buildAssessmentNavigationServiceV2();
 
   DashboardAnalyticsService buildDashboardAnalyticsService();
