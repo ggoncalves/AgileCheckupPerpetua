@@ -13,6 +13,7 @@ import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DashboardAnalyticsService;
+import com.agilecheckup.service.DashboardAnalyticsServiceV2;
 import com.agilecheckup.service.DepartmentService;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
@@ -65,4 +66,6 @@ public interface ServiceComponent {
   AssessmentNavigationServiceV2 buildAssessmentNavigationServiceV2();
 
   DashboardAnalyticsService buildDashboardAnalyticsService();
+
+  DashboardAnalyticsServiceV2 buildDashboardAnalyticsServiceV2();
 }

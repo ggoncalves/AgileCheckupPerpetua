@@ -7,6 +7,7 @@ import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
+import com.agilecheckup.persistency.repository.DashboardAnalyticsRepositoryV2;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
@@ -21,6 +22,7 @@ import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.DashboardAnalyticsService;
+import com.agilecheckup.service.DashboardAnalyticsServiceV2;
 import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceLegacy;
 import com.agilecheckup.service.DepartmentService;
@@ -113,6 +115,20 @@ public abstract class ServiceModule {
       TeamRepositoryV2 teamRepository,
       AnswerRepositoryV2 answerRepository) {
     return new DashboardAnalyticsService(dashboardAnalyticsRepository, assessmentMatrixService, 
+        employeeAssessmentService, companyService, performanceCycleService, teamRepository, answerRepository);
+  }
+
+  @Provides
+  @Singleton  
+  static DashboardAnalyticsServiceV2 provideDashboardAnalyticsServiceV2(
+      DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepositoryV2,
+      AssessmentMatrixServiceV2 assessmentMatrixService,
+      EmployeeAssessmentServiceV2 employeeAssessmentService,
+      CompanyService companyService,
+      PerformanceCycleService performanceCycleService,
+      TeamRepositoryV2 teamRepository,
+      AnswerRepositoryV2 answerRepository) {
+    return new DashboardAnalyticsServiceV2(dashboardAnalyticsRepositoryV2, assessmentMatrixService, 
         employeeAssessmentService, companyService, performanceCycleService, teamRepository, answerRepository);
   }
 

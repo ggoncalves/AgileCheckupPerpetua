@@ -4,7 +4,7 @@ import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.CompanyV2;
-import com.agilecheckup.persistency.entity.DashboardAnalytics;
+import com.agilecheckup.persistency.entity.DashboardAnalyticsV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
@@ -18,7 +18,7 @@ import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
-import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
+import com.agilecheckup.persistency.repository.DashboardAnalyticsRepositoryV2;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.when;
 class DashboardAnalyticsServiceTest {
 
     @Mock
-    private DashboardAnalyticsRepository dashboardAnalyticsRepository;
+    private DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepository;
     
     @Mock
     private AssessmentMatrixServiceV2 assessmentMatrixService;
@@ -71,7 +72,7 @@ class DashboardAnalyticsServiceTest {
     private AnswerRepositoryV2 answerRepository;
 
     @InjectMocks
-    private DashboardAnalyticsService dashboardAnalyticsService;
+    private DashboardAnalyticsServiceV2 dashboardAnalyticsService;
 
     private static final String COMPANY_ID = "company123";
     private static final String TENANT_ID = "tenant456";  // Different from COMPANY_ID
@@ -84,7 +85,7 @@ class DashboardAnalyticsServiceTest {
     private AssessmentMatrixV2 mockMatrix;
     private EmployeeAssessmentV2 mockEmployeeAssessment;
     private TeamV2 mockTeam;
-    private DashboardAnalytics mockDashboardAnalytics;
+    private DashboardAnalyticsV2 mockDashboardAnalytics;
     private PotentialScore mockPotentialScore;
     private EmployeeAssessmentScore mockEmployeeAssessmentScore;
 
@@ -103,7 +104,7 @@ class DashboardAnalyticsServiceTest {
                 .thenReturn(Optional.of(mockDashboardAnalytics));
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsService.getOverview(ASSESSMENT_MATRIX_ID);
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsService.getOverview(ASSESSMENT_MATRIX_ID);
 
         // Then
         assertThat(result).isPresent();
@@ -119,7 +120,7 @@ class DashboardAnalyticsServiceTest {
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.empty());
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsService.getOverview(ASSESSMENT_MATRIX_ID);
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsService.getOverview(ASSESSMENT_MATRIX_ID);
 
         // Then
         assertThat(result).isEmpty();
@@ -137,7 +138,7 @@ class DashboardAnalyticsServiceTest {
                 .thenReturn(Optional.of(mockDashboardAnalytics));
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsService.getTeamAnalytics(ASSESSMENT_MATRIX_ID, TEAM_ID);
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsService.getTeamAnalytics(ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
         assertThat(result).isPresent();
@@ -153,7 +154,7 @@ class DashboardAnalyticsServiceTest {
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.empty());
 
         // When
-        Optional<DashboardAnalytics> result = dashboardAnalyticsService.getTeamAnalytics(ASSESSMENT_MATRIX_ID, TEAM_ID);
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsService.getTeamAnalytics(ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
         assertThat(result).isEmpty();
@@ -164,10 +165,10 @@ class DashboardAnalyticsServiceTest {
     @Test
     void getAllAnalytics_WhenMatrixExists_ShouldReturnFilteredAnalytics() {
         // Given
-        DashboardAnalytics analytics1 = createMockAnalytics(ASSESSMENT_MATRIX_ID, "team1");
-        DashboardAnalytics analytics2 = createMockAnalytics(ASSESSMENT_MATRIX_ID, "team2");
-        DashboardAnalytics analytics3 = createMockAnalytics("otherMatrix", "team3");
-        List<DashboardAnalytics> allAnalytics = Arrays.asList(analytics1, analytics2, analytics3);
+        DashboardAnalyticsV2 analytics1 = createMockAnalytics(ASSESSMENT_MATRIX_ID, "team1");
+        DashboardAnalyticsV2 analytics2 = createMockAnalytics(ASSESSMENT_MATRIX_ID, "team2");
+        DashboardAnalyticsV2 analytics3 = createMockAnalytics("otherMatrix", "team3");
+        List<DashboardAnalyticsV2> allAnalytics = Arrays.asList(analytics1, analytics2, analytics3);
 
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
         when(performanceCycleService.findById(PERFORMANCE_CYCLE_ID)).thenReturn(Optional.of(createMockPerformanceCycle()));
@@ -175,7 +176,7 @@ class DashboardAnalyticsServiceTest {
                 .thenReturn(allAnalytics);
 
         // When
-        List<DashboardAnalytics> result = dashboardAnalyticsService.getAllAnalytics(ASSESSMENT_MATRIX_ID);
+        List<DashboardAnalyticsV2> result = dashboardAnalyticsService.getAllAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
         assertThat(result).hasSize(2);
@@ -190,7 +191,7 @@ class DashboardAnalyticsServiceTest {
         when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.empty());
 
         // When
-        List<DashboardAnalytics> result = dashboardAnalyticsService.getAllAnalytics(ASSESSMENT_MATRIX_ID);
+        List<DashboardAnalyticsV2> result = dashboardAnalyticsService.getAllAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
         assertThat(result).isEmpty();
@@ -251,7 +252,7 @@ class DashboardAnalyticsServiceTest {
         // Then
         verify(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
         verify(employeeAssessmentService).findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID);
-        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalytics.class));
+        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalyticsV2.class));
     }
 
     @Test
@@ -274,7 +275,7 @@ class DashboardAnalyticsServiceTest {
         dashboardAnalyticsService.updateAssessmentMatrixAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
-        verify(dashboardAnalyticsRepository, times(3)).save(any(DashboardAnalytics.class)); // 2 teams + 1 overview
+        verify(dashboardAnalyticsRepository, times(3)).save(any(DashboardAnalyticsV2.class)); // 2 teams + 1 overview
     }
 
     @Test
@@ -301,7 +302,7 @@ class DashboardAnalyticsServiceTest {
 
         // Then
         verify(answerRepository, times(2)).findByEmployeeAssessmentId(assessment.getId(), assessment.getTenantId());
-        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalytics.class));
+        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalyticsV2.class));
     }
 
     @Test
@@ -329,7 +330,7 @@ class DashboardAnalyticsServiceTest {
         dashboardAnalyticsService.updateAssessmentMatrixAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
-        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalytics.class));
+        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalyticsV2.class));
     }
 
     @Test
@@ -352,7 +353,7 @@ class DashboardAnalyticsServiceTest {
         dashboardAnalyticsService.updateAssessmentMatrixAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
-        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalytics.class)); // 1 team + 1 overview
+        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalyticsV2.class)); // 1 team + 1 overview
     }
 
     @Test
@@ -681,7 +682,7 @@ class DashboardAnalyticsServiceTest {
         dashboardAnalyticsService.updateAssessmentMatrixAnalytics(ASSESSMENT_MATRIX_ID);
 
         // Then
-        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalytics.class));
+        verify(dashboardAnalyticsRepository, times(2)).save(any(DashboardAnalyticsV2.class));
     }
 
     private void setupMockEntities() {
@@ -732,7 +733,7 @@ class DashboardAnalyticsServiceTest {
                 .build();
 
         // Setup mock dashboard analytics
-        mockDashboardAnalytics = DashboardAnalytics.builder()
+        mockDashboardAnalytics = DashboardAnalyticsV2.builder()
                 .companyPerformanceCycleId(COMPANY_ID + "#" + PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixScopeId(ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.TEAM.name() + "#" + TEAM_ID)
                 .companyId(COMPANY_ID)
@@ -747,7 +748,7 @@ class DashboardAnalyticsServiceTest {
                 .generalAverage(82.5)
                 .employeeCount(5)
                 .completionPercentage(80.0)
-                .lastUpdated(LocalDateTime.now())
+                .lastUpdated(java.time.Instant.now())
                 .analyticsDataJson("{\"test\": \"data\"}")
                 .build();
     }
@@ -810,8 +811,8 @@ class DashboardAnalyticsServiceTest {
                 .build();
     }
 
-    private DashboardAnalytics createMockAnalytics(String matrixId, String teamId) {
-        return DashboardAnalytics.builder()
+    private DashboardAnalyticsV2 createMockAnalytics(String matrixId, String teamId) {
+        return DashboardAnalyticsV2.builder()
                 .companyPerformanceCycleId(COMPANY_ID + "#" + PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixScopeId(matrixId + "#" + AnalyticsScope.TEAM.name() + "#" + teamId)
                 .companyId(COMPANY_ID)
@@ -826,7 +827,7 @@ class DashboardAnalyticsServiceTest {
                 .generalAverage(75.0)
                 .employeeCount(3)
                 .completionPercentage(80.0)
-                .lastUpdated(LocalDateTime.now())
+                .lastUpdated(java.time.Instant.now())
                 .analyticsDataJson("{}")
                 .build();
     }

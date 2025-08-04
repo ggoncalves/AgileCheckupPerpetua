@@ -1,39 +1,53 @@
 package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.persistency.entity.AnalyticsScope;
-import com.agilecheckup.persistency.entity.DashboardAnalytics;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
+import com.agilecheckup.persistency.entity.DashboardAnalyticsV2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 @ExtendWith(MockitoExtension.class)
-class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardAnalytics> {
+class DashboardAnalyticsRepositoryTest {
 
     @Mock
-    private PaginatedQueryList<DashboardAnalytics> paginatedQueryList;
+    private DynamoDbEnhancedClient enhancedClient;
+    
+    @Mock
+    private DynamoDbTable<DashboardAnalyticsV2> mockTable;
+    
+    @Mock
+    private DynamoDbIndex<DashboardAnalyticsV2> mockIndex;
+    
+    @Mock
+    private PageIterable<DashboardAnalyticsV2> pageIterable;
+    
+    @Mock
+    private Page<DashboardAnalyticsV2> page;
 
     @InjectMocks
     @Spy
-    private DashboardAnalyticsRepository dashboardAnalyticsRepository;
+    private DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepository;
 
     private static final String COMPANY_ID = "company123";
     private static final String PERFORMANCE_CYCLE_ID = "cycle456";
@@ -43,175 +57,155 @@ class DashboardAnalyticsRepositoryTest extends AbstractRepositoryTest<DashboardA
   private static final String ASSESSMENT_MATRIX_SCOPE_ID_TEAM = ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.TEAM.name() + "#" + TEAM_ID;
   private static final String ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW = ASSESSMENT_MATRIX_ID + "#" + AnalyticsScope.ASSESSMENT_MATRIX.name();
 
-    @Override
-    AbstractCrudRepository getRepository() {
-        return dashboardAnalyticsRepository;
-    }
-
-    @Override
-    DashboardAnalytics createMockedT() {
-      return createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
-    }
-
-    @Override
-    Class getMockedClass() {
-        return DashboardAnalytics.class;
-    }
 
     @Test
     void findByCompanyAndPerformanceCycle_ShouldQueryGSI() {
         // Given
-      DashboardAnalytics analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
-      DashboardAnalytics analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
-        List<DashboardAnalytics> expectedResults = Arrays.asList(analytics1, analytics2);
+        DashboardAnalyticsV2 analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
+        DashboardAnalyticsV2 analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
+        List<DashboardAnalyticsV2> expectedResults = Arrays.asList(analytics1, analytics2);
 
-        when(dynamoDBMapperMock.query(eq(DashboardAnalytics.class), any(DynamoDBQueryExpression.class)))
-                .thenReturn(paginatedQueryList);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.index("company-cycle-index")).thenReturn(mockIndex);
+        when(mockIndex.query(any(QueryEnhancedRequest.class))).thenReturn(pageIterable);
+        when(pageIterable.stream()).thenReturn(Stream.of(page));
+        when(page.items()).thenReturn(expectedResults);
 
         // When
-        List<DashboardAnalytics> results = dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(COMPANY_ID, PERFORMANCE_CYCLE_ID);
+        List<DashboardAnalyticsV2> results = dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(COMPANY_ID, PERFORMANCE_CYCLE_ID);
 
         // Then
-        assertEquals(paginatedQueryList, results);
-        
-        ArgumentCaptor<DynamoDBQueryExpression<DashboardAnalytics>> queryCaptor = 
-                ArgumentCaptor.forClass(DynamoDBQueryExpression.class);
-        verify(dynamoDBMapperMock).query(eq(DashboardAnalytics.class), queryCaptor.capture());
-        
-        DynamoDBQueryExpression<DashboardAnalytics> query = queryCaptor.getValue();
-        assertEquals("company-cycle-index", query.getIndexName());
-        assertFalse(query.isConsistentRead());
-      assertEquals("companyId = :companyId AND performanceCycleId = :performanceCycleId",
-                query.getKeyConditionExpression());
+        assertThat(results).hasSize(2);
+        assertThat(results).containsExactly(analytics1, analytics2);
+        verify(mockTable).index("company-cycle-index");
+        verify(mockIndex).query(any(QueryEnhancedRequest.class));
     }
 
     @Test
     void findTeamAnalytics_ShouldLoadByCompositeKey() {
         // Given
-      DashboardAnalytics expectedAnalytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
-      when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM))
-                .thenReturn(expectedAnalytics);
+        DashboardAnalyticsV2 expectedAnalytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.getItem(any(Key.class))).thenReturn(expectedAnalytics);
 
         // When
-      Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
-        assertTrue(result.isPresent());
-        assertEquals(expectedAnalytics, result.get());
-      verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM);
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(expectedAnalytics);
+        verify(mockTable).getItem(any(Key.class));
     }
 
     @Test
     void findTeamAnalytics_WhenNotFound_ShouldReturnEmpty() {
         // Given
-      when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM))
-                .thenReturn(null);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.getItem(any(Key.class))).thenReturn(null);
 
         // When
-      Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsRepository.findTeamAnalytics(
                 COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID, TEAM_ID);
 
         // Then
-        assertFalse(result.isPresent());
-      verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_TEAM);
+        assertThat(result).isEmpty();
+        verify(mockTable).getItem(any(Key.class));
     }
 
-  @Test
-  void findAssessmentMatrixOverview_ShouldLoadByCompositeKey() {
-    // Given
-    DashboardAnalytics expectedAnalytics = createTestAnalytics(null, AnalyticsScope.ASSESSMENT_MATRIX);
-    when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW))
-        .thenReturn(expectedAnalytics);
+    @Test
+    void findAssessmentMatrixOverview_ShouldLoadByCompositeKey() {
+        // Given
+        DashboardAnalyticsV2 expectedAnalytics = createTestAnalytics(null, AnalyticsScope.ASSESSMENT_MATRIX);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.getItem(any(Key.class))).thenReturn(expectedAnalytics);
 
-    // When
-    Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
-        COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
+        // When
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
 
-    // Then
-    assertTrue(result.isPresent());
-    assertEquals(expectedAnalytics, result.get());
-    verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW);
-  }
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(expectedAnalytics);
+        verify(mockTable).getItem(any(Key.class));
+    }
 
-  @Test
-  void findAssessmentMatrixOverview_WhenNotFound_ShouldReturnEmpty() {
-    // Given
-    when(dynamoDBMapperMock.load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW))
-        .thenReturn(null);
+    @Test
+    void findAssessmentMatrixOverview_WhenNotFound_ShouldReturnEmpty() {
+        // Given
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.getItem(any(Key.class))).thenReturn(null);
 
-    // When
-    Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
-        COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
+        // When
+        Optional<DashboardAnalyticsV2> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
+                COMPANY_ID, PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_ID);
 
-    // Then
-    assertFalse(result.isPresent());
-    verify(dynamoDBMapperMock).load(DashboardAnalytics.class, COMPANY_PERFORMANCE_CYCLE_ID, ASSESSMENT_MATRIX_SCOPE_ID_OVERVIEW);
+        // Then
+        assertThat(result).isEmpty();
+        verify(mockTable).getItem(any(Key.class));
     }
 
     @Test
     void findByCompany_ShouldQueryGSIWithCompanyId() {
         // Given
-      DashboardAnalytics analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
-      DashboardAnalytics analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
-        List<DashboardAnalytics> expectedResults = Arrays.asList(analytics1, analytics2);
+        DashboardAnalyticsV2 analytics1 = createTestAnalytics("team1", AnalyticsScope.TEAM);
+        DashboardAnalyticsV2 analytics2 = createTestAnalytics("team2", AnalyticsScope.TEAM);
+        List<DashboardAnalyticsV2> expectedResults = Arrays.asList(analytics1, analytics2);
 
-        when(dynamoDBMapperMock.query(eq(DashboardAnalytics.class), any(DynamoDBQueryExpression.class)))
-                .thenReturn(paginatedQueryList);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
+        when(mockTable.index("company-cycle-index")).thenReturn(mockIndex);
+        when(mockIndex.query(any(QueryEnhancedRequest.class))).thenReturn(pageIterable);
+        when(pageIterable.stream()).thenReturn(Stream.of(page));
+        when(page.items()).thenReturn(expectedResults);
 
         // When
-        List<DashboardAnalytics> results = dashboardAnalyticsRepository.findByCompany(COMPANY_ID);
+        List<DashboardAnalyticsV2> results = dashboardAnalyticsRepository.findByCompany(COMPANY_ID);
 
         // Then
-        assertEquals(paginatedQueryList, results);
-        
-        ArgumentCaptor<DynamoDBQueryExpression<DashboardAnalytics>> queryCaptor = 
-                ArgumentCaptor.forClass(DynamoDBQueryExpression.class);
-        verify(dynamoDBMapperMock).query(eq(DashboardAnalytics.class), queryCaptor.capture());
-        
-        DynamoDBQueryExpression<DashboardAnalytics> query = queryCaptor.getValue();
-        assertEquals("company-cycle-index", query.getIndexName());
-      assertEquals("companyId = :companyId", query.getKeyConditionExpression());
+        assertThat(results).hasSize(2);
+        assertThat(results).containsExactly(analytics1, analytics2);
+        verify(mockTable).index("company-cycle-index");
+        verify(mockIndex).query(any(QueryEnhancedRequest.class));
     }
 
     @Test
     void save_ShouldPersistAnalytics() {
         // Given
-      DashboardAnalytics analytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
+        DashboardAnalyticsV2 analytics = createTestAnalytics(TEAM_ID, AnalyticsScope.TEAM);
+        when(dashboardAnalyticsRepository.getTable()).thenReturn(mockTable);
 
         // When
         dashboardAnalyticsRepository.save(analytics);
 
         // Then
-        verify(dynamoDBMapperMock).save(analytics);
+        verify(mockTable).putItem(analytics);
     }
 
-  private DashboardAnalytics createTestAnalytics(String teamId, AnalyticsScope scope) {
-    String assessmentMatrixScopeId;
-    String teamName = null;
+    private DashboardAnalyticsV2 createTestAnalytics(String teamId, AnalyticsScope scope) {
+        String assessmentMatrixScopeId;
+        String teamName = null;
 
-    if (scope == AnalyticsScope.TEAM) {
-      assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name() + "#" + teamId;
-      teamName = "Team " + teamId;
-    }
-    else {
-      assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name();
-      teamId = null; // Assessment matrix scope doesn't have a team ID
-    }
+        if (scope == AnalyticsScope.TEAM) {
+            assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name() + "#" + teamId;
+            teamName = "Team " + teamId;
+        } else {
+            assessmentMatrixScopeId = ASSESSMENT_MATRIX_ID + "#" + scope.name();
+            teamId = null; // Assessment matrix scope doesn't have a team ID
+        }
 
-    return DashboardAnalytics.builder()
+        return DashboardAnalyticsV2.builder()
                 .companyPerformanceCycleId(COMPANY_PERFORMANCE_CYCLE_ID)
-        .assessmentMatrixScopeId(assessmentMatrixScopeId)
+                .assessmentMatrixScopeId(assessmentMatrixScopeId)
                 .companyId(COMPANY_ID)
                 .performanceCycleId(PERFORMANCE_CYCLE_ID)
                 .assessmentMatrixId(ASSESSMENT_MATRIX_ID)
-        .scope(scope)
+                .scope(scope)
                 .teamId(teamId)
-        .teamName(teamName)
+                .teamName(teamName)
                 .generalAverage(75.5)
                 .employeeCount(10)
                 .completionPercentage(80.0)
-                .lastUpdated(LocalDateTime.now())
+                .lastUpdated(Instant.now())
                 .analyticsDataJson("{\"test\": \"data\"}")
                 .build();
     }
