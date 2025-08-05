@@ -4,16 +4,16 @@ import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
-import com.agilecheckup.persistency.entity.Team;
+import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
-import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
-import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
@@ -35,17 +35,17 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
 
     private final AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
 
-    private final TeamService teamService;
+    private final TeamServiceV2 teamService;
 
     private final EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2;
 
-    private final AnswerRepository answerRepository;
+    private final AnswerRepositoryV2 answerRepository;
 
     @Inject
     public EmployeeAssessmentServiceV2(EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2, 
                                      AssessmentMatrixServiceV2 assessmentMatrixServiceV2, 
-                                     TeamService teamService,
-                                     AnswerRepository answerRepository) {
+                                     TeamServiceV2 teamService,
+                                     AnswerRepositoryV2 answerRepository) {
         this.employeeAssessmentRepositoryV2 = employeeAssessmentRepositoryV2;
         this.assessmentMatrixServiceV2 = assessmentMatrixServiceV2;
         this.teamService = teamService;
@@ -72,8 +72,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
             employeeAssessment.setAssessmentMatrixId(assessmentMatrixEntity.getId());
             
             if (StringUtils.isNotBlank(teamId)) {
-                Optional<Team> team = teamService.findById(teamId);
-                Team teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
+                Optional<TeamV2> team = teamService.findById(teamId);
+                TeamV2 teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
                 employeeAssessment.setTeamId(teamEntity.getId());
             } else {
                 employeeAssessment.setTeamId(null);
@@ -94,8 +94,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         String tenantId = assessmentMatrixEntity.getTenantId();
         
         if (StringUtils.isNotBlank(teamId)) {
-            Optional<Team> team = teamService.findById(teamId);
-            Team teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
+            Optional<TeamV2> team = teamService.findById(teamId);
+            TeamV2 teamEntity = team.orElseThrow(() -> new InvalidIdReferenceException(teamId, getClass().getName(), "Team"));
             finalTeamId = teamEntity.getId();
         }
         
@@ -177,7 +177,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         
         if (optionalEmployeeAssessment.isPresent()) {
             EmployeeAssessmentV2 employeeAssessment = optionalEmployeeAssessment.get();
-            List<Answer> answers = retrieveAnswers(employeeAssessmentId, tenantId);
+            List<AnswerV2> answers = retrieveAnswers(employeeAssessmentId, tenantId);
             EmployeeAssessmentScore employeeAssessmentScore = calculateEmployeeAssessmentScore(answers);
             employeeAssessment.setEmployeeAssessmentScore(employeeAssessmentScore);
             getRepository().save(employeeAssessment);
@@ -186,12 +186,12 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return null;
     }
 
-    private List<Answer> retrieveAnswers(String employeeAssessmentId, String tenantId) {
+    private List<AnswerV2> retrieveAnswers(String employeeAssessmentId, String tenantId) {
         return answerRepository.findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
     }
 
-    private EmployeeAssessmentScore calculateEmployeeAssessmentScore(List<Answer> answers) {
-        Map<String, List<Answer>> answersByPillar = groupAnswersByPillarId(answers);
+    private EmployeeAssessmentScore calculateEmployeeAssessmentScore(List<AnswerV2> answers) {
+        Map<String, List<AnswerV2>> answersByPillar = groupAnswersByPillarId(answers);
         Map<String, PillarScore> pillarScores = calculatePillarScores(answersByPillar);
 
         EmployeeAssessmentScore employeeAssessmentScore = new EmployeeAssessmentScore();
@@ -200,14 +200,14 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return employeeAssessmentScore;
     }
 
-    private Map<String, List<Answer>> groupAnswersByPillarId(List<Answer> answers) {
-        return answers.stream().collect(Collectors.groupingBy(Answer::getPillarId));
+    private Map<String, List<AnswerV2>> groupAnswersByPillarId(List<AnswerV2> answers) {
+        return answers.stream().collect(Collectors.groupingBy(AnswerV2::getPillarId));
     }
 
-    private Map<String, PillarScore> calculatePillarScores(Map<String, List<Answer>> answersByPillar) {
+    private Map<String, PillarScore> calculatePillarScores(Map<String, List<AnswerV2>> answersByPillar) {
         Map<String, PillarScore> pillarScores = new HashMap<>();
 
-        for (Map.Entry<String, List<Answer>> entry : answersByPillar.entrySet()) {
+        for (Map.Entry<String, List<AnswerV2>> entry : answersByPillar.entrySet()) {
             PillarScore pillarScore = calculatePillarScore(entry.getKey(), entry.getValue());
             pillarScores.put(entry.getKey(), pillarScore);
         }
@@ -215,8 +215,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return pillarScores;
     }
 
-    private PillarScore calculatePillarScore(String pillarId, List<Answer> answers) {
-        Map<String, List<Answer>> answersByCategory = groupAnswersByCategory(answers);
+    private PillarScore calculatePillarScore(String pillarId, List<AnswerV2> answers) {
+        Map<String, List<AnswerV2>> answersByCategory = groupAnswersByCategory(answers);
         Map<String, CategoryScore> categoryScores = calculateCategoryScores(answersByCategory);
 
         PillarScore pillarScore = new PillarScore();
@@ -227,14 +227,14 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return pillarScore;
     }
 
-    private Map<String, List<Answer>> groupAnswersByCategory(List<Answer> answers) {
-        return answers.stream().collect(Collectors.groupingBy(Answer::getCategoryId));
+    private Map<String, List<AnswerV2>> groupAnswersByCategory(List<AnswerV2> answers) {
+        return answers.stream().collect(Collectors.groupingBy(AnswerV2::getCategoryId));
     }
 
-    private Map<String, CategoryScore> calculateCategoryScores(Map<String, List<Answer>> answersByCategory) {
+    private Map<String, CategoryScore> calculateCategoryScores(Map<String, List<AnswerV2>> answersByCategory) {
         Map<String, CategoryScore> categoryScores = new HashMap<>();
 
-        for (Map.Entry<String, List<Answer>> entry : answersByCategory.entrySet()) {
+        for (Map.Entry<String, List<AnswerV2>> entry : answersByCategory.entrySet()) {
             CategoryScore categoryScore = calculateCategoryScore(entry.getKey(), entry.getValue());
             categoryScores.put(entry.getKey(), categoryScore);
         }
@@ -242,7 +242,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return categoryScores;
     }
 
-    private CategoryScore calculateCategoryScore(String categoryId, List<Answer> answers) {
+    private CategoryScore calculateCategoryScore(String categoryId, List<AnswerV2> answers) {
         CategoryScore categoryScore = new CategoryScore();
         categoryScore.setCategoryId(categoryId);
         categoryScore.setCategoryName(answers.get(0).getQuestion().getCategoryName());
@@ -251,25 +251,25 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return categoryScore;
     }
 
-    private List<QuestionScore> calculateQuestionScores(List<Answer> answers) {
+    private List<QuestionScore> calculateQuestionScores(List<AnswerV2> answers) {
         List<QuestionScore> questionScores = new ArrayList<>();
 
-        for (Answer answer : answers) {
+        for (AnswerV2 answer : answers) {
             questionScores.add(createQuestionScore(answer));
         }
 
         return questionScores;
     }
 
-    private QuestionScore createQuestionScore(Answer answer) {
+    private QuestionScore createQuestionScore(AnswerV2 answer) {
         QuestionScore questionScore = new QuestionScore();
         questionScore.setQuestionId(answer.getQuestionId());
         questionScore.setScore(answer.getScore());
         return questionScore;
     }
 
-    private double calculateScoreForAnswers(List<Answer> answers) {
-        return answers.stream().mapToDouble(Answer::getScore).sum();
+    private double calculateScoreForAnswers(List<AnswerV2> answers) {
+        return answers.stream().mapToDouble(AnswerV2::getScore).sum();
     }
 
     private double calculateTotalScore(Map<String, PillarScore> pillarScores) {
