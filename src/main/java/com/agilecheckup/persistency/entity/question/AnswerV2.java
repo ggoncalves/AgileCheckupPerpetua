@@ -2,7 +2,7 @@ package com.agilecheckup.persistency.entity.question;
 
 import com.agilecheckup.persistency.converter.LocalDateTimeAttributeConverter;
 import com.agilecheckup.persistency.converter.NaturalPersonAttributeConverter;
-import com.agilecheckup.persistency.converter.QuestionAttributeConverter;
+import com.agilecheckup.persistency.converter.QuestionV2AttributeConverter;
 import com.agilecheckup.persistency.converter.QuestionTypeAttributeConverter;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.base.TenantableEntityV2;
@@ -52,8 +52,8 @@ public class AnswerV2 extends TenantableEntityV2 {
     @Getter(onMethod_ = @__({@DynamoDbAttribute("questionType"), @DynamoDbConvertedBy(QuestionTypeAttributeConverter.class)}))
     private QuestionType questionType;
 
-    @Getter(onMethod_ = @__({@DynamoDbAttribute("question"), @DynamoDbConvertedBy(QuestionAttributeConverter.class)}))
-    private Question question;
+    @Getter(onMethod_ = @__({@DynamoDbAttribute("question"), @DynamoDbConvertedBy(QuestionV2AttributeConverter.class)}))
+    private QuestionV2 question;
 
     @Builder.Default
     @Getter(onMethod_ = @__({@DynamoDbAttribute("pendingReview")}))

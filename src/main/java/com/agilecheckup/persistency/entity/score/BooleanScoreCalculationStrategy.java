@@ -12,6 +12,6 @@ public class BooleanScoreCalculationStrategy extends AbstractScoreCalculator {
 
   @Override
   public Double getCalculatedScore() {
-    return ("true".equalsIgnoreCase(value)) ? question.getPoints() : 0d;
+    return ("true".equalsIgnoreCase(value)) ? getQuestionPoints() : 0d;
   }
 }

@@ -31,9 +31,9 @@ public class E2EAllTablesInvoker {
 //        new PerformanceCycleTableRunner(true),
 //        new AssessmentMatrixTableRunnerV2(true),
 //        new EmployeeAssessmentTableRunnerV2(true),
-//        new QuestionTableRunnerV2(true),
+        new QuestionTableRunnerV2(true)
 //        new AnswerV2TableRunner(true),
-        new DashboardAnalyticsV2TableRunner(true)
+//        new DashboardAnalyticsV2TableRunner(true)
     );
   }
 
