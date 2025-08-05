@@ -158,8 +158,8 @@ public abstract class ServiceModule {
   static EmployeeAssessmentServiceV2 provideEmployeeAssessmentServiceV2(
       EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2,
       AssessmentMatrixServiceV2 assessmentMatrixServiceV2,
-      TeamService teamService,
-      AnswerRepository answerRepository) {
+      TeamServiceV2 teamService,
+      AnswerRepositoryV2 answerRepository) {
     return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2,
         teamService, answerRepository);
   }

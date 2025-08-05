@@ -3,14 +3,15 @@ package com.agilecheckup.service;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
-import com.agilecheckup.persistency.entity.Team;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
-import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.entity.question.AnswerV2;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
@@ -23,6 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,10 +52,10 @@ class EmployeeAssessmentServiceV2Test {
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
 
     @Mock
-    private TeamService teamService;
+    private TeamServiceV2 teamService;
 
     @Mock
-    private AnswerRepository answerRepository;
+    private AnswerRepositoryV2 answerRepository;
 
     private EmployeeAssessmentServiceV2 service;
 
@@ -78,7 +80,7 @@ class EmployeeAssessmentServiceV2Test {
     }
 
     private void setupMockTeam() {
-        Team mockTeam = Team.builder()
+        TeamV2 mockTeam = TeamV2.builder()
             .id(TEAM_ID)
             .tenantId(TENANT_ID)
             .name("Test Team")
@@ -253,7 +255,7 @@ class EmployeeAssessmentServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockEmployeeAssessment();
         assessment.setId(assessmentId);
 
-        List<Answer> mockAnswers = createMockAnswers();
+        List<AnswerV2> mockAnswers = createMockAnswers();
 
         doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
         doReturn(mockAnswers).when(answerRepository).findByEmployeeAssessmentId(assessmentId, TENANT_ID);
@@ -479,27 +481,45 @@ class EmployeeAssessmentServiceV2Test {
         return assessment;
     }
 
-    private List<Answer> createMockAnswers() {
-        Question mockQuestion = new Question();
-        mockQuestion.setId("question-123");
-        mockQuestion.setPillarId("pillar-123");
-        mockQuestion.setPillarName("Test Pillar");
-        mockQuestion.setCategoryId("category-123");
-        mockQuestion.setCategoryName("Test Category");
+    private List<AnswerV2> createMockAnswers() {
+        QuestionV2 mockQuestion = QuestionV2.builder()
+            .id("question-123")
+            .assessmentMatrixId("matrix-123")
+            .pillarId("pillar-123")
+            .pillarName("Test Pillar")
+            .categoryId("category-123")
+            .categoryName("Test Category")
+            .question("Test Question")
+            .questionType(QuestionType.ONE_TO_TEN)
+            .points(10.0)
+            .tenantId(TENANT_ID)
+            .build();
 
-        Answer answer1 = new Answer();
-        answer1.setQuestionId("question-123");
-        answer1.setPillarId("pillar-123");
-        answer1.setCategoryId("category-123");
-        answer1.setScore(8.5);
-        answer1.setQuestion(mockQuestion);
+        AnswerV2 answer1 = AnswerV2.builder()
+            .questionId("question-123")
+            .pillarId("pillar-123")
+            .categoryId("category-123")
+            .score(8.5)
+            .question(mockQuestion)
+            .questionType(QuestionType.ONE_TO_TEN)
+            .employeeAssessmentId("assessment-123")
+            .answeredAt(LocalDateTime.now())
+            .value("8")
+            .tenantId(TENANT_ID)
+            .build();
 
-        Answer answer2 = new Answer();
-        answer2.setQuestionId("question-124");
-        answer2.setPillarId("pillar-123");
-        answer2.setCategoryId("category-123");
-        answer2.setScore(7.0);
-        answer2.setQuestion(mockQuestion);
+        AnswerV2 answer2 = AnswerV2.builder()
+            .questionId("question-124")
+            .pillarId("pillar-123")
+            .categoryId("category-123")
+            .score(7.0)
+            .question(mockQuestion)
+            .questionType(QuestionType.ONE_TO_TEN)
+            .employeeAssessmentId("assessment-123")
+            .answeredAt(LocalDateTime.now())
+            .value("7")
+            .tenantId(TENANT_ID)
+            .build();
 
         return Arrays.asList(answer1, answer2);
     }
@@ -595,7 +615,7 @@ class EmployeeAssessmentServiceV2Test {
         String email = EMPLOYEE_EMAIL;
         
         // Setup mock team with DIFFERENT tenant ID to expose bug
-        Team mockTeam = Team.builder()
+        TeamV2 mockTeam = TeamV2.builder()
             .id(teamId)
             .tenantId("team-tenant-123") // Different from matrix tenant
             .name("Test Team")

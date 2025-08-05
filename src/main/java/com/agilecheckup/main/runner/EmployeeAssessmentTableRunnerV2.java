@@ -8,7 +8,7 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
-import com.agilecheckup.persistency.entity.Team;
+import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
@@ -18,15 +18,26 @@ import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.TeamService;
+import com.agilecheckup.service.TeamServiceV2;
+import com.agilecheckup.service.AnswerServiceV2;
+import com.agilecheckup.service.QuestionServiceV2;
+import com.agilecheckup.service.AssessmentNavigationServiceV2;
 import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
+import com.agilecheckup.service.dto.AnswerWithProgressResponse;
+import com.agilecheckup.persistency.entity.question.AnswerV2;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.PillarV2;
+import com.agilecheckup.persistency.entity.CategoryV2;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Log4j2
@@ -35,15 +46,22 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
     private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
     private EmployeeAssessmentService employeeAssessmentServiceLegacy;
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
-    private TeamService teamService;
+    private TeamServiceV2 teamService;
     private CompanyServiceV2 companyServiceV2;
     private DepartmentServiceV2 departmentServiceV2;
     private PerformanceCycleServiceV2 performanceCycleServiceV2;
+    private AnswerServiceV2 answerServiceV2;
+    private QuestionServiceV2 questionServiceV2;
+    private AssessmentNavigationServiceV2 assessmentNavigationServiceV2;
+    private TableRunnerHelper tableRunnerHelper;
     private CompanyV2 testCompany;
     private DepartmentV2 testDepartment;
-    private Team testTeam;
+    private TeamV2 testTeam;
     private PerformanceCycleV2 testPerformanceCycle;
     private AssessmentMatrixV2 testAssessmentMatrix;
+    private Map<String, PillarV2> testPillarMap;
+    private List<QuestionV2> testQuestions;
+    private List<AnswerV2> testAnswers;
     private String testTenantId;
     private final boolean shouldCleanAfterComplete;
 
@@ -75,17 +93,21 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
             log.info("\n3. Demonstrating business logic...");
             demonstrateBusinessLogic(v2Assessments);
             
-            // 5. Demonstrate employee validation workflow
-            log.info("\n4. Demonstrating employee validation workflow...");
+            // 5. Demonstrate save-and-next flow
+            log.info("\n4. Demonstrating save-and-next answer flow...");
+            demonstrateSaveAndNextFlow(v2Assessments);
+            
+            // 6. Demonstrate employee validation workflow
+            log.info("\n5. Demonstrating employee validation workflow...");
             demonstrateEmployeeValidation();
             
-            // 6. Show side-by-side comparison with V1 if available
-            log.info("\n5. Side-by-side V1 vs V2 comparison:");
+            // 7. Show side-by-side comparison with V1 if available
+            log.info("\n6. Side-by-side V1 vs V2 comparison:");
             demonstrateSideBySideComparison();
             
-            // 7. Cleanup
+            // 8. Cleanup
             if (shouldCleanAfterComplete) {
-                log.info("\n6. Cleaning up test data...");
+                log.info("\n7. Cleaning up test data...");
                 cleanupTestData(v2Assessments);
             }
             
@@ -129,7 +151,7 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
                 log.info("Created test department: {} (ID: {})", testDepartment.getName(), testDepartment.getId());
                 
                 // Create test team
-                Optional<Team> teamOpt = getTeamService().create(
+                Optional<TeamV2> teamOpt = getTeamService().create(
                     "Test Team",
                     "Team for EmployeeAssessment testing",
                     testTenantId,
@@ -157,19 +179,37 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
                         log.info("Created test performance cycle: {} (ID: {})", 
                             testPerformanceCycle.getName(), testPerformanceCycle.getId());
                         
-                        // Create test assessment matrix
+                        // Create test pillars and categories first
+                        log.info("About to create test pillars and categories...");
+                        try {
+                            createTestPillarsAndCategories();
+                            log.info("Completed creating test pillars and categories");
+                        } catch (Exception e) {
+                            log.error("Failed to create test pillars and categories: {}", e.getMessage(), e);
+                            return;
+                        }
+                        
+                        // Create test assessment matrix with pillarMap
                         Optional<AssessmentMatrixV2> matrixOpt = getAssessmentMatrixServiceV2().create(
                             "Test Assessment Matrix",
                             "Assessment matrix for EmployeeAssessment testing",
                             testTenantId,
                             testPerformanceCycle.getId(),
-                            new HashMap<>()
+                            testPillarMap  // Use the created pillarMap
                         );
                         
                         if (matrixOpt.isPresent()) {
                             testAssessmentMatrix = matrixOpt.get();
                             log.info("Created test assessment matrix: {} (ID: {})", 
                                 testAssessmentMatrix.getName(), testAssessmentMatrix.getId());
+                            
+                            // Create test questions for the assessment matrix
+                            try {
+                                createTestQuestions();
+                            } catch (Exception e) {
+                                log.error("Failed to create test questions: {}", e.getMessage(), e);
+                                return;
+                            }
                         } else {
                             log.error("Failed to create test assessment matrix");
                         }
@@ -185,6 +225,105 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         } else {
             log.error("Failed to create test company");
         }
+    }
+    
+    private void createTestPillarsAndCategories() {
+        log.info("Creating test pillars and categories...");
+        
+        // In V2, pillars and categories are embedded within the AssessmentMatrix
+        // We use TableRunnerHelper to create a standard pillarMap structure
+        testPillarMap = getTableRunnerHelper().createPillarsWithCategoriesMapV2();
+        
+        log.info("Created pillar map with {} pillars", testPillarMap.size());
+        for (Map.Entry<String, PillarV2> entry : testPillarMap.entrySet()) {
+            PillarV2 pillar = entry.getValue();
+            log.info("✓ Pillar: {} (ID: {}) with {} categories", 
+                pillar.getName(), entry.getKey(), pillar.getCategoryMap().size());
+            
+            for (Map.Entry<String, CategoryV2> catEntry : pillar.getCategoryMap().entrySet()) {
+                CategoryV2 category = catEntry.getValue();
+                log.info("  - Category: {} (ID: {})", category.getName(), catEntry.getKey());
+            }
+        }
+    }
+    
+    private void createTestQuestions() {
+        log.info("Creating test questions for assessment matrix...");
+        testQuestions = new ArrayList<>();
+        
+        if (testPillarMap == null || testPillarMap.isEmpty()) {
+            log.error("Cannot create questions - pillar map is empty or null");
+            return;
+        }
+        
+        // Get pillar and category IDs from the pillarMap
+        String[] pillarIds = testPillarMap.keySet().toArray(new String[0]);
+        if (pillarIds.length < 2) {
+            log.error("Need at least 2 pillars to create test questions");
+            return;
+        }
+        
+        PillarV2 pillar1 = testPillarMap.get(pillarIds[0]);
+        PillarV2 pillar2 = testPillarMap.get(pillarIds[1]);
+        
+        String[] categories1 = pillar1.getCategoryMap().keySet().toArray(new String[0]);
+        String[] categories2 = pillar2.getCategoryMap().keySet().toArray(new String[0]);
+        
+        if (categories1.length < 2 || categories2.length < 1) {
+            log.error("Need at least 2 categories in pillar 1 and 1 in pillar 2");
+            return;
+        }
+        
+        log.info("Creating questions with {} pillars", testPillarMap.size());
+        
+        // Create different types of questions using actual pillar and category IDs
+        Optional<QuestionV2> question1Opt = getQuestionServiceV2().create(
+            "How well do you communicate with your team?",
+            QuestionType.ONE_TO_TEN,
+            testTenantId,
+            10.0, // points
+            testAssessmentMatrix.getId(),
+            pillarIds[0], 
+            categories1[0], 
+            null // extraDescription
+        );
+        
+        Optional<QuestionV2> question2Opt = getQuestionServiceV2().create(
+            "Do you make decisions effectively?",
+            QuestionType.YES_NO,
+            testTenantId,
+            5.0,
+            testAssessmentMatrix.getId(),
+            pillarIds[0], 
+            categories1[1], 
+            null
+        );
+        
+        Optional<QuestionV2> question3Opt = getQuestionServiceV2().create(
+            "Rate your problem-solving abilities",
+            QuestionType.STAR_FIVE,
+            testTenantId,
+            15.0,
+            testAssessmentMatrix.getId(),
+            pillarIds[1], 
+            categories2[0], 
+            null
+        );
+        
+        if (question1Opt.isPresent()) {
+            testQuestions.add(question1Opt.get());
+            log.info("✓ Created question 1: {}", question1Opt.get().getQuestion());
+        }
+        if (question2Opt.isPresent()) {
+            testQuestions.add(question2Opt.get());
+            log.info("✓ Created question 2: {}", question2Opt.get().getQuestion());
+        }
+        if (question3Opt.isPresent()) {
+            testQuestions.add(question3Opt.get());
+            log.info("✓ Created question 3: {}", question3Opt.get().getQuestion());
+        }
+        
+        log.info("Created {} test questions", testQuestions.size());
     }
     
     private List<EmployeeAssessmentV2> demonstrateV2Operations() {
@@ -324,24 +463,116 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
             log.info("✓ Status transitioned to: {}", confirmedOpt.get().getAssessmentStatus());
         }
         
-        // Test question count increment
-        log.info("Testing question count increment...");
-        log.info("Questions answered before: {}", assessment.getAnsweredQuestionCount());
-        
-        getEmployeeAssessmentServiceV2().incrementAnsweredQuestionCount(assessmentId);
-        
-        // Re-fetch to see changes
-        Optional<EmployeeAssessmentV2> refetchedOpt = getEmployeeAssessmentServiceV2().findById(assessmentId);
-        if (refetchedOpt.isPresent()) {
-            EmployeeAssessmentV2 refetched = refetchedOpt.get();
-            log.info("✓ Questions answered after increment: {}", refetched.getAnsweredQuestionCount());
-            log.info("✓ Status after first question: {}", refetched.getAssessmentStatus());
-        }
+        // Test question count increment (will be done via save-and-next flow)
+        log.info("Testing question count (will be incremented by save-and-next flow)...");
+        log.info("Questions answered before save-and-next: {}", assessment.getAnsweredQuestionCount());
         
         // Test lastActivityDate update
         log.info("Testing lastActivityDate update...");
         getEmployeeAssessmentServiceV2().updateLastActivityDate(assessmentId);
         log.info("✓ LastActivityDate updated");
+    }
+    
+    private void demonstrateSaveAndNextFlow(List<EmployeeAssessmentV2> assessments) {
+        if (assessments.isEmpty() || testQuestions.isEmpty()) {
+            log.warn("No assessments or questions available for save-and-next demo");
+            return;
+        }
+        
+        EmployeeAssessmentV2 assessment = assessments.get(0);
+        String assessmentId = assessment.getId();
+        testAnswers = new ArrayList<>();
+        
+        log.info("Testing save-and-next flow for assessment: {}", assessmentId);
+        log.info("Assessment has {} questions to answer", testQuestions.size());
+        
+        // Answer each question using save-and-next flow
+        for (int i = 0; i < testQuestions.size(); i++) {
+            QuestionV2 question = testQuestions.get(i);
+            String value = generateAnswerValue(question.getQuestionType(), i);
+            
+            log.info("Answering question {}/{}: {} (Type: {})", 
+                i + 1, testQuestions.size(), question.getQuestion(), question.getQuestionType());
+            log.info("Answer value: {}", value);
+            
+            try {
+                AnswerWithProgressResponse response = getAssessmentNavigationServiceV2().saveAnswerAndGetNext(
+                    assessmentId,
+                    question.getId(),
+                    LocalDateTime.now(),
+                    value,
+                    testTenantId,
+                    "Test answer notes for question " + (i + 1)
+                );
+                
+                log.info("✓ Answer saved successfully");
+                log.info("  - Progress: {}/{} questions answered", 
+                    response.getCurrentProgress(), response.getTotalQuestions());
+                
+                if (response.getQuestion() != null) {
+                    log.info("  - Next question: {}", response.getQuestion().getQuestion());
+                } else {
+                    log.info("  - Assessment completed - no more questions");
+                }
+                
+                // Verify assessment status changes
+                Optional<EmployeeAssessmentV2> updatedAssessment = getEmployeeAssessmentServiceV2().findById(assessmentId);
+                if (updatedAssessment.isPresent()) {
+                    EmployeeAssessmentV2 updated = updatedAssessment.get();
+                    log.info("  - Assessment status: {}", updated.getAssessmentStatus());
+                    log.info("  - Questions answered count: {}", updated.getAnsweredQuestionCount());
+                    
+                    if (updated.getEmployeeAssessmentScore() != null) {
+                        log.info("  - Assessment score calculated: {}", updated.getEmployeeAssessmentScore().getScore());
+                    }
+                }
+                
+            } catch (Exception e) {
+                log.error("❌ Failed to save answer for question {}: {}", i + 1, e.getMessage(), e);
+                break;
+            }
+        }
+        
+        // Verify final state
+        Optional<EmployeeAssessmentV2> finalAssessment = getEmployeeAssessmentServiceV2().findById(assessmentId);
+        if (finalAssessment.isPresent()) {
+            EmployeeAssessmentV2 finalState = finalAssessment.get();
+            log.info("Final assessment state:");
+            log.info("  - Status: {}", finalState.getAssessmentStatus());
+            log.info("  - Questions answered: {}/{}", finalState.getAnsweredQuestionCount(), testQuestions.size());
+            log.info("  - Last activity: {}", finalState.getLastActivityDate());
+            
+            if (finalState.getEmployeeAssessmentScore() != null) {
+                log.info("  - Total score: {}", finalState.getEmployeeAssessmentScore().getScore());
+                log.info("  - Pillar scores: {}", finalState.getEmployeeAssessmentScore().getPillarIdToPillarScoreMap().size());
+            }
+        }
+        
+        // Get all answers created for cleanup
+        List<AnswerV2> allAnswers = getAnswerServiceV2().findByEmployeeAssessmentId(assessmentId, testTenantId);
+        testAnswers.addAll(allAnswers);
+        log.info("Created {} answers total for cleanup", testAnswers.size());
+    }
+    
+    private String generateAnswerValue(QuestionType questionType, int questionIndex) {
+        switch (questionType) {
+            case YES_NO:
+                return questionIndex % 2 == 0 ? "true" : "false";
+            case ONE_TO_TEN:
+                return String.valueOf((questionIndex % 10) + 1);
+            case STAR_THREE:
+                return String.valueOf((questionIndex % 3) + 1);
+            case STAR_FIVE:
+                return String.valueOf((questionIndex % 5) + 1);
+            case GOOD_BAD:
+                return questionIndex % 2 == 0 ? "true" : "false";
+            case OPEN_ANSWER:
+                return "This is a test open answer for question " + (questionIndex + 1);
+            case CUSTOMIZED:
+                return "Option " + ((questionIndex % 3) + 1);
+            default:
+                return "1";
+        }
     }
     
     private void demonstrateEmployeeValidation() {
@@ -420,6 +651,32 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
     }
     
     private void cleanupTestData(List<EmployeeAssessmentV2> assessments) {
+        // Clean AnswersV2 first (FK dependency)
+        if (testAnswers != null && !testAnswers.isEmpty()) {
+            log.info("Cleaning up {} test answers...", testAnswers.size());
+            for (AnswerV2 answer : testAnswers) {
+                try {
+                    getAnswerServiceV2().deleteById(answer.getId());
+                    log.info("✓ Cleaned up answer: {}", answer.getId());
+                } catch (Exception e) {
+                    log.warn("Failed to cleanup answer {}: {}", answer.getId(), e.getMessage());
+                }
+            }
+        }
+        
+        // Clean any remaining answers from assessments
+        for (EmployeeAssessmentV2 assessment : assessments) {
+            try {
+                List<AnswerV2> remainingAnswers = getAnswerServiceV2().findByEmployeeAssessmentId(assessment.getId(), testTenantId);
+                for (AnswerV2 answer : remainingAnswers) {
+                    getAnswerServiceV2().deleteById(answer.getId());
+                    log.info("✓ Cleaned up remaining answer: {}", answer.getId());
+                }
+            } catch (Exception e) {
+                log.warn("Error cleaning remaining answers for assessment {}: {}", assessment.getId(), e.getMessage());
+            }
+        }
+        
         // Clean V2 assessments
         for (EmployeeAssessmentV2 assessment : assessments) {
             try {
@@ -444,6 +701,23 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
     
     private void cleanupTestDependencies() {
         // Cleanup in reverse order of creation
+        
+        // Clean test questions first (FK dependency on assessment matrix pillars/categories)
+        if (testQuestions != null && !testQuestions.isEmpty()) {
+            log.info("Cleaning up {} test questions...", testQuestions.size());
+            for (QuestionV2 question : testQuestions) {
+                try {
+                    getQuestionServiceV2().deleteById(question.getId());
+                    log.info("✓ Cleaned up question: {}", question.getId());
+                } catch (Exception e) {
+                    log.warn("Failed to cleanup question {}: {}", question.getId(), e.getMessage());
+                }
+            }
+        }
+        
+        // Note: In V2, pillars and categories are embedded in the AssessmentMatrix
+        // They don't need separate cleanup - they'll be cleaned up with the matrix
+        
         if (testAssessmentMatrix != null) {
             try {
                 getAssessmentMatrixServiceV2().deleteById(testAssessmentMatrix.getId());
@@ -464,7 +738,7 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         
         if (testTeam != null) {
             try {
-                getTeamService().delete(testTeam);
+                getTeamService().deleteById(testTeam.getId());
                 log.info("✓ Cleaned up test team: {}", testTeam.getId());
             } catch (Exception e) {
                 log.warn("Failed to cleanup test team {}: {}", testTeam.getId(), e.getMessage());
@@ -515,12 +789,36 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         return assessmentMatrixServiceV2;
     }
     
-    private TeamService getTeamService() {
+    private TeamServiceV2 getTeamService() {
         if (teamService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            teamService = serviceComponent.buildTeamServiceLegacy();
+            teamService = serviceComponent.buildTeamService();
         }
         return teamService;
+    }
+    
+    private AnswerServiceV2 getAnswerServiceV2() {
+        if (answerServiceV2 == null) {
+            ServiceComponent serviceComponent = DaggerServiceComponent.create();
+            answerServiceV2 = serviceComponent.buildAnswerServiceV2();
+        }
+        return answerServiceV2;
+    }
+    
+    private QuestionServiceV2 getQuestionServiceV2() {
+        if (questionServiceV2 == null) {
+            ServiceComponent serviceComponent = DaggerServiceComponent.create();
+            questionServiceV2 = serviceComponent.buildQuestionServiceV2();
+        }
+        return questionServiceV2;
+    }
+    
+    private AssessmentNavigationServiceV2 getAssessmentNavigationServiceV2() {
+        if (assessmentNavigationServiceV2 == null) {
+            ServiceComponent serviceComponent = DaggerServiceComponent.create();
+            assessmentNavigationServiceV2 = serviceComponent.buildAssessmentNavigationServiceV2();
+        }
+        return assessmentNavigationServiceV2;
     }
     
     private CompanyServiceV2 getCompanyService() {
@@ -545,5 +843,12 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
             performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
         }
         return performanceCycleServiceV2;
+    }
+    
+    private TableRunnerHelper getTableRunnerHelper() {
+        if (tableRunnerHelper == null) {
+            tableRunnerHelper = new TableRunnerHelper();
+        }
+        return tableRunnerHelper;
     }
 }
