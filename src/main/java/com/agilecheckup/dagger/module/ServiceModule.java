@@ -177,10 +177,10 @@ public abstract class ServiceModule {
   static AnswerServiceV2 provideAnswerServiceV2(
       AnswerRepositoryV2 answerRepositoryV2,
       EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
-      QuestionService questionService,
+      QuestionServiceV2 questionServiceV2,
       AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
     return new AnswerServiceV2(answerRepositoryV2, employeeAssessmentServiceV2, 
-        questionService, assessmentMatrixServiceV2);
+        questionServiceV2, assessmentMatrixServiceV2);
   }
 
   @Provides

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
+import static com.agilecheckup.util.TestObjectFactoryV2.createMockedQuestionV2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,18 +46,18 @@ class AnswerServiceV2Test {
     private EmployeeAssessmentServiceV2 employeeAssessmentService;
 
     @Mock
-    private QuestionService questionService;
+    private QuestionServiceV2 questionService;
 
     @Mock
     private AssessmentMatrixServiceV2 assessmentMatrixService;
 
-    private com.agilecheckup.persistency.entity.question.Question testQuestion;
+    private com.agilecheckup.persistency.entity.question.QuestionV2 testQuestion;
     private EmployeeAssessmentV2 testEmployeeAssessment;
     private AssessmentMatrixV2 testAssessmentMatrix;
 
     @BeforeEach
     void setUp() {
-        testQuestion = createMockedQuestion();
+        testQuestion = createMockedQuestionV2();
         testEmployeeAssessment = createMockedEmployeeAssessmentV2();
         testAssessmentMatrix = createMockedAssessmentMatrixV2();
 

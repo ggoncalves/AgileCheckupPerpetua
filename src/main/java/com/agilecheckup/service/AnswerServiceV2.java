@@ -7,7 +7,7 @@ import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.question.AnswerStrategy;
 import com.agilecheckup.persistency.entity.question.AnswerStrategyFactory;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.score.AbstractScoreCalculator;
 import com.agilecheckup.persistency.entity.score.ScoreCalculationStrategyFactory;
 import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
@@ -25,14 +25,14 @@ import java.util.Set;
 public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepositoryV2> {
 
     private final EmployeeAssessmentServiceV2 employeeAssessmentService;
-    private final QuestionService questionService;
+    private final QuestionServiceV2 questionService;
     private final AnswerRepositoryV2 answerRepository;
     private final AssessmentMatrixServiceV2 assessmentMatrixService;
 
     @Inject
     public AnswerServiceV2(AnswerRepositoryV2 answerRepository, 
                           EmployeeAssessmentServiceV2 employeeAssessmentService, 
-                          QuestionService questionService, 
+                          QuestionServiceV2 questionService, 
                           AssessmentMatrixServiceV2 assessmentMatrixService) {
         this.answerRepository = answerRepository;
         this.employeeAssessmentService = employeeAssessmentService;
@@ -41,7 +41,7 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
     }
 
     public Optional<AnswerV2> create(@NonNull String employeeAssessmentId, @NonNull String questionId,
-                                    @NonNull LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId,
+                                    LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId,
                                     String notes) {
         // Check for existing answer to prevent duplicates
         Optional<AnswerV2> existingAnswer = answerRepository.findByEmployeeAssessmentIdAndQuestionId(
@@ -62,7 +62,7 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
         if (optionalAnswer.isPresent()) {
             AnswerV2 answer = optionalAnswer.get();
             validateAnsweredAt(answeredAt);
-            Question question = getQuestionById(answer.getQuestionId());
+            QuestionV2 question = getQuestionById(answer.getQuestionId());
             AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
             answerStrategy.assignValue(value);
             AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
@@ -90,7 +90,7 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
     private Optional<AnswerV2> updateExistingAnswer(@NonNull AnswerV2 existingAnswer, @NonNull LocalDateTime answeredAt, 
                                                    @NonNull String value, String notes) {
         validateAnsweredAt(answeredAt);
-        Question question = getQuestionById(existingAnswer.getQuestionId());
+        QuestionV2 question = getQuestionById(existingAnswer.getQuestionId());
         AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
         answerStrategy.assignValue(value);
         AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
@@ -148,7 +148,7 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
                                          @NonNull LocalDateTime answeredAt, @NonNull String value,
                                          @NonNull String tenantId, String notes) {
         validateAnsweredAt(answeredAt);
-        Question question = getQuestionById(questionId);
+        QuestionV2 question = getQuestionById(questionId);
         AnswerStrategy<?> answerStrategy = AnswerStrategyFactory.createStrategy(question, false);
         answerStrategy.assignValue(value);
         AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
@@ -180,8 +180,8 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
         return answerRepository;
     }
 
-    private Question getQuestionById(String questionId) {
-        Optional<Question> question = questionService.findById(questionId);
+    private QuestionV2 getQuestionById(String questionId) {
+        Optional<QuestionV2> question = questionService.findById(questionId);
         return question.orElseThrow(() -> new InvalidIdReferenceException(questionId, getClass().getName(), "Question"));
     }
 
@@ -221,4 +221,5 @@ public class AnswerServiceV2 extends AbstractCrudServiceV2<AnswerV2, AnswerRepos
             employeeAssessmentService.updateLastActivityDate(employeeAssessmentId);
         }
     }
+
 }

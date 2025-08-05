@@ -16,6 +16,8 @@ public abstract class AnswerStrategy<T> {
   private T value;
 
   private Question question;
+  
+  private QuestionV2 questionV2;
 
   // TODO: Must refactor to be inside QuestionValidationRules
   // QuestionValidationRules must have allowNullValue, answerMaxCharacters.

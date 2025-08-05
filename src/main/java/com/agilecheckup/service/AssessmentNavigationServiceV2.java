@@ -193,7 +193,7 @@ public class AssessmentNavigationServiceV2 {
    */
   public AnswerWithProgressResponse saveAnswerAndGetNext(@NonNull String employeeAssessmentId,
                                                          @NonNull String questionId,
-                                                         @NonNull LocalDateTime answeredAt,
+                                                         LocalDateTime answeredAt,
                                                          @NonNull String value,
                                                          @NonNull String tenantId,
                                                          String notes) {
@@ -201,7 +201,7 @@ public class AssessmentNavigationServiceV2 {
     Optional<AnswerV2> savedAnswer = answerService.create(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes);
 
     if (savedAnswer.isEmpty()) {
-      throw new RuntimeException("Failed to save answer");
+      throw new RuntimeException("Failed to save answer - answerService.create returned empty Optional");
     }
 
     // Get the next unanswered question with progress

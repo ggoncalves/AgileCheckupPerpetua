@@ -259,7 +259,7 @@ class AssessmentNavigationServiceV2Test {
         assertThatThrownBy(() -> assessmentNavigationService.saveAnswerAndGetNext(
             EMPLOYEE_ASSESSMENT_ID, QUESTION_ID, ANSWERED_AT, "Yes", TENANT_ID, "notes"))
             .isInstanceOf(RuntimeException.class)
-            .hasMessage("Failed to save answer");
+            .hasMessage("Failed to save answer - answerService.create returned empty Optional");
     }
 
     @Test
