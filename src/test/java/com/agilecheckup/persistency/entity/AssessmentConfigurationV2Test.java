@@ -7,12 +7,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class AssessmentConfigurationTest {
+class AssessmentConfigurationV2Test {
 
     @Test
     void shouldCreateWithDefaultValues() {
         // When
-        AssessmentConfiguration configuration = AssessmentConfiguration.builder().build();
+        AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder().build();
 
         // Then
         assertThat(configuration.getAllowQuestionReview()).isTrue();
@@ -24,7 +24,7 @@ class AssessmentConfigurationTest {
     @Test
     void shouldCreateWithCustomValues() {
         // When
-        AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder()
             .allowQuestionReview(false)
             .requireAllQuestions(false)
             .autoSave(false)
@@ -41,7 +41,7 @@ class AssessmentConfigurationTest {
     @Test
     void shouldCreateWithPartialCustomValues() {
         // When
-        AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder()
             .allowQuestionReview(false)
             .navigationMode(QuestionNavigationType.FREE_FORM)
             .build();
@@ -64,7 +64,7 @@ class AssessmentConfigurationTest {
 
         for (QuestionNavigationType mode : modes) {
             // When
-            AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+            AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder()
                 .navigationMode(mode)
                 .build();
 
@@ -76,7 +76,7 @@ class AssessmentConfigurationTest {
     @Test
     void shouldCreateWithNoArgsConstructor() {
         // When
-        AssessmentConfiguration configuration = new AssessmentConfiguration();
+        AssessmentConfigurationV2 configuration = new AssessmentConfigurationV2();
 
         // Then - Lombok @Builder.Default applies defaults even with no-args constructor
         assertThat(configuration.getAllowQuestionReview()).isTrue();
@@ -88,7 +88,7 @@ class AssessmentConfigurationTest {
     @Test
     void shouldCreateWithAllArgsConstructor() {
         // When
-        AssessmentConfiguration configuration = new AssessmentConfiguration(
+        AssessmentConfigurationV2 configuration = new AssessmentConfigurationV2(
             false, true, false, QuestionNavigationType.SEQUENTIAL);
 
         // Then
@@ -101,21 +101,21 @@ class AssessmentConfigurationTest {
     @Test
     void shouldSupportDataAnnotationMethods() {
         // Given
-        AssessmentConfiguration configuration1 = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration1 = AssessmentConfigurationV2.builder()
             .allowQuestionReview(true)
             .requireAllQuestions(false)
             .autoSave(true)
             .navigationMode(QuestionNavigationType.RANDOM)
             .build();
 
-        AssessmentConfiguration configuration2 = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration2 = AssessmentConfigurationV2.builder()
             .allowQuestionReview(true)
             .requireAllQuestions(false)
             .autoSave(true)
             .navigationMode(QuestionNavigationType.RANDOM)
             .build();
 
-        AssessmentConfiguration configuration3 = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration3 = AssessmentConfigurationV2.builder()
             .allowQuestionReview(false)
             .requireAllQuestions(false)
             .autoSave(true)
@@ -126,6 +126,6 @@ class AssessmentConfigurationTest {
         assertThat(configuration1).isEqualTo(configuration2);
         assertThat(configuration1).isNotEqualTo(configuration3);
         assertThat(configuration1.hashCode()).isEqualTo(configuration2.hashCode());
-        assertThat(configuration1.toString()).isNotNull().contains("AssessmentConfiguration");
+        assertThat(configuration1.toString()).isNotNull().contains("AssessmentConfigurationV2");
     }
 }
