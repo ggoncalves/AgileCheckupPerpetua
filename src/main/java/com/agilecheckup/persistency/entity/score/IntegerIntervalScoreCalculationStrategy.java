@@ -12,13 +12,7 @@ public class IntegerIntervalScoreCalculationStrategy extends AbstractScoreCalcul
   }
 
   private Double getPointsPerInterval() {
-    if (question != null) {
-      return question.getPoints() / numberOfOptions;
-    } else if (questionV2 != null) {
-      return questionV2.getPoints() / numberOfOptions;
-    } else {
-      throw new IllegalStateException("Both question and questionV2 are null");
-    }
+    return getQuestionPoints() / numberOfOptions;
   }
 
   private Integer getOption() {

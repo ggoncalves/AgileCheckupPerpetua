@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity;
 
-import com.agilecheckup.persistency.entity.base.DescribableEntity;
+import com.agilecheckup.persistency.entity.base.DescribableEntityV2;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class Category extends DescribableEntity {
+public class Category extends DescribableEntityV2 {
 
 
 }

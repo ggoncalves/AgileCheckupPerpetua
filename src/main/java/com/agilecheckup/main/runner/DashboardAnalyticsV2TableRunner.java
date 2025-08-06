@@ -20,7 +20,7 @@ import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
@@ -31,7 +31,7 @@ import com.agilecheckup.service.DashboardAnalyticsServiceV2;
 import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamServiceV2;
 import lombok.extern.log4j.Log4j2;
 
@@ -56,7 +56,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
     private PerformanceCycleServiceV2 performanceCycleServiceV2;
     private DepartmentServiceV2 departmentServiceV2;
     private TeamServiceV2 teamServiceV2;
-    private QuestionService questionService;
+    private QuestionServiceV2 questionService;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
     private final boolean shouldCleanAfterComplete;
@@ -65,7 +65,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
     private final List<DashboardAnalyticsV2> createdAnalytics = new ArrayList<>();
     private final List<EmployeeAssessmentV2> createdAssessments = new ArrayList<>();
     private final List<AnswerV2> createdAnswers = new ArrayList<>();
-    private final List<Question> createdQuestions = new ArrayList<>();
+    private final List<QuestionV2> createdQuestions = new ArrayList<>();
     private CompanyV2 testCompany;
     private PerformanceCycleV2 testPerformanceCycle;
     private DepartmentV2 testDepartment;
@@ -271,7 +271,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
             if (questionTypes[i] == QuestionType.CUSTOMIZED) {
                 // Create custom question with options
                 List<QuestionOption> options = createMockedQuestionOptionList("Method", 10.0, 20.0, 30.0);
-                Optional<Question> questionOpt = getQuestionService().createCustomQuestion(
+                Optional<QuestionV2> questionOpt = getQuestionService().createCustomQuestion(
                     questionTexts[i],
                     questionTypes[i],
                     testTenantId,
@@ -290,7 +290,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
                 }
             } else {
                 // Create regular question
-                Optional<Question> questionOpt = getQuestionService().create(
+                Optional<QuestionV2> questionOpt = getQuestionService().create(
                     questionTexts[i],
                     questionTypes[i],
                     testTenantId,
@@ -376,7 +376,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         // Create answers for each assessment
         for (EmployeeAssessmentV2 assessment : createdAssessments) {
             for (int i = 0; i < createdQuestions.size(); i++) {
-                Question question = createdQuestions.get(i);
+                QuestionV2 question = createdQuestions.get(i);
                 String value = generateAnswerValue(question.getQuestionType(), assessment, i);
                 
                 Optional<AnswerV2> answerOpt = getAnswerServiceV2().create(
@@ -710,9 +710,9 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         }
         
         // Delete created questions
-        for (Question question : createdQuestions) {
+        for (QuestionV2 question : createdQuestions) {
             try {
-                getQuestionService().delete(question);
+                getQuestionService().deleteById(question.getId());
                 log.info("✓ Cleaned up question: {}", question.getQuestion());
             } catch (Exception e) {
                 log.error("Error cleaning up question {}: {}", question.getQuestion(), e.getMessage());
@@ -874,10 +874,10 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         return teamServiceV2;
     }
 
-    private QuestionService getQuestionService() {
+    private QuestionServiceV2 getQuestionService() {
         if (questionService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            questionService = serviceComponent.buildQuestionService();
+            questionService = serviceComponent.buildQuestionServiceV2();
         }
         return questionService;
     }

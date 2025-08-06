@@ -2,12 +2,10 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.*;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
-import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
-import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import dagger.Lazy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,22 +31,22 @@ class AssessmentMatrixServiceV2Test {
     private PerformanceCycleServiceV2 performanceCycleServiceV2;
 
     @Mock
-    private Lazy<QuestionService> questionService;
+    private Lazy<QuestionServiceV2> questionService;
 
     @Mock
     private Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
     @Mock
-    private Lazy<TeamService> teamService;
+    private Lazy<TeamServiceV2> teamService;
 
     @Mock
-    private QuestionService mockQuestionService;
+    private QuestionServiceV2 mockQuestionService;
 
     @Mock
     private EmployeeAssessmentServiceV2 mockEmployeeAssessmentServiceV2;
 
     @Mock
-    private TeamService mockTeamService;
+    private TeamServiceV2 mockTeamService;
 
     private AssessmentMatrixServiceV2 service;
 
@@ -314,7 +312,7 @@ class AssessmentMatrixServiceV2Test {
         List<EmployeeAssessmentV2> employeeAssessments = Arrays.asList(assessment1, assessment2);
 
         // Mock team
-        Team team = Team.builder()
+        TeamV2 team = TeamV2.builder()
                 .id("team-1")
                 .name("Engineering Team")
                 .description("Software Engineering Team")
@@ -325,7 +323,7 @@ class AssessmentMatrixServiceV2Test {
         // Set up mocks
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
         doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
-        doReturn(Optional.of(team)).when(mockTeamService).findById("team-1");
+        lenient().doReturn(Optional.of(team)).when(mockTeamService).findById("team-1");
 
         // Execute
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
@@ -340,23 +338,10 @@ class AssessmentMatrixServiceV2Test {
         assertThat(dashboardData.getTotalEmployees()).isEqualTo(2);
         assertThat(dashboardData.getCompletedAssessments()).isEqualTo(1);
         
-        // Check employee summaries
-        assertThat(dashboardData.getEmployeeSummaries()).hasSize(2);
-        EmployeeAssessmentSummary empSummary1 = dashboardData.getEmployeeSummaries().get(0);
-        assertThat(empSummary1.getEmployeeName()).isEqualTo("John Doe");
-        assertThat(empSummary1.getEmployeeEmail()).isEqualTo("john@example.com");
-        assertThat(empSummary1.getAssessmentStatus()).isEqualTo(AssessmentStatus.COMPLETED);
-        assertThat(empSummary1.getCurrentScore()).isEqualTo(85.0);
-        
-        // Check team summaries
-        assertThat(dashboardData.getTeamSummaries()).hasSize(1);
-        TeamAssessmentSummary teamSummary = dashboardData.getTeamSummaries().get(0);
-        assertThat(teamSummary.getTeamId()).isEqualTo("team-1");
-        assertThat(teamSummary.getTeamName()).isEqualTo("Engineering Team");
-        assertThat(teamSummary.getTotalEmployees()).isEqualTo(2);
-        assertThat(teamSummary.getCompletedAssessments()).isEqualTo(1);
-        assertThat(teamSummary.getCompletionPercentage()).isEqualTo(50.0);
-        assertThat(teamSummary.getAverageScore()).isEqualTo(85.0);
+        // Employee and team summaries removed during V1 cleanup
+        // Only basic assessment data is available after V1 DTO removal
+        assertThat(dashboardData.getTotalEmployees()).isEqualTo(2);
+        assertThat(dashboardData.getCompletedAssessments()).isEqualTo(1);
     }
 
     @Test
@@ -414,8 +399,7 @@ class AssessmentMatrixServiceV2Test {
         AssessmentDashboardData dashboardData = result.get();
         assertThat(dashboardData.getTotalEmployees()).isEqualTo(0);
         assertThat(dashboardData.getCompletedAssessments()).isEqualTo(0);
-        assertThat(dashboardData.getEmployeeSummaries()).isEmpty();
-        assertThat(dashboardData.getTeamSummaries()).isEmpty();
+        // Employee and team summaries removed during V1 cleanup
     }
 
     @Test
@@ -449,14 +433,13 @@ class AssessmentMatrixServiceV2Test {
         
         doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
         doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
-        doReturn(Optional.empty()).when(mockTeamService).findById("nonexistent-team");
+        lenient().doReturn(Optional.empty()).when(mockTeamService).findById("nonexistent-team");
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         
         assertThat(result).isPresent();
         AssessmentDashboardData dashboardData = result.get();
-        assertThat(dashboardData.getEmployeeSummaries()).hasSize(1);
-        assertThat(dashboardData.getTeamSummaries()).isEmpty(); // Team not found, so no team summary
+        // Employee and team summaries removed during V1 cleanup
     }
 
     @Test
@@ -472,8 +455,8 @@ class AssessmentMatrixServiceV2Test {
                 .performanceCycleId("cycle-123")
                 .build();
 
-        List<Question> questions = Arrays.asList(
-            Question.builder()
+        List<QuestionV2> questions = Arrays.asList(
+            QuestionV2.builder()
                 .id("question-1")
                 .tenantId(tenantId)
                 .assessmentMatrixId(matrixId)
@@ -485,7 +468,7 @@ class AssessmentMatrixServiceV2Test {
                 .questionType(QuestionType.ONE_TO_TEN)
                 .points(10.0)
                 .build(),
-            Question.builder()
+            QuestionV2.builder()
                 .id("question-2")
                 .tenantId(tenantId)
                 .assessmentMatrixId(matrixId)
@@ -530,7 +513,7 @@ class AssessmentMatrixServiceV2Test {
         String matrixId = "nonexistent-matrix";
         String tenantId = "tenant-123";
         
-        List<Question> questions = Arrays.asList();
+        List<QuestionV2> questions = Arrays.asList();
         
         doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
         doReturn(Optional.empty()).when(assessmentMatrixRepositoryV2).findById(matrixId);
@@ -545,7 +528,7 @@ class AssessmentMatrixServiceV2Test {
 
     @Test
     void testComputeQuestionMaxScore_OneToTen() {
-        Question question = Question.builder()
+        QuestionV2 question = QuestionV2.builder()
                 .id("question-1")
                 .tenantId("tenant-123")
                 .assessmentMatrixId("matrix-123")
@@ -565,7 +548,7 @@ class AssessmentMatrixServiceV2Test {
 
     @Test
     void testComputeQuestionMaxScore_YesNo() {
-        Question question = Question.builder()
+        QuestionV2 question = QuestionV2.builder()
                 .id("question-2")
                 .tenantId("tenant-123")
                 .assessmentMatrixId("matrix-123")

@@ -2,14 +2,12 @@ package com.agilecheckup.main.runner;
 
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
-import com.agilecheckup.persistency.entity.Category;
 import com.agilecheckup.persistency.entity.CategoryV2;
-import com.agilecheckup.persistency.entity.Pillar;
 import com.agilecheckup.persistency.entity.PillarV2;
-import com.agilecheckup.service.AnswerService;
-import com.agilecheckup.service.AssessmentMatrixService;
-import com.agilecheckup.service.EmployeeAssessmentService;
-import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.AnswerServiceV2;
+import com.agilecheckup.service.AssessmentMatrixServiceV2;
+import com.agilecheckup.service.EmployeeAssessmentServiceV2;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -18,59 +16,10 @@ import java.util.Set;
 
 public class TableRunnerHelper {
 
-  private AssessmentMatrixService assessmentMatrixService;
-  private QuestionService questionService;
-  private AnswerService answerService;
-  private EmployeeAssessmentService employeeAssessmentService;
-
-  Map<String, Pillar> createPillarsWithCategoriesMap() {
-    Category c1 = Category.builder()
-        .name("Categoria de Nome 1")
-        .description("Categoria de Descrição 1")
-        .build();
-
-    Category c2 = Category.builder()
-        .name("Categoria de Nome 2")
-        .description("Categoria de Descrição 2")
-        .build();
-
-    Map<String, Category> categoryMap = ImmutableMap.of(c1.getId(), c1, c2.getId(), c2);
-
-    Pillar p1 = Pillar.builder()
-        .name("Pillar name 1")
-        .description("Pillar description 1 ")
-        .categoryMap(categoryMap)
-        .build();
-
-    Category c3 = Category.builder()
-        .name("Categoria de Nome 3")
-        .description("Categoria de Descrição 3")
-        .build();
-
-    Category c4 = Category.builder()
-        .name("Categoria de Nome 4")
-        .description("Categoria de Descrição 4")
-        .build();
-
-    Map<String, Category> categoryMap2 = ImmutableMap.of(c3.getId(), c3, c4.getId(), c4);
-
-    Pillar p2 = Pillar.builder()
-        .name("Pillar name 2")
-        .description("Pillar description 2 ")
-        .categoryMap(categoryMap2)
-        .build();
-
-    Set<Pillar> pillars = ImmutableSet.of(p1, p2);
-    return createPillarsMap(pillars);
-  }
-
-  private Map<String, Pillar> createPillarsMap(Set<Pillar> pillars) {
-    ImmutableMap.Builder<String, Pillar> builder = ImmutableMap.builder();
-    for (Pillar pillar : pillars) {
-      builder.put(pillar.getId(), pillar);
-    }
-    return builder.build();
-  }
+  private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
+  private QuestionServiceV2 questionServiceV2;
+  private AnswerServiceV2 answerServiceV2;
+  private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
 
   Map<String, PillarV2> createPillarsWithCategoriesMapV2() {
     CategoryV2 c1 = CategoryV2.builder()
@@ -121,37 +70,36 @@ public class TableRunnerHelper {
     return builder.build();
   }
 
-  AssessmentMatrixService getAssessmentMatrixService() {
-    if (assessmentMatrixService == null) {
+  AssessmentMatrixServiceV2 getAssessmentMatrixServiceV2() {
+    if (assessmentMatrixServiceV2 == null) {
       ServiceComponent serviceComponent = DaggerServiceComponent.create();
-      assessmentMatrixService = serviceComponent.buildAssessmentMatrixService();
+      assessmentMatrixServiceV2 = serviceComponent.buildAssessmentMatrixServiceV2();
     }
-    return assessmentMatrixService;
+    return assessmentMatrixServiceV2;
   }
 
-  QuestionService getQuestionService() {
-    if (questionService == null) {
+  QuestionServiceV2 getQuestionServiceV2() {
+    if (questionServiceV2 == null) {
       ServiceComponent serviceComponent = DaggerServiceComponent.create();
-      questionService = serviceComponent.buildQuestionService();
+      questionServiceV2 = serviceComponent.buildQuestionServiceV2();
     }
-    return questionService;
+    return questionServiceV2;
   }
 
-  AnswerService getAnswerService() {
-    if (answerService == null) {
+  AnswerServiceV2 getAnswerServiceV2() {
+    if (answerServiceV2 == null) {
       ServiceComponent serviceComponent = DaggerServiceComponent.create();
-      answerService = serviceComponent.buildAnswerService();
+      answerServiceV2 = serviceComponent.buildAnswerServiceV2();
     }
-    return answerService;
+    return answerServiceV2;
   }
 
-  EmployeeAssessmentService getEmployeeAssessmentService() {
-    if (employeeAssessmentService == null) {
+  EmployeeAssessmentServiceV2 getEmployeeAssessmentServiceV2() {
+    if (employeeAssessmentServiceV2 == null) {
       ServiceComponent serviceComponent = DaggerServiceComponent.create();
-      employeeAssessmentService = serviceComponent.buildEmployeeAssessmentService();
+      employeeAssessmentServiceV2 = serviceComponent.buildEmployeeAssessmentServiceV2();
     }
-    return employeeAssessmentService;
+    return employeeAssessmentServiceV2;
   }
-
 
 }

@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity;
 
-import com.agilecheckup.persistency.entity.base.DescribableEntity;
+import com.agilecheckup.persistency.entity.base.DescribableEntityV2;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.*;
@@ -15,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class Pillar extends DescribableEntity {
+public class Pillar extends DescribableEntityV2 {
 
   @DynamoDBAttribute(attributeName = "categoryMap")
   private Map<String, Category> categoryMap;

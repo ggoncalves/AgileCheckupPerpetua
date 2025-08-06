@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Domain DTO representing team-level assessment summary statistics.
+ * V2 Team assessment summary DTO for dashboard data.
  * 
  * @author Claude (claude-sonnet-4-20250514)
  */
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamAssessmentSummary {
+public class TeamAssessmentSummaryV2 {
     
     private String teamId;
     private String teamName;

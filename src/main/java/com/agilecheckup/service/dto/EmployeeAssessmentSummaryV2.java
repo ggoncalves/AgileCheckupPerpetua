@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * Domain DTO representing individual employee assessment summary.
+ * V2 Employee assessment summary DTO for dashboard data.
  * 
  * @author Claude (claude-sonnet-4-20250514)
  */
@@ -17,14 +17,16 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeAssessmentSummary {
+public class EmployeeAssessmentSummaryV2 {
     
     private String employeeAssessmentId;
+    private String employeeId;
     private String employeeName;
     private String employeeEmail;
     private String teamId;
+    private String teamName;
     private AssessmentStatus assessmentStatus;
-    private Integer answeredQuestions;
     private Double currentScore;
+    private Integer answeredQuestionCount;
     private LocalDateTime lastActivityDate;
 }

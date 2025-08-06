@@ -22,8 +22,8 @@ public class AssessmentDashboardData {
     private String assessmentMatrixId;
     private String matrixName;
     private PotentialScore potentialScore;
-    private List<TeamAssessmentSummary> teamSummaries;
-    private List<EmployeeAssessmentSummary> employeeSummaries;
+    private List<TeamAssessmentSummaryV2> teamSummaries;
+    private List<EmployeeAssessmentSummaryV2> employeeSummaries;
     private int totalEmployees;
     private int completedAssessments;
 }

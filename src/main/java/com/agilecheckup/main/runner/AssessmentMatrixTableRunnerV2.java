@@ -10,11 +10,11 @@ import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
 import lombok.extern.log4j.Log4j2;
 
@@ -31,14 +31,14 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
     private PerformanceCycleServiceV2 performanceCycleServiceV2;
     private CompanyServiceV2 companyServiceV2;
-    private QuestionService questionService;
+    private QuestionServiceV2 questionServiceV2;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
     private final boolean shouldCleanAfterComplete;
     
     // Test data tracking for cleanup
     private final List<AssessmentMatrixV2> createdMatrices = new ArrayList<>();
-    private final List<Question> createdQuestions = new ArrayList<>();
+    private final List<QuestionV2> createdQuestions = new ArrayList<>();
     private CompanyV2 testCompany;
     private PerformanceCycleV2 testPerformanceCycle;
     private final String testTenantId = "test-tenant-v2-" + System.currentTimeMillis();
@@ -371,7 +371,7 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
         
         CategoryV2 firstCategory = firstPillar.getCategoryMap().values().iterator().next();
         
-        Optional<Question> questionOpt = getQuestionService().create(
+        Optional<QuestionV2> questionOpt = getQuestionServiceV2().create(
             "Test Question V2",
             QuestionType.STAR_FIVE,
             testTenantId,
@@ -436,9 +436,9 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
         }
         
         // Delete test questions
-        for (Question question : createdQuestions) {
+        for (QuestionV2 question : createdQuestions) {
             try {
-                getQuestionService().delete(question);
+                getQuestionServiceV2().deleteById(question.getId());
                 log.info("✓ Cleaned up question: {}", question.getQuestion());
             } catch (Exception e) {
                 log.error("Error cleaning up question {}: {}", question.getQuestion(), e.getMessage());
@@ -502,10 +502,11 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
         return companyServiceV2;
     }
 
-    private QuestionService getQuestionService() {
-        if (questionService == null) {
-            questionService = tableRunnerHelper.getQuestionService();
+    private QuestionServiceV2 getQuestionServiceV2() {
+        if (questionServiceV2 == null) {
+            ServiceComponent serviceComponent = DaggerServiceComponent.create();
+            questionServiceV2 = serviceComponent.buildQuestionServiceV2();
         }
-        return questionService;
+        return questionServiceV2;
     }
 }
