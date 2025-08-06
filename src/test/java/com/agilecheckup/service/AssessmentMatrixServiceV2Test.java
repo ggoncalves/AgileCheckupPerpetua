@@ -1,9 +1,17 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.*;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.AssessmentConfigurationV2;
+import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScoreV2;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
+import com.agilecheckup.persistency.entity.PerformanceCycleV2;
+import com.agilecheckup.persistency.entity.PillarV2;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.TeamV2;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
-import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
 import dagger.Lazy;
@@ -13,7 +21,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -115,7 +129,7 @@ class AssessmentMatrixServiceV2Test {
         String tenantId = "tenant-123";
         String performanceCycleId = "cycle-123";
         Map<String, PillarV2> pillarMap = new HashMap<>();
-        AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder()
                 .allowQuestionReview(false)
                 .requireAllQuestions(true)
                 .build();
@@ -182,7 +196,7 @@ class AssessmentMatrixServiceV2Test {
 
     @Test
     void testCreateDefaultConfiguration() {
-        AssessmentConfiguration config = service.createDefaultConfiguration();
+        AssessmentConfigurationV2 config = service.createDefaultConfiguration();
 
         assertThat(config).isNotNull();
         assertThat(config.getAllowQuestionReview()).isTrue();
@@ -258,7 +272,7 @@ class AssessmentMatrixServiceV2Test {
         String tenantId = "tenant-123";
         
         // Mock the assessment matrix
-        PotentialScore potentialScore = PotentialScore.builder()
+        PotentialScoreV2 potentialScore = PotentialScoreV2.builder()
                 .score(100.0)
                 .build();
                 
@@ -272,17 +286,17 @@ class AssessmentMatrixServiceV2Test {
                 .build();
 
         // Mock employee assessments
-        NaturalPerson employee1 = NaturalPerson.builder()
+        NaturalPersonV2 employee1 = NaturalPersonV2.builder()
                 .name("John Doe")
                 .email("john@example.com")
                 .build();
                 
-        NaturalPerson employee2 = NaturalPerson.builder()
+        NaturalPersonV2 employee2 = NaturalPersonV2.builder()
                 .name("Jane Smith")
                 .email("jane@example.com")
                 .build();
 
-        EmployeeAssessmentScore score1 = EmployeeAssessmentScore.builder()
+        EmployeeAssessmentScoreV2 score1 = EmployeeAssessmentScoreV2.builder()
                 .score(85.0)
                 .build();
 
@@ -415,7 +429,7 @@ class AssessmentMatrixServiceV2Test {
                 .performanceCycleId("cycle-123")
                 .build();
 
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
                 .name("John Doe")
                 .email("john@example.com")
                 .build();
@@ -488,7 +502,7 @@ class AssessmentMatrixServiceV2Test {
                 .description("Test Description")
                 .tenantId(tenantId)
                 .performanceCycleId("cycle-123")
-                .potentialScore(PotentialScore.builder()
+                .potentialScore(PotentialScoreV2.builder()
                     .score(15.0)
                     .build())
                 .build();

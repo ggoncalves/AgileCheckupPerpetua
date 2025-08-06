@@ -10,7 +10,7 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DashboardAnalyticsV2;
 import com.agilecheckup.persistency.entity.DepartmentV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
-import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScoreV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
@@ -21,9 +21,10 @@ import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
-import com.agilecheckup.persistency.entity.score.CategoryScore;
-import com.agilecheckup.persistency.entity.score.PillarScore;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
+import com.agilecheckup.persistency.entity.score.CategoryScoreV2;
+import com.agilecheckup.persistency.entity.score.PillarScoreV2;
+import com.agilecheckup.persistency.entity.score.QuestionScoreV2;
 import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.CompanyServiceV2;
@@ -270,7 +271,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         for (int i = 0; i < questionTexts.length; i++) {
             if (questionTypes[i] == QuestionType.CUSTOMIZED) {
                 // Create custom question with options
-                List<QuestionOption> options = createMockedQuestionOptionList("Method", 10.0, 20.0, 30.0);
+                List<QuestionOptionV2> options = createMockedQuestionOptionList("Method", 10.0, 20.0, 30.0);
                 Optional<QuestionV2> questionOpt = getQuestionService().createCustomQuestion(
                     questionTexts[i],
                     questionTypes[i],
@@ -425,7 +426,7 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         }
     }
 
-    private EmployeeAssessmentScore createMockEmployeeAssessmentScore(EmployeeAssessmentV2 assessment) {
+    private EmployeeAssessmentScoreV2 createMockEmployeeAssessmentScore(EmployeeAssessmentV2 assessment) {
         // Create realistic scores based on team
         boolean isTeam1 = assessment.getTeamId().equals(testTeam1.getId());
         double baseScore = isTeam1 ? 85.0 : 75.0;
@@ -438,25 +439,57 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
             baseScore -= 5.0;
         }
         
-        Map<String, PillarScore> pillarScoreMap = new HashMap<>();
-        String firstPillarId = testAssessmentMatrix.getPillarMap().keySet().iterator().next();
+        Map<String, PillarScoreV2> pillarScoreMap = new HashMap<>();
         
-        Map<String, CategoryScore> categoryScoreMap = new HashMap<>();
-        String firstCategoryId = testAssessmentMatrix.getPillarMap().values().iterator().next()
-            .getCategoryMap().keySet().iterator().next();
+        // Create scores for all pillars with category breakdowns
+        for (Map.Entry<String, PillarV2> pillarEntry : testAssessmentMatrix.getPillarMap().entrySet()) {
+            String pillarId = pillarEntry.getKey();
+            PillarV2 pillar = pillarEntry.getValue();
+            
+            Map<String, CategoryScoreV2> categoryScoreMap = new HashMap<>();
+            double pillarTotalScore = 0.0;
+            
+            // Create scores for all categories in this pillar
+            for (Map.Entry<String, CategoryV2> categoryEntry : pillar.getCategoryMap().entrySet()) {
+                String categoryId = categoryEntry.getKey();
+                CategoryV2 category = categoryEntry.getValue();
+                
+                // Create question scores for this category
+                List<QuestionScoreV2> questionScores = new ArrayList<>();
+                double categoryScore = baseScore - (Math.random() * 10.0); // Add some variation
+                
+                for (int i = 0; i < 3; i++) { // Mock 3 questions per category
+                    questionScores.add(QuestionScoreV2.builder()
+                        .questionId("question-" + categoryId + "-" + i)
+                        .score(categoryScore / 3.0)
+                        .build());
+                }
+                
+                categoryScoreMap.put(categoryId, CategoryScoreV2.builder()
+                    .categoryId(categoryId)
+                    .categoryName(category.getName())
+                    .score(categoryScore)
+                    .questionScores(questionScores)
+                    .build());
+                
+                pillarTotalScore += categoryScore;
+            }
+            
+            pillarScoreMap.put(pillarId, PillarScoreV2.builder()
+                .pillarId(pillarId)
+                .pillarName(pillar.getName())
+                .score(pillarTotalScore)
+                .categoryIdToCategoryScoreMap(categoryScoreMap)
+                .build());
+        }
         
-        categoryScoreMap.put(firstCategoryId, CategoryScore.builder()
-            .categoryName("Test Category")
-            .score(baseScore - 5.0)
-            .build());
+        // Calculate total score from all pillars
+        double totalScore = pillarScoreMap.values().stream()
+            .mapToDouble(PillarScoreV2::getScore)
+            .sum();
         
-        pillarScoreMap.put(firstPillarId, PillarScore.builder()
-            .score(baseScore)
-            .categoryIdToCategoryScoreMap(categoryScoreMap)
-            .build());
-        
-        return EmployeeAssessmentScore.builder()
-            .score(baseScore)
+        return EmployeeAssessmentScoreV2.builder()
+            .score(totalScore)
             .pillarIdToPillarScoreMap(pillarScoreMap)
             .build();
     }
@@ -640,6 +673,13 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
                 isValid = false;
             }
             
+            // Test category breakdowns within each pillar
+            boolean categoriesValid = testCategoryBreakdowns(analytics);
+            if (!categoriesValid) {
+                issues.add("Missing category breakdowns within pillars");
+                isValid = false;
+            }
+            
             if (isValid) {
                 log.info("✓ Analytics data verification passed for {}: {}", 
                     analytics.getScope(), 
@@ -651,6 +691,101 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         }
         
         log.info("Data verification completed for {} analytics records", createdAnalytics.size());
+    }
+    
+    private boolean testCategoryBreakdowns(DashboardAnalyticsV2 analytics) {
+        log.info("Testing category breakdowns within pillars for {}: {}", 
+            analytics.getScope(), 
+            analytics.getScope() == AnalyticsScope.TEAM ? analytics.getTeamName() : "Overview");
+        
+        String analyticsDataJson = analytics.getAnalyticsDataJson();
+        if (analyticsDataJson == null || analyticsDataJson.isEmpty() || "{}".equals(analyticsDataJson)) {
+            log.warn("✗ No analytics data JSON found");
+            return false;
+        }
+        
+        try {
+            // Parse the JSON to verify structure
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> analyticsData = mapper.readValue(analyticsDataJson, Map.class);
+            
+            // Check if pillars exist
+            @SuppressWarnings("unchecked")
+            Map<String, Object> pillars = (Map<String, Object>) analyticsData.get("pillars");
+            if (pillars == null || pillars.isEmpty()) {
+                log.warn("✗ No pillars found in analytics data");
+                return false;
+            }
+            
+            // Check each pillar for categories
+            boolean allPillarsHaveCategories = true;
+            int totalPillars = 0;
+            int pillarsWithCategories = 0;
+            int totalCategories = 0;
+            
+            for (Map.Entry<String, Object> pillarEntry : pillars.entrySet()) {
+                String pillarId = pillarEntry.getKey();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> pillarData = (Map<String, Object>) pillarEntry.getValue();
+                
+                totalPillars++;
+                String pillarName = (String) pillarData.get("name");
+                
+                // Check if categories exist within this pillar
+                @SuppressWarnings("unchecked")
+                Map<String, Object> categories = (Map<String, Object>) pillarData.get("categories");
+                if (categories == null || categories.isEmpty()) {
+                    log.warn("✗ No categories found within pillar '{}' ({})", pillarName, pillarId);
+                    allPillarsHaveCategories = false;
+                } else {
+                    pillarsWithCategories++;
+                    int categoriesInThisPillar = categories.size();
+                    totalCategories += categoriesInThisPillar;
+                    
+                    log.info("✓ Found {} categories within pillar '{}' ({})", 
+                        categoriesInThisPillar, pillarName, pillarId);
+                    
+                    // Verify each category has required fields
+                    for (Map.Entry<String, Object> categoryEntry : categories.entrySet()) {
+                        String categoryId = categoryEntry.getKey();
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> categoryData = (Map<String, Object>) categoryEntry.getValue();
+                        
+                        String categoryName = (String) categoryData.get("name");
+                        Double percentage = (Double) categoryData.get("percentage");
+                        Double actualScore = (Double) categoryData.get("actualScore");
+                        Double potentialScore = (Double) categoryData.get("potentialScore");
+                        
+                        if (categoryName == null || percentage == null || actualScore == null || potentialScore == null) {
+                            log.warn("✗ Incomplete category data for '{}' ({}) in pillar '{}'", 
+                                categoryName, categoryId, pillarName);
+                            allPillarsHaveCategories = false;
+                        } else {
+                            log.info("  ✓ Category '{}' ({}): {}% ({}/{} points)", 
+                                categoryName, categoryId, percentage, actualScore, potentialScore);
+                        }
+                    }
+                }
+            }
+            
+            log.info("Category breakdown verification results:");
+            log.info("  Total pillars: {}", totalPillars);
+            log.info("  Pillars with categories: {}", pillarsWithCategories);
+            log.info("  Total categories found: {}", totalCategories);
+            
+            if (allPillarsHaveCategories && totalCategories > 0) {
+                log.info("✓ All pillars have category breakdowns with valid data");
+                return true;
+            } else {
+                log.warn("✗ Category breakdown verification failed");
+                return false;
+            }
+            
+        } catch (Exception e) {
+            log.error("✗ Error parsing analytics data JSON for category verification: {}", e.getMessage());
+            return false;
+        }
     }
 
     private NaturalPersonV2 createTestEmployee(String name, String email, String documentNumber) {
@@ -664,14 +799,14 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
             .build();
     }
 
-    private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
+    private List<QuestionOptionV2> createMockedQuestionOptionList(String prefix, Double... points) {
         return IntStream.range(0, points.length)
             .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
             .collect(Collectors.toList());
     }
 
-    private QuestionOption createQuestionOption(Integer id, String prefix, double points) {
-        return QuestionOption.builder()
+    private QuestionOptionV2 createQuestionOption(Integer id, String prefix, double points) {
+        return QuestionOptionV2.builder()
             .id(id)
             .text(prefix + " " + id)
             .points(points)
@@ -719,8 +854,15 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
             }
         }
         
-        // Note: Analytics are automatically cleaned up when assessments are deleted
-        // as they are regenerated based on existing assessment data
+        // Delete created analytics explicitly (even though they may be auto-cleaned)
+        for (DashboardAnalyticsV2 analytics : createdAnalytics) {
+            try {
+                getDashboardAnalyticsServiceV2().deleteById(analytics.getCompanyPerformanceCycleId(), analytics.getAssessmentMatrixScopeId());
+                log.info("✓ Cleaned up analytics: {}", analytics.getAssessmentMatrixScopeId());
+            } catch (Exception e) {
+                log.error("Error cleaning up analytics {}: {}", analytics.getAssessmentMatrixScopeId(), e.getMessage());
+            }
+        }
         
         // Delete test assessment matrix
         if (testAssessmentMatrix != null) {
@@ -807,6 +949,12 @@ public class DashboardAnalyticsV2TableRunner implements CrudRunner {
         
         log.info("Cleanup completed. Cleaned {} analytics, {} assessments, {} answers, {} questions, 1 matrix, 1 cycle, 2 teams, 1 department, 1 company", 
             createdAnalytics.size(), createdAssessments.size(), createdAnswers.size(), createdQuestions.size());
+        
+        // Clear all tracking lists
+        createdAnalytics.clear();
+        createdAssessments.clear();
+        createdAnswers.clear();
+        createdQuestions.clear();
     }
 
     // Service getters with lazy initialization

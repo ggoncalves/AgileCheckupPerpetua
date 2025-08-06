@@ -1,6 +1,5 @@
 package com.agilecheckup.persistency.entity;
 
-import com.agilecheckup.persistency.entity.score.PotentialScore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,7 +15,7 @@ class AssessmentMatrixV2Test {
     @Test
     void testEntityCreation() {
         Map<String, PillarV2> pillarMap = new HashMap<>();
-        AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 configuration = AssessmentConfigurationV2.builder()
                 .allowQuestionReview(true)
                 .requireAllQuestions(false)
                 .autoSave(true)

@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -10,14 +10,14 @@ import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-public class PotentialScoreAttributeConverter implements AttributeConverter<PotentialScore> {
+public class PotentialScoreAttributeConverter implements AttributeConverter<PotentialScoreV2> {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setDateFormat(new StdDateFormat());
 
     @Override
-    public AttributeValue transformFrom(PotentialScore input) {
+    public AttributeValue transformFrom(PotentialScoreV2 input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
@@ -25,12 +25,12 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
             String jsonString = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(jsonString).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize PotentialScore", e);
+            throw new RuntimeException("Failed to serialize PotentialScoreV2", e);
         }
     }
 
     @Override
-    public PotentialScore transformTo(AttributeValue input) {
+    public PotentialScoreV2 transformTo(AttributeValue input) {
         if (input.nul() != null && input.nul()) {
             return null;
         }
@@ -41,15 +41,15 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
         }
         
         try {
-            return OBJECT_MAPPER.readValue(content, PotentialScore.class);
+            return OBJECT_MAPPER.readValue(content, PotentialScoreV2.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize PotentialScore", e);
+            throw new RuntimeException("Failed to deserialize PotentialScoreV2", e);
         }
     }
 
     @Override
-    public EnhancedType<PotentialScore> type() {
-        return EnhancedType.of(PotentialScore.class);
+    public EnhancedType<PotentialScoreV2> type() {
+        return EnhancedType.of(PotentialScoreV2.class);
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.agilecheckup.main.runner;
 
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentConfigurationV2;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.CompanyV2;
@@ -159,7 +159,7 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
         }
         
         // Create matrix with custom configuration
-        AssessmentConfiguration customConfig = AssessmentConfiguration.builder()
+        AssessmentConfigurationV2 customConfig = AssessmentConfigurationV2.builder()
             .allowQuestionReview(false)
             .requireAllQuestions(true)
             .autoSave(false)
@@ -221,7 +221,7 @@ public class AssessmentMatrixTableRunnerV2 implements CrudRunner {
         // Update with custom configuration
         if (createdMatrices.size() > 1) {
             AssessmentMatrixV2 matrix2 = createdMatrices.get(1);
-            AssessmentConfiguration newConfig = AssessmentConfiguration.builder()
+            AssessmentConfigurationV2 newConfig = AssessmentConfigurationV2.builder()
                 .allowQuestionReview(true)
                 .requireAllQuestions(false)
                 .autoSave(true)

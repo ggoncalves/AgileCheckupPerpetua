@@ -18,7 +18,7 @@ import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
 import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.CompanyServiceV2;
@@ -269,7 +269,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         for (int i = 0; i < questionTexts.length; i++) {
             if (questionTypes[i] == QuestionType.CUSTOMIZED) {
                 // Create custom question with options
-                List<QuestionOption> options = createMockedQuestionOptionList("Option", 5.0, 10.0, 15.0);
+                List<QuestionOptionV2> options = createMockedQuestionOptionList("Option", 5.0, 10.0, 15.0);
                 Optional<QuestionV2> questionOpt = getQuestionServiceV2().createCustomQuestion(
                     questionTexts[i],
                     questionTypes[i],
@@ -795,14 +795,14 @@ public class AnswerV2TableRunner implements CrudRunner {
         log.info("Delete operations completed. Remaining answers: {}", createdAnswers.size());
     }
 
-    private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
+    private List<QuestionOptionV2> createMockedQuestionOptionList(String prefix, Double... points) {
         return IntStream.range(0, points.length)
             .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
             .collect(Collectors.toList());
     }
 
-    private QuestionOption createQuestionOption(Integer id, String prefix, double points) {
-        return QuestionOption.builder()
+    private QuestionOptionV2 createQuestionOption(Integer id, String prefix, double points) {
+        return QuestionOptionV2.builder()
             .id(id)
             .text(prefix + " " + id)
             .points(points)

@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentConfigurationV2;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
@@ -81,7 +81,7 @@ public class AssessmentNavigationServiceV2 {
       return null;
     }
     
-    AssessmentConfiguration config = assessmentMatrixService.getEffectiveConfiguration(matrix);
+    AssessmentConfigurationV2 config = assessmentMatrixService.getEffectiveConfiguration(matrix);
     return selectQuestionByNavigationMode(unansweredQuestions, config.getNavigationMode(), assessment.getId());
   }
   

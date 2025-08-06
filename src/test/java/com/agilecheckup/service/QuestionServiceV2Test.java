@@ -4,8 +4,8 @@ import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.OptionGroup;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.question.OptionGroupV2;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
 import com.agilecheckup.service.exception.InvalidCustomOptionListException;
@@ -16,15 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class QuestionServiceV2Test {
@@ -76,9 +78,9 @@ class QuestionServiceV2Test {
         String tenantId = "tenant-123";
         boolean isMultipleChoice = true;
         boolean showFlushed = false;
-        List<QuestionOption> options = Arrays.asList(
-                QuestionOption.builder().id(1).text("Option 1").points(10.0).build(),
-                QuestionOption.builder().id(2).text("Option 2").points(20.0).build()
+        List<QuestionOptionV2> options = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("Option 1").points(10.0).build(),
+                QuestionOptionV2.builder().id(2).text("Option 2").points(20.0).build()
         );
         String assessmentMatrixId = "matrix-123";
         String pillarId = "pillar-456";
@@ -137,10 +139,10 @@ class QuestionServiceV2Test {
         String tenantId = "tenant-123";
         boolean isMultipleChoice = false;
         boolean showFlushed = true;
-        List<QuestionOption> options = Arrays.asList(
-                QuestionOption.builder().id(1).text("New Option 1").points(15.0).build(),
-                QuestionOption.builder().id(2).text("New Option 2").points(25.0).build(),
-                QuestionOption.builder().id(3).text("New Option 3").points(35.0).build()
+        List<QuestionOptionV2> options = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("New Option 1").points(15.0).build(),
+                QuestionOptionV2.builder().id(2).text("New Option 2").points(25.0).build(),
+                QuestionOptionV2.builder().id(3).text("New Option 3").points(35.0).build()
         );
         String assessmentMatrixId = "matrix-123";
         String pillarId = "pillar-456";
@@ -241,7 +243,7 @@ class QuestionServiceV2Test {
 
     @Test
     void testValidateQuestionOptions_EmptyOptions() {
-        List<QuestionOption> emptyOptions = Arrays.asList();
+        List<QuestionOptionV2> emptyOptions = Arrays.asList();
 
         assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, emptyOptions, "matrix-123", "pillar-1", "category-1", "desc"))
                 .isInstanceOf(InvalidCustomOptionListException.class);
@@ -249,8 +251,8 @@ class QuestionServiceV2Test {
 
     @Test
     void testValidateQuestionOptions_TooFewOptions() {
-        List<QuestionOption> tooFewOptions = Arrays.asList(
-                QuestionOption.builder().id(1).text("Only option").points(10.0).build()
+        List<QuestionOptionV2> tooFewOptions = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("Only option").points(10.0).build()
         );
 
         assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, tooFewOptions, "matrix-123", "pillar-1", "category-1", "desc"))
@@ -259,9 +261,9 @@ class QuestionServiceV2Test {
 
     @Test
     void testValidateQuestionOptions_EmptyOptionText() {
-        List<QuestionOption> optionsWithEmptyText = Arrays.asList(
-                QuestionOption.builder().id(1).text("Valid option").points(10.0).build(),
-                QuestionOption.builder().id(2).text("").points(20.0).build()
+        List<QuestionOptionV2> optionsWithEmptyText = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("Valid option").points(10.0).build(),
+                QuestionOptionV2.builder().id(2).text("").points(20.0).build()
         );
 
         assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, optionsWithEmptyText, "matrix-123", "pillar-1", "category-1", "desc"))
@@ -270,9 +272,9 @@ class QuestionServiceV2Test {
 
     @Test
     void testValidateQuestionOptions_InvalidOptionIds() {
-        List<QuestionOption> invalidIdOptions = Arrays.asList(
-                QuestionOption.builder().id(1).text("Option 1").points(10.0).build(),
-                QuestionOption.builder().id(3).text("Option 3").points(30.0).build() // Missing id 2
+        List<QuestionOptionV2> invalidIdOptions = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("Option 1").points(10.0).build(),
+                QuestionOptionV2.builder().id(3).text("Option 3").points(30.0).build() // Missing id 2
         );
 
         assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, invalidIdOptions, "matrix-123", "pillar-1", "category-1", "desc"))
@@ -281,13 +283,13 @@ class QuestionServiceV2Test {
 
     @Test
     void testToOptionMap() {
-        List<QuestionOption> options = Arrays.asList(
-                QuestionOption.builder().id(1).text("Option 1").points(10.0).build(),
-                QuestionOption.builder().id(2).text("Option 2").points(20.0).build(),
-                QuestionOption.builder().id(3).text("Option 3").points(30.0).build()
+        List<QuestionOptionV2> options = Arrays.asList(
+                QuestionOptionV2.builder().id(1).text("Option 1").points(10.0).build(),
+                QuestionOptionV2.builder().id(2).text("Option 2").points(20.0).build(),
+                QuestionOptionV2.builder().id(3).text("Option 3").points(30.0).build()
         );
 
-        Map<Integer, QuestionOption> result = service.toOptionMap(options);
+        Map<Integer, QuestionOptionV2> result = service.toOptionMap(options);
 
         assertThat(result).hasSize(3);
         assertThat(result.get(1).getText()).isEqualTo("Option 1");
@@ -347,13 +349,13 @@ class QuestionServiceV2Test {
                 .build();
     }
 
-    private QuestionV2 createMockCustomQuestion(String id, String questionText, String tenantId, String assessmentMatrixId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
-        Map<Integer, QuestionOption> optionMap = new HashMap<>();
-        for (QuestionOption option : options) {
+    private QuestionV2 createMockCustomQuestion(String id, String questionText, String tenantId, String assessmentMatrixId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOptionV2> options) {
+        Map<Integer, QuestionOptionV2> optionMap = new HashMap<>();
+        for (QuestionOptionV2 option : options) {
             optionMap.put(option.getId(), option);
         }
 
-        OptionGroup optionGroup = OptionGroup.builder()
+        OptionGroupV2 optionGroup = OptionGroupV2.builder()
                 .isMultipleChoice(isMultipleChoice)
                 .showFlushed(showFlushed)
                 .optionMap(optionMap)

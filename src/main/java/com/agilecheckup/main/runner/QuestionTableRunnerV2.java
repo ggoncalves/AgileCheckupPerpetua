@@ -8,7 +8,7 @@ import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.CompanyServiceV2;
@@ -226,7 +226,7 @@ public class QuestionTableRunnerV2 implements CrudRunner {
         }
         
         // Create CUSTOMIZED question with options
-        List<QuestionOption> customOptions = createMockedQuestionOptionList("Choice", 5.0, 10.0, 15.0, 20.0);
+        List<QuestionOptionV2> customOptions = createMockedQuestionOptionList("Choice", 5.0, 10.0, 15.0, 20.0);
         Optional<QuestionV2> customQuestionOpt = getQuestionServiceV2().createCustomQuestion(
             "Which agile practices does your team use most?",
             QuestionType.CUSTOMIZED,
@@ -359,7 +359,7 @@ public class QuestionTableRunnerV2 implements CrudRunner {
             
         if (customQuestionToUpdate != null) {
             String originalQuestion = customQuestionToUpdate.getQuestion();
-            List<QuestionOption> updatedOptions = createMockedQuestionOptionList("Updated", 8.0, 16.0, 24.0);
+            List<QuestionOptionV2> updatedOptions = createMockedQuestionOptionList("Updated", 8.0, 16.0, 24.0);
             
             Optional<QuestionV2> updatedCustomQuestionOpt = getQuestionServiceV2().updateCustomQuestion(
                 customQuestionToUpdate.getId(),
@@ -562,14 +562,14 @@ public class QuestionTableRunnerV2 implements CrudRunner {
         log.info("Delete operations completed. Remaining questions: {}", createdQuestions.size());
     }
 
-    private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
+    private List<QuestionOptionV2> createMockedQuestionOptionList(String prefix, Double... points) {
         return IntStream.range(0, points.length)
             .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
             .collect(Collectors.toList());
     }
 
-    private QuestionOption createQuestionOption(Integer id, String prefix, double points) {
-        return QuestionOption.builder()
+    private QuestionOptionV2 createQuestionOption(Integer id, String prefix, double points) {
+        return QuestionOptionV2.builder()
             .id(id)
             .text(prefix + " " + id)
             .points(points)

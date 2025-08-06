@@ -6,14 +6,14 @@ import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.CompanyV2;
 import com.agilecheckup.persistency.entity.DashboardAnalyticsV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
-import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScoreV2;
 import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.score.CategoryScore;
-import com.agilecheckup.persistency.entity.score.PillarScore;
-import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.entity.score.CategoryScoreV2;
+import com.agilecheckup.persistency.entity.score.PillarScoreV2;
+import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
 import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepositoryV2;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
@@ -304,16 +304,16 @@ public class DashboardAnalyticsServiceV2 {
             List<EmployeeAssessmentV2> completedAssessments, AssessmentMatrixV2 matrix) {
         
         Map<String, Object> pillarAnalytics = new HashMap<>();
-        PotentialScore potentialScore = matrix.getPotentialScore();
+        PotentialScoreV2 potentialScore = matrix.getPotentialScore();
         
         if (potentialScore == null || potentialScore.getPillarIdToPillarScoreMap() == null) {
             return pillarAnalytics;
         }
         
-        Map<String, List<PillarScore>> pillarScores = new HashMap<>();
+        Map<String, List<PillarScoreV2>> pillarScores = new HashMap<>();
         
         for (EmployeeAssessmentV2 assessment : completedAssessments) {
-            EmployeeAssessmentScore score = assessment.getEmployeeAssessmentScore();
+            EmployeeAssessmentScoreV2 score = assessment.getEmployeeAssessmentScore();
             if (score != null && score.getPillarIdToPillarScoreMap() != null) {
                 score.getPillarIdToPillarScoreMap().forEach((pillarId, pillarScore) -> {
                     pillarScores.computeIfAbsent(pillarId, k -> new ArrayList<>()).add(pillarScore);
@@ -322,18 +322,24 @@ public class DashboardAnalyticsServiceV2 {
         }
         
         pillarScores.forEach((pillarId, scores) -> {
+            log.info("=== calculatePillarAnalytics processing pillarId: {} ===", pillarId);
+            log.info("Number of scores for this pillar: {}", scores.size());
+            
             Map<String, Object> pillarData = new HashMap<>();
             
             PillarV2 pillar = matrix.getPillarMap().get(pillarId);
             String pillarName = pillar != null ? pillar.getName() : pillarId;
             
             double avgActualScore = scores.stream()
-                    .mapToDouble(PillarScore::getScore)
+                    .mapToDouble(PillarScoreV2::getScore)
                     .average()
                     .orElse(0.0);
             
-            PillarScore potentialPillarScore = potentialScore.getPillarIdToPillarScoreMap().get(pillarId);
+            PillarScoreV2 potentialPillarScore = potentialScore.getPillarIdToPillarScoreMap().get(pillarId);
             double maxScore = potentialPillarScore != null ? potentialPillarScore.getScore() : 100.0;
+            
+            log.info("Pillar {} - avgActualScore: {}, maxScore: {}", pillarId, avgActualScore, maxScore);
+            log.info("About to call calculateCategoryAnalytics for pillar: {}", pillarId);
             
             double percentage = calculatePercentage(avgActualScore, maxScore);
             double gapFromPotential = 100.0 - percentage;
@@ -344,49 +350,88 @@ public class DashboardAnalyticsServiceV2 {
             pillarData.put("potentialScore", maxScore);
             pillarData.put("gapFromPotential", gapFromPotential);
             
-            pillarData.put("categories", calculateCategoryAnalytics(pillarId, scores, potentialPillarScore));
+            Map<String, Object> categoryAnalyticsResult = calculateCategoryAnalytics(pillarId, scores, potentialPillarScore);
+            log.info("calculateCategoryAnalytics returned {} categories for pillar {}", categoryAnalyticsResult.size(), pillarId);
+            pillarData.put("categories", categoryAnalyticsResult);
             
             pillarAnalytics.put(pillarId, pillarData);
+            log.info("=== Finished processing pillar: {} ===", pillarId);
         });
         
         return pillarAnalytics;
     }
 
     private Map<String, Object> calculateCategoryAnalytics(
-            String pillarId, List<PillarScore> pillarScores, PillarScore potentialPillarScore) {
+            String pillarId, List<PillarScoreV2> pillarScores, PillarScoreV2 potentialPillarScore) {
+        
+        log.info("=== calculateCategoryAnalytics DEBUG START ===");
+        log.info("Method called for pillarId: {}", pillarId);
+        log.info("pillarScores parameter size: {}", pillarScores != null ? pillarScores.size() : "NULL");
+        log.info("potentialPillarScore parameter: {}", potentialPillarScore != null ? "PRESENT" : "NULL");
+        
+        if (potentialPillarScore != null) {
+            log.info("potentialPillarScore pillarId: {}", potentialPillarScore.getPillarId());
+            log.info("potentialPillarScore categoryMap size: {}", 
+                potentialPillarScore.getCategoryIdToCategoryScoreMap() != null ? 
+                potentialPillarScore.getCategoryIdToCategoryScoreMap().size() : "NULL");
+        }
         
         Map<String, Object> categoryAnalytics = new HashMap<>();
+        Map<String, List<CategoryScoreV2>> categoryScores = new HashMap<>();
         
-        Map<String, List<CategoryScore>> categoryScores = new HashMap<>();
-        
-        for (PillarScore pillarScore : pillarScores) {
+        // Debug: Log each pillar score being processed
+        log.info("Processing {} pillar scores for category aggregation...", pillarScores.size());
+        for (int i = 0; i < pillarScores.size(); i++) {
+            PillarScoreV2 pillarScore = pillarScores.get(i);
+            log.info("PillarScore[{}]: pillarId={}, categoryMap size={}", 
+                i, 
+                pillarScore.getPillarId(),
+                pillarScore.getCategoryIdToCategoryScoreMap() != null ? pillarScore.getCategoryIdToCategoryScoreMap().size() : "NULL");
+            
             if (pillarScore.getCategoryIdToCategoryScoreMap() != null) {
                 pillarScore.getCategoryIdToCategoryScoreMap().forEach((categoryId, categoryScore) -> {
+                    log.info("  Adding category: {} (name: {}, score: {}) to aggregation", 
+                        categoryId, categoryScore.getCategoryName(), categoryScore.getScore());
                     categoryScores.computeIfAbsent(categoryId, k -> new ArrayList<>()).add(categoryScore);
                 });
+            } else {
+                log.warn("PillarScore[{}] has NULL categoryIdToCategoryScoreMap", i);
             }
         }
         
+        log.info("After aggregation, found {} unique categories: {}", 
+            categoryScores.size(), categoryScores.keySet());
+        
+        // Debug: Log category processing
         categoryScores.forEach((categoryId, scores) -> {
+            log.info("Processing category: {} with {} score entries", categoryId, scores.size());
+            
             Map<String, Object> categoryData = new HashMap<>();
             
             String categoryName = scores.stream()
-                    .map(CategoryScore::getCategoryName)
+                    .map(CategoryScoreV2::getCategoryName)
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(categoryId);
             
             double avgActualScore = scores.stream()
-                    .mapToDouble(CategoryScore::getScore)
+                    .mapToDouble(CategoryScoreV2::getScore)
                     .average()
                     .orElse(0.0);
             
+            log.info("  Category {} - name: {}, avgScore: {}", categoryId, categoryName, avgActualScore);
+            
             double maxScore = 100.0;
             if (potentialPillarScore != null && potentialPillarScore.getCategoryIdToCategoryScoreMap() != null) {
-                CategoryScore potentialCategoryScore = potentialPillarScore.getCategoryIdToCategoryScoreMap().get(categoryId);
+                CategoryScoreV2 potentialCategoryScore = potentialPillarScore.getCategoryIdToCategoryScoreMap().get(categoryId);
                 if (potentialCategoryScore != null) {
                     maxScore = potentialCategoryScore.getScore();
+                    log.info("  Category {} - found potential score: {}", categoryId, maxScore);
+                } else {
+                    log.warn("  Category {} - NO potential score found in potentialPillarScore", categoryId);
                 }
+            } else {
+                log.warn("  Category {} - using default maxScore (potentialPillarScore or its categoryMap is null)", categoryId);
             }
             
             double percentage = calculatePercentage(avgActualScore, maxScore);
@@ -396,8 +441,15 @@ public class DashboardAnalyticsServiceV2 {
             categoryData.put("actualScore", avgActualScore);
             categoryData.put("potentialScore", maxScore);
             
+            log.info("  Category {} final data: name={}, percentage={}, actualScore={}, potentialScore={}", 
+                categoryId, categoryName, percentage, avgActualScore, maxScore);
+            
             categoryAnalytics.put(categoryId, categoryData);
         });
+        
+        log.info("calculateCategoryAnalytics RESULT: {} categories in final analytics", categoryAnalytics.size());
+        log.info("Final category analytics keys: {}", categoryAnalytics.keySet());
+        log.info("=== calculateCategoryAnalytics DEBUG END ===");
         
         return categoryAnalytics;
     }
@@ -494,5 +546,12 @@ public class DashboardAnalyticsServiceV2 {
         } else {
             return assessmentMatrixId + "#" + scope.name() + "#" + teamId;
         }
+    }
+
+    /**
+     * Delete analytics by ID
+     */
+    public void deleteById(String companyPerformanceCycleId, String assessmentMatrixScopeId) {
+        dashboardAnalyticsRepository.deleteById(companyPerformanceCycleId, assessmentMatrixScopeId);
     }
 }

@@ -1,8 +1,8 @@
 package com.agilecheckup.persistency.entity;
 
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,7 +20,7 @@ class AnswerV2Test {
         // Given
         LocalDateTime answeredAt = LocalDateTime.now();
         QuestionV2 question = createMockedQuestionV2();
-        NaturalPerson reviewer = NaturalPerson.builder()
+        NaturalPersonV2 reviewer = NaturalPersonV2.builder()
                 .name("John Reviewer")
                 .email("john@reviewer.com")
                 .build();

@@ -1,10 +1,10 @@
 package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.converter.DateAttributeConverter;
-import com.agilecheckup.persistency.converter.EmployeeAssessmentScoreAttributeConverter;
+import com.agilecheckup.persistency.converter.EmployeeAssessmentScoreV2AttributeConverter;
 import com.agilecheckup.persistency.converter.NaturalPersonAttributeConverter;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.base.TenantableEntityV2;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -31,13 +31,13 @@ public class EmployeeAssessmentV2 extends TenantableEntityV2 {
     private String assessmentMatrixId;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("employee"), @DynamoDbConvertedBy(NaturalPersonAttributeConverter.class)}))
-    private NaturalPerson employee;
+    private NaturalPersonV2 employee;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("teamId")}))
     private String teamId;
 
-    @Getter(onMethod_ = @__({@DynamoDbAttribute("employeeAssessmentScore"), @DynamoDbConvertedBy(EmployeeAssessmentScoreAttributeConverter.class)}))
-    private EmployeeAssessmentScore employeeAssessmentScore;
+    @Getter(onMethod_ = @__({@DynamoDbAttribute("employeeAssessmentScore"), @DynamoDbConvertedBy(EmployeeAssessmentScoreV2AttributeConverter.class)}))
+    private EmployeeAssessmentScoreV2 employeeAssessmentScore;
 
     @Builder.Default
     @Getter(onMethod_ = @__({@DynamoDbAttribute("assessmentStatus")}))
@@ -57,10 +57,10 @@ public class EmployeeAssessmentV2 extends TenantableEntityV2 {
     /**
      * Sets the employee and automatically updates the normalized email for GSI
      */
-    public void setEmployee(NaturalPerson employee) {
+    public void setEmployee(NaturalPersonV2 employee) {
         this.employee = employee;
         this.employeeEmailNormalized = Optional.ofNullable(employee)
-            .map(NaturalPerson::getEmail)
+            .map(NaturalPersonV2::getEmail)
             .filter(StringUtils::isNotBlank)
             .map(email -> email.toLowerCase().trim())
             .orElse(null);
