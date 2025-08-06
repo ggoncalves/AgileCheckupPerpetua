@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentConfigurationV2;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
@@ -72,7 +72,7 @@ class AssessmentNavigationServiceV2Test {
         AssessmentMatrixV2 matrix = createMockMatrix(10);
         List<QuestionV2> questions = createMockQuestions(3);
         Set<String> answeredQuestionIds = new HashSet<>(Arrays.asList("q1", "q2"));
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
         when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
@@ -130,7 +130,7 @@ class AssessmentNavigationServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.CONFIRMED, 0);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
         List<QuestionV2> questions = createMockQuestions(2);
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.RANDOM);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.RANDOM);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
         when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
@@ -153,7 +153,7 @@ class AssessmentNavigationServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 2);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
         List<QuestionV2> questions = createMockQuestions(2);
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
         when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
@@ -174,7 +174,7 @@ class AssessmentNavigationServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 0);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
         List<QuestionV2> questions = createMockQuestions(3);
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.RANDOM);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.RANDOM);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
         when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
@@ -226,7 +226,7 @@ class AssessmentNavigationServiceV2Test {
         EmployeeAssessmentV2 assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 1);
         AssessmentMatrixV2 matrix = createMockMatrix(5);
         List<QuestionV2> questions = createMockQuestions(2);
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         doReturn(Optional.of(savedAnswer)).when(answerService).create(
             eq(EMPLOYEE_ASSESSMENT_ID), eq(questionId), eq(ANSWERED_AT), eq(value), eq(TENANT_ID), eq(notes));
@@ -274,7 +274,7 @@ class AssessmentNavigationServiceV2Test {
         List<QuestionV2> allQuestions = Arrays.asList(q1, q2, q3);
         
         Set<String> answeredQuestionIds = new HashSet<>(Arrays.asList("q1"));
-        AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
+        AssessmentConfigurationV2 config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
         when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
         when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
@@ -322,8 +322,8 @@ class AssessmentNavigationServiceV2Test {
         return question;
     }
 
-    private AssessmentConfiguration createMockConfiguration(QuestionNavigationType navigationType) {
-        return AssessmentConfiguration.builder()
+    private AssessmentConfigurationV2 createMockConfiguration(QuestionNavigationType navigationType) {
+        return AssessmentConfigurationV2.builder()
             .navigationMode(navigationType)
             .build();
     }

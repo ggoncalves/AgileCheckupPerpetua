@@ -1,6 +1,6 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentConfigurationV2;
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
@@ -10,11 +10,11 @@ import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
-import com.agilecheckup.persistency.entity.score.CategoryScore;
-import com.agilecheckup.persistency.entity.score.PillarScore;
-import com.agilecheckup.persistency.entity.score.PotentialScore;
-import com.agilecheckup.persistency.entity.score.QuestionScore;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
+import com.agilecheckup.persistency.entity.score.CategoryScoreV2;
+import com.agilecheckup.persistency.entity.score.PillarScoreV2;
+import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
+import com.agilecheckup.persistency.entity.score.QuestionScoreV2;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
 import com.agilecheckup.service.dto.EmployeeAssessmentSummaryV2;
@@ -87,7 +87,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     public Optional<AssessmentMatrixV2> create(String name, String description, String tenantId, String performanceCycleId,
-                                               Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
+                                               Map<String, PillarV2> pillarMap, AssessmentConfigurationV2 configuration) {
         return super.create(createAssessmentMatrix(name, description, tenantId, performanceCycleId, pillarMap, configuration));
     }
 
@@ -97,7 +97,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     public Optional<AssessmentMatrixV2> update(String id, String name, String description, String tenantId, String performanceCycleId,
-                                               Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
+                                               Map<String, PillarV2> pillarMap, AssessmentConfigurationV2 configuration) {
         Optional<AssessmentMatrixV2> optionalAssessmentMatrix = findById(id);
         if (optionalAssessmentMatrix.isPresent()) {
             AssessmentMatrixV2 assessmentMatrix = optionalAssessmentMatrix.get();
@@ -134,8 +134,8 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         throw new RuntimeException("Matrix not found: " + matrixId);
     }
 
-    public AssessmentConfiguration createDefaultConfiguration() {
-        return AssessmentConfiguration.builder()
+    public AssessmentConfigurationV2 createDefaultConfiguration() {
+        return AssessmentConfigurationV2.builder()
                 .allowQuestionReview(true)
                 .requireAllQuestions(true)
                 .autoSave(true)
@@ -143,8 +143,8 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
                 .build();
     }
 
-    public AssessmentConfiguration getEffectiveConfiguration(AssessmentMatrixV2 assessmentMatrix) {
-        AssessmentConfiguration configuration = assessmentMatrix.getConfiguration();
+    public AssessmentConfigurationV2 getEffectiveConfiguration(AssessmentMatrixV2 assessmentMatrix) {
+        AssessmentConfigurationV2 configuration = assessmentMatrix.getConfiguration();
         if (configuration == null) {
             return createDefaultConfiguration();
         }
@@ -155,26 +155,26 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         return getRepository().findAllByTenantId(tenantId);
     }
 
-    public AssessmentMatrixV2 updateCurrentPotentialScore(String matrixId, String tenantId) {
+    public AssessmentMatrixV2 updateCurrentPotentialScoreV2(String matrixId, String tenantId) {
         List<QuestionV2> questions = getQuestionServiceV2().findByAssessmentMatrixId(matrixId, tenantId);
 
-        // Map pillarId -> PillarScore
-        Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
+        // Map pillarId -> PillarScoreV2
+        Map<String, PillarScoreV2> pillarIdToPillarScoreMap = new HashMap<>();
 
         // 2. Calculate the maximum possible total score from the retrieved questions
         double totalPoints = questions.stream()
             .mapToDouble(question -> {
-                // Retrieve or create the PillarScore
-                PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
-                    PillarScore.builder()
+                // Retrieve or create the PillarScoreV2
+                PillarScoreV2 pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
+                    PillarScoreV2.builder()
                         .pillarId(id)
                         .pillarName(question.getPillarName())
                         .categoryIdToCategoryScoreMap(new HashMap<>())
                         .build()
                 );
 
-                // Run the logic to update PillarScore and if necessary CategoryScore based on the question
-                updatePillarScoreWithQuestion(pillarScore, question);
+                // Run the logic to update PillarScoreV2 and if necessary CategoryScoreV2 based on the question
+                updatePillarScoreV2WithQuestion(pillarScore, question);
 
                 return computeQuestionMaxScore(question);
             })
@@ -188,10 +188,10 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         
         AssessmentMatrixV2 assessmentMatrix = optionalMatrix.get();
 
-        // 3.2 Update the PotentialScore of the AssessmentMatrix
-        PotentialScore potentialScore = assessmentMatrix.getPotentialScore();
+        // 3.2 Update the PotentialScoreV2 of the AssessmentMatrix
+        PotentialScoreV2 potentialScore = assessmentMatrix.getPotentialScore();
         if (potentialScore == null) {
-            potentialScore = PotentialScore.builder().build();
+            potentialScore = PotentialScoreV2.builder().build();
             assessmentMatrix.setPotentialScore(potentialScore);
         }
         potentialScore.setPillarIdToPillarScoreMap(pillarIdToPillarScoreMap);
@@ -199,6 +199,10 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
 
         // 4. Save the updated AssessmentMatrix
         return super.update(assessmentMatrix).orElse(assessmentMatrix);
+    }
+
+    public AssessmentMatrixV2 updateCurrentPotentialScore(String matrixId, String tenantId) {
+        return updateCurrentPotentialScoreV2(matrixId, tenantId);
     }
 
     public Optional<AssessmentDashboardData> getAssessmentDashboard(String matrixId, String tenantId) {
@@ -312,7 +316,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     private AssessmentMatrixV2 createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
-                                                      Map<String, PillarV2> pillarMap, AssessmentConfiguration configuration) {
+                                                      Map<String, PillarV2> pillarMap, AssessmentConfigurationV2 configuration) {
         validatePerformanceCycle(performanceCycleId, tenantId);
 
         return AssessmentMatrixV2.builder()
@@ -335,63 +339,63 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         }
     }
 
-    private PotentialScore calculatePotentialScore(AssessmentMatrixV2 matrix) {
+    private PotentialScoreV2 calculatePotentialScoreV2(AssessmentMatrixV2 matrix) {
         List<QuestionV2> questions = getQuestionServiceV2().findByAssessmentMatrixId(matrix.getId(), matrix.getTenantId());
 
-        // Map pillarId -> PillarScore
-        Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
+        // Map pillarId -> PillarScoreV2
+        Map<String, PillarScoreV2> pillarIdToPillarScoreMap = new HashMap<>();
 
         // Calculate the maximum possible total score from the retrieved questions
         double totalPoints = questions.stream()
             .mapToDouble(question -> {
-                // Retrieve or create the PillarScore
-                PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
-                    PillarScore.builder()
+                // Retrieve or create the PillarScoreV2
+                PillarScoreV2 pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id ->
+                    PillarScoreV2.builder()
                         .pillarId(id)
                         .pillarName(question.getPillarName())
                         .categoryIdToCategoryScoreMap(new HashMap<>())
                         .build()
                 );
 
-                // Run the logic to update PillarScore and if necessary CategoryScore based on the question
-                updatePillarScoreWithQuestion(pillarScore, question);
+                // Run the logic to update PillarScoreV2 and if necessary CategoryScoreV2 based on the question
+                updatePillarScoreV2WithQuestion(pillarScore, question);
 
                 return computeQuestionMaxScore(question);
             })
             .sum();
 
-        return PotentialScore.builder()
+        return PotentialScoreV2.builder()
             .pillarIdToPillarScoreMap(pillarIdToPillarScoreMap)
             .score(totalPoints)
             .build();
     }
 
-    private void updatePillarScoreWithQuestion(PillarScore pillarScore, QuestionV2 question) {
-        // Assuming each CategoryScore can be identified by the category ID in the question
+    private void updatePillarScoreV2WithQuestion(PillarScoreV2 pillarScore, QuestionV2 question) {
+        // Assuming each CategoryScoreV2 can be identified by the category ID in the question
         String categoryId = question.getCategoryId();
-        CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id ->
-            CategoryScore.builder()
+        CategoryScoreV2 categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id ->
+            CategoryScoreV2.builder()
                 .categoryId(id)
                 .categoryName(question.getCategoryName())
                 .questionScores(new ArrayList<>())
                 .build()
         );
 
-        // Create and add QuestionScore to the questionScores list in CategoryScore
-        QuestionScore questionScore = QuestionScore.builder()
+        // Create and add QuestionScoreV2 to the questionScores list in CategoryScoreV2
+        QuestionScoreV2 questionScore = QuestionScoreV2.builder()
             .questionId(question.getId())
             .score(computeQuestionMaxScore(question))
             .build();
         categoryScore.getQuestionScores().add(questionScore);
 
-        // Update the maxCategoryScore in CategoryScore
+        // Update the maxCategoryScoreV2 in CategoryScoreV2
         categoryScore.setScore(categoryScore.getQuestionScores().stream()
-            .mapToDouble(QuestionScore::getScore)
+            .mapToDouble(QuestionScoreV2::getScore)
             .sum());
 
-        // Update the maxPillarScore in PillarScore
+        // Update the maxPillarScoreV2 in PillarScoreV2
         pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream()
-            .mapToDouble(CategoryScore::getScore)
+            .mapToDouble(CategoryScoreV2::getScore)
             .sum());
     }
 
@@ -400,11 +404,11 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         if (QuestionType.CUSTOMIZED.equals(question.getQuestionType())) {
             if (question.getOptionGroup().isMultipleChoice()) {
                 return question.getOptionGroup().getOptionMap().values().stream()
-                    .mapToDouble(QuestionOption::getPoints)
+                    .mapToDouble(QuestionOptionV2::getPoints)
                     .sum();
             } else {
                 return question.getOptionGroup().getOptionMap().values().stream()
-                    .mapToDouble(QuestionOption::getPoints)
+                    .mapToDouble(QuestionOptionV2::getPoints)
                     .max().orElse(0);
             }
         } else {

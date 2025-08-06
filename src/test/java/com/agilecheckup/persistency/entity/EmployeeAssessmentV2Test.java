@@ -2,7 +2,7 @@ package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ class EmployeeAssessmentV2Test {
 
     @Test
     void testEmployeeAssessmentV2Construction() {
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("John Doe")
             .email("john.doe@example.com")
@@ -24,7 +24,7 @@ class EmployeeAssessmentV2Test {
             .genderPronoun(GenderPronoun.HE)
             .build();
 
-        EmployeeAssessmentScore score = EmployeeAssessmentScore.builder()
+        EmployeeAssessmentScoreV2 score = EmployeeAssessmentScoreV2.builder()
             .score(85.5)
             .build();
 
@@ -57,7 +57,7 @@ class EmployeeAssessmentV2Test {
 
     @Test
     void testSetEmployeeUpdatesNormalizedEmail() {
-        NaturalPerson initialEmployee = NaturalPerson.builder()
+        NaturalPersonV2 initialEmployee = NaturalPersonV2.builder()
             .id("person-initial")
             .name("Initial Name")
             .email("initial@example.com")
@@ -71,7 +71,7 @@ class EmployeeAssessmentV2Test {
             .build();
         assessment.setTenantId("tenant-123");
 
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("Jane Smith")
             .email("JANE.SMITH@EXAMPLE.COM")
@@ -86,7 +86,7 @@ class EmployeeAssessmentV2Test {
 
     @Test
     void testSetEmployeeWithBlankEmailSetsNormalizedEmailToNull() {
-        NaturalPerson initialEmployee = NaturalPerson.builder()
+        NaturalPersonV2 initialEmployee = NaturalPersonV2.builder()
             .id("person-initial")
             .name("Initial Name")
             .email("initial@example.com")
@@ -100,7 +100,7 @@ class EmployeeAssessmentV2Test {
             .build();
         assessment.setTenantId("tenant-123");
 
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("Jane Smith")
             .email("   ")
@@ -114,7 +114,7 @@ class EmployeeAssessmentV2Test {
 
     @Test
     void testDefaultAnsweredQuestionCountIsZero() {
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("Test Employee")
             .email("test@example.com")
@@ -133,7 +133,7 @@ class EmployeeAssessmentV2Test {
 
     @Test
     void testDefaultAssessmentStatusIsInvited() {
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("Test Employee")
             .email("test@example.com")

@@ -1,58 +1,51 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.question.OptionGroupV2;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScoreV2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-/**
- * Converter for OptionGroup to/from DynamoDB JSON string attribute.
- * Maintains compatibility with V1 storage format.
- */
-public class OptionGroupAttributeConverter implements AttributeConverter<OptionGroupV2> {
-
+@Slf4j
+public class EmployeeAssessmentScoreV2AttributeConverter implements AttributeConverter<EmployeeAssessmentScoreV2> {
+    
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
+    
     @Override
-    public AttributeValue transformFrom(OptionGroupV2 input) {
+    public AttributeValue transformFrom(EmployeeAssessmentScoreV2 input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
-        
         try {
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize OptionGroupV2", e);
+            log.error("Error converting EmployeeAssessmentScoreV2 to JSON", e);
+            throw new RuntimeException("Error converting EmployeeAssessmentScoreV2 to JSON", e);
         }
     }
-
+    
     @Override
-    public OptionGroupV2 transformTo(AttributeValue input) {
-        if (input == null || input.nul() != null && input.nul()) {
+    public EmployeeAssessmentScoreV2 transformTo(AttributeValue input) {
+        if (input.nul() != null && input.nul()) {
             return null;
         }
-        
-        String content = input.s();
-        if (content == null || content.trim().isEmpty()) {
-            return null;
-        }
-        
         try {
-            return OBJECT_MAPPER.readValue(content, OptionGroupV2.class);
+            return OBJECT_MAPPER.readValue(input.s(), EmployeeAssessmentScoreV2.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize OptionGroupV2", e);
+            log.error("Error converting JSON to EmployeeAssessmentScoreV2", e);
+            throw new RuntimeException("Error converting JSON to EmployeeAssessmentScoreV2", e);
         }
     }
-
+    
     @Override
-    public EnhancedType<OptionGroupV2> type() {
-        return EnhancedType.of(OptionGroupV2.class);
+    public EnhancedType<EmployeeAssessmentScoreV2> type() {
+        return EnhancedType.of(EmployeeAssessmentScoreV2.class);
     }
-
+    
     @Override
     public AttributeValueType attributeValueType() {
         return AttributeValueType.S;

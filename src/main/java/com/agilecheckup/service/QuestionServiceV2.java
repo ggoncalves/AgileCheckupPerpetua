@@ -4,8 +4,8 @@ import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.CategoryV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.OptionGroup;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.question.OptionGroupV2;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
 import com.agilecheckup.service.exception.InvalidCustomOptionListException;
@@ -47,7 +47,7 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
     return createQuestion(question);
   }
 
-  public Optional<QuestionV2> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+  public Optional<QuestionV2> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOptionV2> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     QuestionV2 question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId, extraDescription);
     return createQuestion(question);
   }
@@ -78,12 +78,12 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
   }
 
   public Optional<QuestionV2> updateCustomQuestion(String id, String questionTxt, QuestionType questionType, String tenantId,
-                                                 boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options,
+                                                 boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOptionV2> options,
                                                  String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Optional<QuestionV2> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       QuestionV2 question = optionalQuestion.get();
-      validateQuestionOptions(options);
+      validateQuestionOptionV2s(options);
       AssessmentMatrixV2 assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
       PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
       CategoryV2 category = getCategory(pillar, categoryId);
@@ -149,9 +149,9 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
 
   private QuestionV2 internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId,
                                                 boolean isMultipleChoice, boolean showFlushed,
-                                                @NonNull List<QuestionOption> options, String assessmentMatrixId,
+                                                @NonNull List<QuestionOptionV2> options, String assessmentMatrixId,
                                                 String pillarId, String categoryId, String extraDescription) {
-    validateQuestionOptions(options);
+    validateQuestionOptionV2s(options);
     AssessmentMatrixV2 assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     PillarV2 pillar = getPillar(assessmentMatrix, pillarId);
     CategoryV2 category = getCategory(pillar, categoryId);
@@ -169,43 +169,43 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
         .build();
   }
 
-  private void validateQuestionOptions(List<QuestionOption> options) {
+  private void validateQuestionOptionV2s(List<QuestionOptionV2> options) {
     validateOptionListSize(options);
     options = sortOptionsById(options);
     validateOptions(options);
   }
 
-  private List<QuestionOption> sortOptionsById(List<QuestionOption> options) {
+  private List<QuestionOptionV2> sortOptionsById(List<QuestionOptionV2> options) {
     return options.stream()
-        .sorted(Comparator.comparing(QuestionOption::getId))
+        .sorted(Comparator.comparing(QuestionOptionV2::getId))
         .collect(Collectors.toList());
   }
 
-  private void validateOptions(List<QuestionOption> options) {
+  private void validateOptions(List<QuestionOptionV2> options) {
     Integer expectedId = 1;
-    for (QuestionOption option : options) {
+    for (QuestionOptionV2 option : options) {
       validateOptionText(option);
       validateOptionId(option, expectedId, options);
       expectedId++;
     }
   }
 
-  private void validateOptionText(QuestionOption option) {
+  private void validateOptionText(QuestionOptionV2 option) {
     if (option.getText().isEmpty()) {
       throw new InvalidCustomOptionListException(OPTION_LIST_TEXT_EMPTY.getReason());
     }
   }
 
-  private void validateOptionId(QuestionOption option, Integer expectedId, List<QuestionOption> options) {
+  private void validateOptionId(QuestionOptionV2 option, Integer expectedId, List<QuestionOptionV2> options) {
     if (!option.getId().equals(expectedId)) {
       Integer[] optionIds = options.stream()
-          .map(QuestionOption::getId)
+          .map(QuestionOptionV2::getId)
           .toArray(Integer[]::new);
       throw new InvalidCustomOptionListException(INVALID_OPTIONS_IDS, optionIds);
     }
   }
 
-  private void validateOptionListSize(List<QuestionOption> options) {
+  private void validateOptionListSize(List<QuestionOptionV2> options) {
     if (isOptionListEmpty(options)) {
       throw new InvalidCustomOptionListException(OPTION_LIST_EMPTY, MIN_CUSTOM_OPTIONS_SIZE, MAX_CUSTOM_OPTIONS_SIZE);
     }
@@ -217,20 +217,20 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
     }
   }
 
-  private boolean isOptionListEmpty(List<QuestionOption> options) {
+  private boolean isOptionListEmpty(List<QuestionOptionV2> options) {
     return options.isEmpty();
   }
 
-  private boolean isOptionListTooShort(List<QuestionOption> options) {
+  private boolean isOptionListTooShort(List<QuestionOptionV2> options) {
     return options.size() < MIN_CUSTOM_OPTIONS_SIZE;
   }
 
-  private boolean isOptionListTooBig(List<QuestionOption> options) {
+  private boolean isOptionListTooBig(List<QuestionOptionV2> options) {
     return options.size() > MAX_CUSTOM_OPTIONS_SIZE;
   }
 
-  private OptionGroup createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
-    return OptionGroup.builder()
+  private OptionGroupV2 createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOptionV2> options) {
+    return OptionGroupV2.builder()
         .isMultipleChoice(isMultipleChoice)
         .showFlushed(showFlushed)
         .optionMap(toOptionMap(options))
@@ -238,8 +238,8 @@ public class QuestionServiceV2 extends AbstractCrudServiceV2<QuestionV2, Questio
   }
 
   @VisibleForTesting
-  Map<Integer, QuestionOption> toOptionMap(List<QuestionOption> options) {
-    return options.stream().collect(Collectors.toMap(QuestionOption::getId, Function.identity()));
+  Map<Integer, QuestionOptionV2> toOptionMap(List<QuestionOptionV2> options) {
+    return options.stream().collect(Collectors.toMap(QuestionOptionV2::getId, Function.identity()));
   }
 
   private AssessmentMatrixV2 getAssessmentMatrixById(String assessmentMatrixId) {

@@ -53,5 +53,5 @@ public class QuestionV2 extends TenantableEntityV2 {
     private QuestionType questionType;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("optionGroup"), @DynamoDbConvertedBy(OptionGroupAttributeConverter.class)}))
-    private OptionGroup optionGroup;
+    private OptionGroupV2 optionGroup;
 }

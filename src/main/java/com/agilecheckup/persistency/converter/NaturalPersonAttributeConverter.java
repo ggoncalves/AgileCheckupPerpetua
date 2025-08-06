@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
@@ -8,12 +8,12 @@ import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-public class NaturalPersonAttributeConverter implements AttributeConverter<NaturalPerson> {
+public class NaturalPersonAttributeConverter implements AttributeConverter<NaturalPersonV2> {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
-    public AttributeValue transformFrom(NaturalPerson input) {
+    public AttributeValue transformFrom(NaturalPersonV2 input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
@@ -22,12 +22,12 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize NaturalPerson", e);
+            throw new RuntimeException("Failed to serialize NaturalPersonV2", e);
         }
     }
 
     @Override
-    public NaturalPerson transformTo(AttributeValue input) {
+    public NaturalPersonV2 transformTo(AttributeValue input) {
         if (input.nul() != null && input.nul()) {
             return null;
         }
@@ -38,15 +38,15 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
         }
         
         try {
-            return OBJECT_MAPPER.readValue(content, NaturalPerson.class);
+            return OBJECT_MAPPER.readValue(content, NaturalPersonV2.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize NaturalPerson", e);
+            throw new RuntimeException("Failed to deserialize NaturalPersonV2", e);
         }
     }
 
     @Override
-    public EnhancedType<NaturalPerson> type() {
-        return EnhancedType.of(NaturalPerson.class);
+    public EnhancedType<NaturalPersonV2> type() {
+        return EnhancedType.of(NaturalPersonV2.class);
     }
 
     @Override

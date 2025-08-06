@@ -2,11 +2,11 @@ package com.agilecheckup.persistency.entity.question;
 
 import com.agilecheckup.persistency.converter.LocalDateTimeAttributeConverter;
 import com.agilecheckup.persistency.converter.NaturalPersonAttributeConverter;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.converter.QuestionV2AttributeConverter;
 import com.agilecheckup.persistency.converter.QuestionTypeAttributeConverter;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.base.TenantableEntityV2;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
@@ -46,7 +46,7 @@ public class AnswerV2 extends TenantableEntityV2 {
     private String questionId;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("reviewer"), @DynamoDbConvertedBy(NaturalPersonAttributeConverter.class)}))
-    private NaturalPerson reviewer;
+    private NaturalPersonV2 reviewer;
 
     @NonNull
     @Getter(onMethod_ = @__({@DynamoDbAttribute("questionType"), @DynamoDbConvertedBy(QuestionTypeAttributeConverter.class)}))

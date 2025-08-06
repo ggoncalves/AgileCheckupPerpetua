@@ -2,17 +2,17 @@ package com.agilecheckup.service;
 
 import com.agilecheckup.persistency.entity.AssessmentMatrixV2;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.EmployeeAssessmentScore;
+import com.agilecheckup.persistency.entity.EmployeeAssessmentScoreV2;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
 import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.score.CategoryScore;
-import com.agilecheckup.persistency.entity.score.PillarScore;
-import com.agilecheckup.persistency.entity.score.QuestionScore;
+import com.agilecheckup.persistency.entity.score.CategoryScoreV2;
+import com.agilecheckup.persistency.entity.score.PillarScoreV2;
+import com.agilecheckup.persistency.entity.score.QuestionScoreV2;
 import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.service.dto.EmployeeValidationRequest;
@@ -78,7 +78,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
             } else {
                 employeeAssessment.setTeamId(null);
             }
-            employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
+            employeeAssessment.setEmployee(createNaturalPersonV2(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
             employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim());
             return super.update(employeeAssessment);
         } else {
@@ -103,15 +103,15 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
             .assessmentMatrixId(assessmentMatrixEntity.getId())
             .teamId(finalTeamId)
             .tenantId(tenantId)
-            .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
+            .employee(createNaturalPersonV2(name, email, documentNumber, documentType, gender, genderPronoun, null))
             .employeeEmailNormalized(email.toLowerCase().trim())
             .answeredQuestionCount(0)
             .assessmentStatus(AssessmentStatus.INVITED)
             .build();
     }
 
-    public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
-        return NaturalPerson.builder()
+    public static NaturalPersonV2 createNaturalPersonV2(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
+        return NaturalPersonV2.builder()
             .id(personId)
             .name(name)
             .email(email)
@@ -178,7 +178,7 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         if (optionalEmployeeAssessment.isPresent()) {
             EmployeeAssessmentV2 employeeAssessment = optionalEmployeeAssessment.get();
             List<AnswerV2> answers = retrieveAnswers(employeeAssessmentId, tenantId);
-            EmployeeAssessmentScore employeeAssessmentScore = calculateEmployeeAssessmentScore(answers);
+            EmployeeAssessmentScoreV2 employeeAssessmentScore = calculateEmployeeAssessmentScore(answers);
             employeeAssessment.setEmployeeAssessmentScore(employeeAssessmentScore);
             getRepository().save(employeeAssessment);
             return employeeAssessment;
@@ -190,11 +190,11 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return answerRepository.findByEmployeeAssessmentId(employeeAssessmentId, tenantId);
     }
 
-    private EmployeeAssessmentScore calculateEmployeeAssessmentScore(List<AnswerV2> answers) {
+    private EmployeeAssessmentScoreV2 calculateEmployeeAssessmentScore(List<AnswerV2> answers) {
         Map<String, List<AnswerV2>> answersByPillar = groupAnswersByPillarId(answers);
-        Map<String, PillarScore> pillarScores = calculatePillarScores(answersByPillar);
+        Map<String, PillarScoreV2> pillarScores = calculatePillarScores(answersByPillar);
 
-        EmployeeAssessmentScore employeeAssessmentScore = new EmployeeAssessmentScore();
+        EmployeeAssessmentScoreV2 employeeAssessmentScore = new EmployeeAssessmentScoreV2();
         employeeAssessmentScore.setPillarIdToPillarScoreMap(pillarScores);
         employeeAssessmentScore.setScore(calculateTotalScore(pillarScores));
         return employeeAssessmentScore;
@@ -204,22 +204,22 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return answers.stream().collect(Collectors.groupingBy(AnswerV2::getPillarId));
     }
 
-    private Map<String, PillarScore> calculatePillarScores(Map<String, List<AnswerV2>> answersByPillar) {
-        Map<String, PillarScore> pillarScores = new HashMap<>();
+    private Map<String, PillarScoreV2> calculatePillarScores(Map<String, List<AnswerV2>> answersByPillar) {
+        Map<String, PillarScoreV2> pillarScores = new HashMap<>();
 
         for (Map.Entry<String, List<AnswerV2>> entry : answersByPillar.entrySet()) {
-            PillarScore pillarScore = calculatePillarScore(entry.getKey(), entry.getValue());
+            PillarScoreV2 pillarScore = calculatePillarScore(entry.getKey(), entry.getValue());
             pillarScores.put(entry.getKey(), pillarScore);
         }
 
         return pillarScores;
     }
 
-    private PillarScore calculatePillarScore(String pillarId, List<AnswerV2> answers) {
+    private PillarScoreV2 calculatePillarScore(String pillarId, List<AnswerV2> answers) {
         Map<String, List<AnswerV2>> answersByCategory = groupAnswersByCategory(answers);
-        Map<String, CategoryScore> categoryScores = calculateCategoryScores(answersByCategory);
+        Map<String, CategoryScoreV2> categoryScores = calculateCategoryScores(answersByCategory);
 
-        PillarScore pillarScore = new PillarScore();
+        PillarScoreV2 pillarScore = new PillarScoreV2();
         pillarScore.setPillarId(pillarId);
         pillarScore.setPillarName(answers.get(0).getQuestion().getPillarName());
         pillarScore.setScore(calculateScoreForAnswers(answers));
@@ -231,19 +231,19 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return answers.stream().collect(Collectors.groupingBy(AnswerV2::getCategoryId));
     }
 
-    private Map<String, CategoryScore> calculateCategoryScores(Map<String, List<AnswerV2>> answersByCategory) {
-        Map<String, CategoryScore> categoryScores = new HashMap<>();
+    private Map<String, CategoryScoreV2> calculateCategoryScores(Map<String, List<AnswerV2>> answersByCategory) {
+        Map<String, CategoryScoreV2> categoryScores = new HashMap<>();
 
         for (Map.Entry<String, List<AnswerV2>> entry : answersByCategory.entrySet()) {
-            CategoryScore categoryScore = calculateCategoryScore(entry.getKey(), entry.getValue());
+            CategoryScoreV2 categoryScore = calculateCategoryScore(entry.getKey(), entry.getValue());
             categoryScores.put(entry.getKey(), categoryScore);
         }
 
         return categoryScores;
     }
 
-    private CategoryScore calculateCategoryScore(String categoryId, List<AnswerV2> answers) {
-        CategoryScore categoryScore = new CategoryScore();
+    private CategoryScoreV2 calculateCategoryScore(String categoryId, List<AnswerV2> answers) {
+        CategoryScoreV2 categoryScore = new CategoryScoreV2();
         categoryScore.setCategoryId(categoryId);
         categoryScore.setCategoryName(answers.get(0).getQuestion().getCategoryName());
         categoryScore.setScore(calculateScoreForAnswers(answers));
@@ -251,8 +251,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return categoryScore;
     }
 
-    private List<QuestionScore> calculateQuestionScores(List<AnswerV2> answers) {
-        List<QuestionScore> questionScores = new ArrayList<>();
+    private List<QuestionScoreV2> calculateQuestionScores(List<AnswerV2> answers) {
+        List<QuestionScoreV2> questionScores = new ArrayList<>();
 
         for (AnswerV2 answer : answers) {
             questionScores.add(createQuestionScore(answer));
@@ -261,8 +261,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return questionScores;
     }
 
-    private QuestionScore createQuestionScore(AnswerV2 answer) {
-        QuestionScore questionScore = new QuestionScore();
+    private QuestionScoreV2 createQuestionScore(AnswerV2 answer) {
+        QuestionScoreV2 questionScore = new QuestionScoreV2();
         questionScore.setQuestionId(answer.getQuestionId());
         questionScore.setScore(answer.getScore());
         return questionScore;
@@ -272,8 +272,8 @@ public class EmployeeAssessmentServiceV2 extends AbstractCrudServiceV2<EmployeeA
         return answers.stream().mapToDouble(AnswerV2::getScore).sum();
     }
 
-    private double calculateTotalScore(Map<String, PillarScore> pillarScores) {
-        return pillarScores.values().stream().mapToDouble(PillarScore::getScore).sum();
+    private double calculateTotalScore(Map<String, PillarScoreV2> pillarScores) {
+        return pillarScores.values().stream().mapToDouble(PillarScoreV2::getScore).sum();
     }
     
     /**

@@ -4,7 +4,7 @@ import com.agilecheckup.persistency.converter.AssessmentConfigurationAttributeCo
 import com.agilecheckup.persistency.converter.PillarMapAttributeConverter;
 import com.agilecheckup.persistency.converter.PotentialScoreAttributeConverter;
 import com.agilecheckup.persistency.entity.base.TenantDescribableEntityV2;
-import com.agilecheckup.persistency.entity.score.PotentialScore;
+import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,8 +39,8 @@ public class AssessmentMatrixV2 extends TenantDescribableEntityV2 {
     private Integer questionCount;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("potentialScore"), @DynamoDbConvertedBy(PotentialScoreAttributeConverter.class)}))
-    private PotentialScore potentialScore;
+    private PotentialScoreV2 potentialScore;
 
     @Getter(onMethod_ = @__({@DynamoDbAttribute("configuration"), @DynamoDbConvertedBy(AssessmentConfigurationAttributeConverter.class)}))
-    private AssessmentConfiguration configuration;
+    private AssessmentConfigurationV2 configuration;
 }

@@ -126,4 +126,14 @@ public class DashboardAnalyticsRepositoryV2 {
         DashboardAnalyticsV2 item = getTable().getItem(key);
         return Optional.ofNullable(item);
     }
+
+    public void deleteById(String companyPerformanceCycleId, String assessmentMatrixScopeId) {
+        Key key = Key.builder()
+                .partitionValue(companyPerformanceCycleId)
+                .sortValue(assessmentMatrixScopeId)
+                .build();
+
+        getTable().deleteItem(key);
+        log.info("Deleted analytics: {}/{}", companyPerformanceCycleId, assessmentMatrixScopeId);
+    }
 }

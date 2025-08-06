@@ -2,7 +2,7 @@ package com.agilecheckup.persistency.repository;
 
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessmentV2;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,10 +12,8 @@ import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.util.Arrays;
@@ -63,7 +61,7 @@ class EmployeeAssessmentRepositoryV2Test {
         String employeeEmail = "John.Doe@Example.com";
         String normalizedEmail = "john.doe@example.com";
 
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name("John Doe")
             .email(employeeEmail)
@@ -145,12 +143,12 @@ class EmployeeAssessmentRepositoryV2Test {
         String assessmentMatrixId = "matrix-123";
         String tenantId = "tenant-123";
 
-        NaturalPerson employee1 = NaturalPerson.builder()
+        NaturalPersonV2 employee1 = NaturalPersonV2.builder()
             .name("John Doe")
             .email("john.doe@example.com")
             .build();
 
-        NaturalPerson employee2 = NaturalPerson.builder()
+        NaturalPersonV2 employee2 = NaturalPersonV2.builder()
             .name("Jane Smith")
             .email("jane.smith@example.com")
             .build();

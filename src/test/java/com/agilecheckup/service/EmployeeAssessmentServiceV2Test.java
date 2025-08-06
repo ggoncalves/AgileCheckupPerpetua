@@ -7,7 +7,7 @@ import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.TeamV2;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
-import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
@@ -458,7 +458,7 @@ class EmployeeAssessmentServiceV2Test {
     }
 
     private EmployeeAssessmentV2 createMockEmployeeAssessment() {
-        NaturalPerson employee = NaturalPerson.builder()
+        NaturalPersonV2 employee = NaturalPersonV2.builder()
             .id("person-123")
             .name(EMPLOYEE_NAME)
             .email(EMPLOYEE_EMAIL)

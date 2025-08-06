@@ -1,7 +1,7 @@
 package com.agilecheckup.persistency.entity;
 
-import com.agilecheckup.persistency.entity.question.OptionGroup;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.entity.question.OptionGroupV2;
+import com.agilecheckup.persistency.entity.question.QuestionOptionV2;
 import com.agilecheckup.persistency.entity.question.QuestionV2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,11 +44,11 @@ class QuestionV2Test {
 
     @Test
     void testCustomQuestionWithOptions() {
-        Map<Integer, QuestionOption> optionMap = new HashMap<>();
-        optionMap.put(1, QuestionOption.builder().id(1).text("Option 1").points(10.0).build());
-        optionMap.put(2, QuestionOption.builder().id(2).text("Option 2").points(20.0).build());
+        Map<Integer, QuestionOptionV2> optionMap = new HashMap<>();
+        optionMap.put(1, QuestionOptionV2.builder().id(1).text("Option 1").points(10.0).build());
+        optionMap.put(2, QuestionOptionV2.builder().id(2).text("Option 2").points(20.0).build());
 
-        OptionGroup optionGroup = OptionGroup.builder()
+        OptionGroupV2 optionGroup = OptionGroupV2.builder()
                 .isMultipleChoice(true)
                 .showFlushed(false)
                 .optionMap(optionMap)
