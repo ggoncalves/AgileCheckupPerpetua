@@ -17,7 +17,7 @@ import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.AnswerV2;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.service.AnswerServiceV2;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
@@ -25,7 +25,7 @@ import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.DepartmentServiceV2;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.QuestionServiceV2;
 import com.agilecheckup.service.TeamServiceV2;
 import lombok.extern.log4j.Log4j2;
 
@@ -44,7 +44,7 @@ public class AnswerV2TableRunner implements CrudRunner {
 
     private AnswerServiceV2 answerServiceV2;
     private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
-    private QuestionService questionService;
+    private QuestionServiceV2 questionServiceV2;
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
     private PerformanceCycleServiceV2 performanceCycleServiceV2;
     private CompanyServiceV2 companyServiceV2;
@@ -56,7 +56,7 @@ public class AnswerV2TableRunner implements CrudRunner {
     
     // Test data tracking for cleanup
     private final List<AnswerV2> createdAnswers = new ArrayList<>();
-    private final List<Question> createdQuestions = new ArrayList<>();
+    private final List<QuestionV2> createdQuestions = new ArrayList<>();
     private CompanyV2 testCompany;
     private DepartmentV2 testDepartment;
     private TeamV2 testTeam;
@@ -270,7 +270,7 @@ public class AnswerV2TableRunner implements CrudRunner {
             if (questionTypes[i] == QuestionType.CUSTOMIZED) {
                 // Create custom question with options
                 List<QuestionOption> options = createMockedQuestionOptionList("Option", 5.0, 10.0, 15.0);
-                Optional<Question> questionOpt = getQuestionService().createCustomQuestion(
+                Optional<QuestionV2> questionOpt = getQuestionServiceV2().createCustomQuestion(
                     questionTexts[i],
                     questionTypes[i],
                     testTenantId,
@@ -289,7 +289,7 @@ public class AnswerV2TableRunner implements CrudRunner {
                 }
             } else {
                 // Create regular question
-                Optional<Question> questionOpt = getQuestionService().create(
+                Optional<QuestionV2> questionOpt = getQuestionServiceV2().create(
                     questionTexts[i],
                     questionTypes[i],
                     testTenantId,
@@ -332,7 +332,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         LocalDateTime answeredAt = LocalDateTime.now().minusMinutes(30);
         
         // Test YES_NO answer
-        Question yesNoQuestion = createdQuestions.stream()
+        QuestionV2 yesNoQuestion = createdQuestions.stream()
             .filter(q -> q.getQuestionType() == QuestionType.YES_NO)
             .findFirst()
             .orElse(null);
@@ -358,7 +358,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         }
         
         // Test STAR_FIVE answer
-        Question starFiveQuestion = createdQuestions.stream()
+        QuestionV2 starFiveQuestion = createdQuestions.stream()
             .filter(q -> q.getQuestionType() == QuestionType.STAR_FIVE)
             .findFirst()
             .orElse(null);
@@ -384,7 +384,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         }
         
         // Test ONE_TO_TEN answer
-        Question oneToTenQuestion = createdQuestions.stream()
+        QuestionV2 oneToTenQuestion = createdQuestions.stream()
             .filter(q -> q.getQuestionType() == QuestionType.ONE_TO_TEN)
             .findFirst()
             .orElse(null);
@@ -410,7 +410,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         }
         
         // Test OPEN_ANSWER
-        Question openQuestion = createdQuestions.stream()
+        QuestionV2 openQuestion = createdQuestions.stream()
             .filter(q -> q.getQuestionType() == QuestionType.OPEN_ANSWER)
             .findFirst()
             .orElse(null);
@@ -438,7 +438,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         }
         
         // Test CUSTOMIZED answer
-        Question customQuestion = createdQuestions.stream()
+        QuestionV2 customQuestion = createdQuestions.stream()
             .filter(q -> q.getQuestionType() == QuestionType.CUSTOMIZED)
             .findFirst()
             .orElse(null);
@@ -647,7 +647,7 @@ public class AnswerV2TableRunner implements CrudRunner {
         
         // Try to create duplicate answer
         AnswerV2 existingAnswer = createdAnswers.get(0);
-        Question question = createdQuestions.stream()
+        QuestionV2 question = createdQuestions.stream()
             .filter(q -> q.getId().equals(existingAnswer.getQuestionId()))
             .findFirst()
             .orElse(null);
@@ -841,9 +841,9 @@ public class AnswerV2TableRunner implements CrudRunner {
         }
         
         // Delete created questions
-        for (Question question : createdQuestions) {
+        for (QuestionV2 question : createdQuestions) {
             try {
-                getQuestionService().delete(question);
+                getQuestionServiceV2().deleteById(question.getId());
                 log.info("✓ Cleaned up question: {}", question.getQuestion());
             } catch (Exception e) {
                 log.error("Error cleaning up question {}: {}", question.getQuestion(), e.getMessage());
@@ -941,12 +941,12 @@ public class AnswerV2TableRunner implements CrudRunner {
         return employeeAssessmentServiceV2;
     }
 
-    private QuestionService getQuestionService() {
-        if (questionService == null) {
+    private QuestionServiceV2 getQuestionServiceV2() {
+        if (questionServiceV2 == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            questionService = serviceComponent.buildQuestionService();
+            questionServiceV2 = serviceComponent.buildQuestionServiceV2();
         }
-        return questionService;
+        return questionServiceV2;
     }
 
     private AssessmentMatrixServiceV2 getAssessmentMatrixServiceV2() {

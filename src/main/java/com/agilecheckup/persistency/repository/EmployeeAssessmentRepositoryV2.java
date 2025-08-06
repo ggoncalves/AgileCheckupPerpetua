@@ -114,7 +114,6 @@ public class EmployeeAssessmentRepositoryV2 extends AbstractCrudRepositoryV2<Emp
                 .stream()
                 .flatMap(page -> page.items().stream())
                 .collect(java.util.stream.Collectors.toList());
-                
         } catch (Exception e) {
             throw new RuntimeException("Failed to query employee assessments by matrix ID: " + assessmentMatrixId, e);
         }

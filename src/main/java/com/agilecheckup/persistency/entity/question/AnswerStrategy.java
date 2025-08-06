@@ -14,8 +14,6 @@ public abstract class AnswerStrategy<T> {
   private static final String UNPARSEABLE_VALUE_MESSAGE_FORMAT = "Invalid Answer value. Not parseable: %s";
 
   private T value;
-
-  private Question question;
   
   private QuestionV2 questionV2;
 

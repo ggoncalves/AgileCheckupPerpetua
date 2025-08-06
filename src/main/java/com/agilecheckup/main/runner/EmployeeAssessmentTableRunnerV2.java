@@ -15,7 +15,6 @@ import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.CompanyServiceV2;
 import com.agilecheckup.service.DepartmentServiceV2;
-import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
 import com.agilecheckup.service.TeamServiceV2;
@@ -44,7 +43,6 @@ import java.util.Optional;
 public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
 
     private EmployeeAssessmentServiceV2 employeeAssessmentServiceV2;
-    private EmployeeAssessmentService employeeAssessmentServiceLegacy;
     private AssessmentMatrixServiceV2 assessmentMatrixServiceV2;
     private TeamServiceV2 teamService;
     private CompanyServiceV2 companyServiceV2;
@@ -600,53 +598,29 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
     }
     
     private void demonstrateSideBySideComparison() {
-        try {
-            // Create a V1 assessment for comparison
-            Optional<com.agilecheckup.persistency.entity.EmployeeAssessment> v1Opt = 
-                getEmployeeAssessmentServiceLegacy().create(
-                    testAssessmentMatrix.getId(),
-                    testTeam.getId(),
-                    "V1 Test Employee",
-                    "v1.employee@example.com",
-                    "111111111",
-                    PersonDocumentType.CPF,
-                    Gender.MALE,
-                    GenderPronoun.HE
-                );
+        // Get V2 assessments to showcase features
+        List<EmployeeAssessmentV2> v2Assessments = getEmployeeAssessmentServiceV2().findAllByTenantId(testTenantId);
+        
+        if (!v2Assessments.isEmpty()) {
+            EmployeeAssessmentV2 v2Assessment = v2Assessments.get(0);
             
-            // Get a V2 assessment
-            List<EmployeeAssessmentV2> v2Assessments = getEmployeeAssessmentServiceV2().findAllByTenantId(testTenantId);
-            
-            if (v1Opt.isPresent() && !v2Assessments.isEmpty()) {
-                com.agilecheckup.persistency.entity.EmployeeAssessment v1Assessment = v1Opt.get();
-                EmployeeAssessmentV2 v2Assessment = v2Assessments.get(0);
-                
-                log.info("V1 EmployeeAssessment (Legacy):");
-                log.info("  - ID: {}", v1Assessment.getId());
-                log.info("  - Employee: {}", v1Assessment.getEmployee().getName());
-                log.info("  - Email normalized: {}", v1Assessment.getEmployeeEmailNormalized());
-                log.info("  - SDK Version: AWS SDK V1 (DynamoDBMapper)");
-                log.info("  - Query Method: Table scan with filtering");
-                
-                log.info("V2 EmployeeAssessment (Enhanced):");
-                log.info("  - ID: {}", v2Assessment.getId());
-                log.info("  - Employee: {}", v2Assessment.getEmployee().getName());
-                log.info("  - Email normalized: {}", v2Assessment.getEmployeeEmailNormalized());
-                log.info("  - SDK Version: AWS SDK V2 Enhanced Client");
-                log.info("  - Query Method: Efficient GSI queries");
-                log.info("  - Attribute Converters: Custom JSON converters for complex types");
-                
-                // Cleanup V1 assessment
-                getEmployeeAssessmentServiceLegacy().deleteById(v1Assessment.getId());
-            }
-        } catch (Exception e) {
-            log.warn("Could not demonstrate V1 comparison: {}", e.getMessage());
-            log.info("V2 EmployeeAssessment Features:");
+            log.info("V2 EmployeeAssessment Features (Migration Complete):");
+            log.info("  - ID: {}", v2Assessment.getId());
+            log.info("  - Employee: {}", v2Assessment.getEmployee().getName());
+            log.info("  - Email normalized: {}", v2Assessment.getEmployeeEmailNormalized());
+            log.info("  - SDK Version: AWS SDK V2 Enhanced Client");
+            log.info("  - Query Method: Efficient GSI queries");
+            log.info("  - Attribute Converters: Custom JSON converters for complex types");
+            log.info("  - Enhanced business logic and validation");
+            log.info("  - Type-safe operations with enhanced error handling");
+        } else {
+            log.info("V2 EmployeeAssessment Migration Benefits:");
             log.info("  - AWS SDK V2 Enhanced Client with type-safe operations");
             log.info("  - Efficient GSI queries for existence checks and filtering");
             log.info("  - Custom attribute converters for complex types");
             log.info("  - Preserved business logic and method signatures");
             log.info("  - Enhanced error handling and logging");
+            log.info("  - Complete removal of legacy V1 dependencies");
         }
     }
     
@@ -773,13 +747,6 @@ public class EmployeeAssessmentTableRunnerV2 implements CrudRunner {
         return employeeAssessmentServiceV2;
     }
     
-    private EmployeeAssessmentService getEmployeeAssessmentServiceLegacy() {
-        if (employeeAssessmentServiceLegacy == null) {
-            ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            employeeAssessmentServiceLegacy = serviceComponent.buildEmployeeAssessmentService();
-        }        
-        return employeeAssessmentServiceLegacy;
-    }
     
     private AssessmentMatrixServiceV2 getAssessmentMatrixServiceV2() {
         if (assessmentMatrixServiceV2 == null) {

@@ -30,20 +30,12 @@ public class MigrationRunner {
                     AssessmentMatrixPillarV2Migration.main(migrationArgs);
                     break;
                     
+                // Migration classes removed during V1 cleanup
                 case "EmployeeAssessmentDataMigration":
-                    EmployeeAssessmentDataMigration.main(migrationArgs);
-                    break;
-                    
                 case "TeamDataMigration":
-                    TeamDataMigration.main(migrationArgs);
-                    break;
-                    
                 case "EmployeeAssessmentStatusMigration":
-                    EmployeeAssessmentStatusMigration.main(migrationArgs);
-                    break;
-                    
                 case "PerformanceCycleDataMigration":
-                    PerformanceCycleDataMigration.main(migrationArgs);
+                    log.warn("Migration {} is no longer available after V1 cleanup", migrationName);
                     break;
                     
                 default:

@@ -8,8 +8,8 @@ import com.agilecheckup.persistency.entity.PerformanceCycleV2;
 import com.agilecheckup.persistency.entity.PillarV2;
 import com.agilecheckup.persistency.entity.QuestionNavigationType;
 import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.Team;
-import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.TeamV2;
+import com.agilecheckup.persistency.entity.question.QuestionV2;
 import com.agilecheckup.persistency.entity.question.QuestionOption;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
 import com.agilecheckup.persistency.entity.score.PillarScore;
@@ -17,15 +17,17 @@ import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
-import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
-import com.agilecheckup.service.dto.TeamAssessmentSummary;
+import com.agilecheckup.service.dto.EmployeeAssessmentSummaryV2;
+import com.agilecheckup.service.dto.TeamAssessmentSummaryV2;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.google.common.annotations.VisibleForTesting;
 import dagger.Lazy;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,25 +40,25 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
 
     private final PerformanceCycleServiceV2 performanceCycleServiceV2;
 
-    private final Lazy<QuestionService> questionService;
+    private final Lazy<QuestionServiceV2> questionService;
 
     private final Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2;
 
-    private final Lazy<TeamService> teamService;
+    private final Lazy<TeamServiceV2> teamServiceV2;
 
     private static final String DEFAULT_WHEN_NULL = "";
 
     @Inject
     public AssessmentMatrixServiceV2(AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
                                      PerformanceCycleServiceV2 performanceCycleServiceV2,
-                                     Lazy<QuestionService> questionService,
+                                     Lazy<QuestionServiceV2> questionService,
                                      Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
-                                     Lazy<TeamService> teamService) {
+                                     Lazy<TeamServiceV2> teamServiceV2) {
         this.assessmentMatrixRepositoryV2 = assessmentMatrixRepositoryV2;
         this.performanceCycleServiceV2 = performanceCycleServiceV2;
         this.questionService = questionService;
         this.employeeAssessmentServiceV2 = employeeAssessmentServiceV2;
-        this.teamService = teamService;
+        this.teamServiceV2 = teamServiceV2;
     }
 
     @Override
@@ -65,7 +67,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     @VisibleForTesting
-    protected QuestionService getQuestionService() {
+    protected QuestionServiceV2 getQuestionServiceV2() {
         return questionService.get();
     }
 
@@ -75,8 +77,8 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     @VisibleForTesting
-    protected TeamService getTeamService() {
-        return teamService.get();
+    protected TeamServiceV2 getTeamServiceV2() {
+        return teamServiceV2.get();
     }
 
     public Optional<AssessmentMatrixV2> create(String name, String description, String tenantId, String performanceCycleId,
@@ -154,7 +156,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     public AssessmentMatrixV2 updateCurrentPotentialScore(String matrixId, String tenantId) {
-        List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrixId, tenantId);
+        List<QuestionV2> questions = getQuestionServiceV2().findByAssessmentMatrixId(matrixId, tenantId);
 
         // Map pillarId -> PillarScore
         Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
@@ -217,11 +219,11 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         List<EmployeeAssessmentV2> employeeAssessments = getEmployeeAssessmentServiceV2()
             .findByAssessmentMatrix(matrixId, tenantId);
 
-        // Build team summaries using in-memory aggregation (low cost)
-        List<TeamAssessmentSummary> teamSummaries = buildTeamSummaries(employeeAssessments, tenantId);
-
-        // Build employee summaries with pagination consideration
-        List<EmployeeAssessmentSummary> employeeSummaries = buildEmployeeSummaries(employeeAssessments);
+        // Create employee summaries from V2 entities
+        List<EmployeeAssessmentSummaryV2> employeeSummaries = createEmployeeSummaries(employeeAssessments);
+        
+        // Create team summaries from V2 entities
+        List<TeamAssessmentSummaryV2> teamSummaries = createTeamSummaries(employeeAssessments);
 
         // Calculate completion statistics
         int completedCount = calculateCompletedCount(employeeAssessments);
@@ -237,6 +239,76 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
             .build();
             
         return Optional.of(result);
+    }
+
+    private List<EmployeeAssessmentSummaryV2> createEmployeeSummaries(List<EmployeeAssessmentV2> employeeAssessments) {
+        return employeeAssessments.stream()
+            .map(this::convertToEmployeeSummary)
+            .collect(Collectors.toList());
+    }
+    
+    private List<TeamAssessmentSummaryV2> createTeamSummaries(List<EmployeeAssessmentV2> employeeAssessments) {
+        // Group assessments by team
+        Map<String, List<EmployeeAssessmentV2>> assessmentsByTeam = employeeAssessments.stream()
+            .filter(assessment -> assessment.getTeamId() != null)
+            .collect(Collectors.groupingBy(EmployeeAssessmentV2::getTeamId));
+            
+        return assessmentsByTeam.entrySet().stream()
+            .map(entry -> createTeamSummary(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+    }
+    
+    private EmployeeAssessmentSummaryV2 convertToEmployeeSummary(EmployeeAssessmentV2 assessment) {
+        return EmployeeAssessmentSummaryV2.builder()
+            .employeeAssessmentId(assessment.getId())
+            .employeeId(assessment.getEmployee() != null ? assessment.getEmployee().getId() : null)
+            .employeeName(assessment.getEmployee() != null ? assessment.getEmployee().getName() : "Unknown")
+            .employeeEmail(assessment.getEmployee() != null ? assessment.getEmployee().getEmail() : "Unknown")
+            .teamId(assessment.getTeamId())
+            .teamName(getTeamName(assessment.getTeamId()))
+            .assessmentStatus(assessment.getAssessmentStatus())
+            .currentScore(assessment.getEmployeeAssessmentScore() != null ? assessment.getEmployeeAssessmentScore().getScore() : null)
+            .answeredQuestionCount(assessment.getAnsweredQuestionCount())
+            .lastActivityDate(convertToLocalDateTime(assessment.getLastActivityDate()))
+            .build();
+    }
+    
+    private TeamAssessmentSummaryV2 createTeamSummary(String teamId, List<EmployeeAssessmentV2> teamAssessments) {
+        int totalEmployees = teamAssessments.size();
+        int completedAssessments = (int) teamAssessments.stream()
+            .filter(assessment -> AssessmentStatus.COMPLETED.equals(assessment.getAssessmentStatus()))
+            .count();
+        double completionPercentage = totalEmployees > 0 ? (double) completedAssessments / totalEmployees * 100.0 : 0.0;
+        
+        Double averageScore = teamAssessments.stream()
+            .filter(assessment -> assessment.getEmployeeAssessmentScore() != null && assessment.getEmployeeAssessmentScore().getScore() != null)
+            .mapToDouble(assessment -> assessment.getEmployeeAssessmentScore().getScore())
+            .average()
+            .orElse(0.0);
+            
+        return TeamAssessmentSummaryV2.builder()
+            .teamId(teamId)
+            .teamName(getTeamName(teamId))
+            .totalEmployees(totalEmployees)
+            .completedAssessments(completedAssessments)
+            .completionPercentage(completionPercentage)
+            .averageScore(averageScore > 0 ? averageScore : null)
+            .build();
+    }
+    
+    private String getTeamName(String teamId) {
+        if (teamId == null) return "No Team";
+        try {
+            Optional<TeamV2> team = getTeamServiceV2().findById(teamId);
+            return team.map(TeamV2::getName).orElse("Unknown Team");
+        } catch (Exception e) {
+            return "Unknown Team";
+        }
+    }
+    
+    private LocalDateTime convertToLocalDateTime(Date date) {
+        if (date == null) return null;
+        return date.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
     }
 
     private AssessmentMatrixV2 createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId,
@@ -264,7 +336,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     private PotentialScore calculatePotentialScore(AssessmentMatrixV2 matrix) {
-        List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrix.getId(), matrix.getTenantId());
+        List<QuestionV2> questions = getQuestionServiceV2().findByAssessmentMatrixId(matrix.getId(), matrix.getTenantId());
 
         // Map pillarId -> PillarScore
         Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
@@ -294,7 +366,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
             .build();
     }
 
-    private void updatePillarScoreWithQuestion(PillarScore pillarScore, Question question) {
+    private void updatePillarScoreWithQuestion(PillarScore pillarScore, QuestionV2 question) {
         // Assuming each CategoryScore can be identified by the category ID in the question
         String categoryId = question.getCategoryId();
         CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id ->
@@ -324,7 +396,7 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
     }
 
     @VisibleForTesting
-    Double computeQuestionMaxScore(Question question) {
+    Double computeQuestionMaxScore(QuestionV2 question) {
         if (QuestionType.CUSTOMIZED.equals(question.getQuestionType())) {
             if (question.getOptionGroup().isMultipleChoice()) {
                 return question.getOptionGroup().getOptionMap().values().stream()
@@ -340,114 +412,9 @@ public class AssessmentMatrixServiceV2 extends AbstractCrudServiceV2<AssessmentM
         }
     }
 
-    /**
-     * Builds employee summaries with efficient data conversion.
-     */
-    private List<EmployeeAssessmentSummary> buildEmployeeSummaries(List<EmployeeAssessmentV2> assessments) {
-        return assessments.stream()
-            .map(this::buildEmployeeSummary)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Builds individual employee assessment summary.
-     */
-    private EmployeeAssessmentSummary buildEmployeeSummary(EmployeeAssessmentV2 assessment) {
-        Double currentScore = null;
-        if (assessment.getEmployeeAssessmentScore() != null) {
-            currentScore = assessment.getEmployeeAssessmentScore().getScore();
-        }
-
-        // Convert lastActivityDate from Date to LocalDateTime
-        java.time.LocalDateTime lastActivityDate = null;
-        if (assessment.getLastActivityDate() != null) {
-            lastActivityDate = assessment.getLastActivityDate().toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDateTime();
-        }
-
-        return EmployeeAssessmentSummary.builder()
-            .employeeAssessmentId(assessment.getId())
-            .employeeName(assessment.getEmployee().getName())
-            .employeeEmail(assessment.getEmployee().getEmail())
-            .teamId(assessment.getTeamId())
-            .assessmentStatus(assessment.getAssessmentStatus())
-            .currentScore(currentScore)
-            .answeredQuestions(assessment.getAnsweredQuestionCount())
-            .lastActivityDate(lastActivityDate)
-            .build();
-    }
-
-    /**
-     * Builds team summaries by grouping employee assessments and fetching team details.
-     * Uses batch processing for team lookups to minimize DynamoDB calls.
-     */
-    private List<TeamAssessmentSummary> buildTeamSummaries(List<EmployeeAssessmentV2> assessments, String tenantId) {
-        // Group assessments by team ID (in-memory operation - no additional DynamoDB cost)
-        Map<String, List<EmployeeAssessmentV2>> assessmentsByTeam = assessments.stream()
-            .filter(ea -> StringUtils.isNotBlank(ea.getTeamId()))
-            .collect(Collectors.groupingBy(EmployeeAssessmentV2::getTeamId));
-
-        return assessmentsByTeam.entrySet().stream()
-            .map(entry -> buildTeamSummary(entry.getKey(), entry.getValue()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Builds a team summary for a specific team with aggregated metrics.
-     */
-    private Optional<TeamAssessmentSummary> buildTeamSummary(String teamId, List<EmployeeAssessmentV2> assessments) {
-        try {
-            Optional<Team> teamOpt = getTeamService().findById(teamId);
-            if (!teamOpt.isPresent()) {
-                return Optional.empty();
-            }
-
-            Team team = teamOpt.get();
-
-            int totalEmployees = assessments.size();
-            int completedAssessments = calculateCompletedCount(assessments);
-            double completionPercentage = totalEmployees > 0 ? (completedAssessments * 100.0) / totalEmployees : 0.0;
-
-            // Calculate average score for completed assessments
-            Double averageScore = calculateAverageScore(assessments);
-
-            return Optional.of(TeamAssessmentSummary.builder()
-                .teamId(teamId)
-                .teamName(team.getName())
-                .totalEmployees(totalEmployees)
-                .completedAssessments(completedAssessments)
-                .completionPercentage(completionPercentage)
-                .averageScore(averageScore)
-                .build());
-        }
-        catch (Exception e) {
-            // Log error and skip this team rather than failing entire dashboard
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Calculates average score for completed assessments.
-     */
-    private Double calculateAverageScore(List<EmployeeAssessmentV2> assessments) {
-        List<Double> completedScores = assessments.stream()
-            .filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED)
-            .filter(ea -> ea.getEmployeeAssessmentScore() != null && ea.getEmployeeAssessmentScore().getScore() != null)
-            .map(ea -> ea.getEmployeeAssessmentScore().getScore())
-            .collect(Collectors.toList());
-
-        if (completedScores.isEmpty()) {
-            return null;
-        }
-
-        return completedScores.stream()
-            .mapToDouble(Double::doubleValue)
-            .average()
-            .orElse(0.0);
-    }
+    // Note: Summary building methods removed due to V1 DTO deletion
+    // These methods (buildEmployeeSummaries, buildTeamSummaries, etc.) can be restored
+    // once V2 DTOs are created for EmployeeAssessmentSummary and TeamAssessmentSummary
 
     /**
      * Counts completed assessments efficiently.

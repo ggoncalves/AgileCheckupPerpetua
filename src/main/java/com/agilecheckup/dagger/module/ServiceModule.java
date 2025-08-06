@@ -4,35 +4,20 @@ import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
 import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
 import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
-import com.agilecheckup.persistency.repository.AnswerRepository;
-import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
-import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepositoryV2;
-import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
 import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
 import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
-import com.agilecheckup.persistency.repository.TeamRepository;
 import com.agilecheckup.persistency.repository.TeamRepositoryV2;
-import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
 import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
-import com.agilecheckup.service.AbstractCrudService;
-import com.agilecheckup.service.AnswerService;
 import com.agilecheckup.service.AnswerServiceV2;
-import com.agilecheckup.service.AssessmentMatrixService;
 import com.agilecheckup.service.AssessmentMatrixServiceV2;
 import com.agilecheckup.service.AssessmentNavigationServiceV2;
-import com.agilecheckup.service.CompanyService;
 import com.agilecheckup.service.CompanyServiceV2;
-import com.agilecheckup.service.DashboardAnalyticsService;
 import com.agilecheckup.service.DashboardAnalyticsServiceV2;
 import com.agilecheckup.service.DepartmentServiceV2;
-import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.EmployeeAssessmentServiceV2;
-import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.QuestionServiceV2;
-import com.agilecheckup.service.TeamService;
 import com.agilecheckup.service.TeamServiceV2;
 import dagger.Binds;
 import dagger.Lazy;
@@ -44,11 +29,6 @@ import javax.inject.Singleton;
 @Module
 public abstract class ServiceModule {
 
-  @Binds
-  abstract AbstractCrudService provideQuestionService(QuestionService questionService);
-
-  @Binds
-  abstract AbstractCrudService provideCompanyServiceLegacy(CompanyService companyService);
 
   @Provides
   @Singleton
@@ -63,11 +43,6 @@ public abstract class ServiceModule {
     return new TeamServiceV2(teamRepositoryV2);
   }
 
-  @Provides
-  @Singleton
-  static TeamService provideTeamServiceLegacy(TeamRepository teamRepository, DepartmentServiceV2 departmentServiceV2) {
-    return new TeamService(teamRepository, departmentServiceV2);
-  }
 
   @Provides
   @Singleton
@@ -75,48 +50,9 @@ public abstract class ServiceModule {
     return new PerformanceCycleServiceV2(performanceCycleRepositoryV2, companyServiceV2);
   }
 
-  @Provides
-  @Singleton
-  static PerformanceCycleService providePerformanceCycleServiceLegacy(PerformanceCycleRepository performanceCycleRepository, CompanyService companyService) {
-    return new PerformanceCycleService(performanceCycleRepository, companyService);
-  }
 
-  @Provides
-  @Singleton
-  static AssessmentMatrixService provideAssessmentMatrixService(
-      AssessmentMatrixRepository assessmentMatrixRepository,
-      PerformanceCycleService performanceCycleService,
-      Lazy<QuestionService> questionService,
-      Lazy<EmployeeAssessmentService> employeeAssessmentService,
-      Lazy<TeamService> teamServiceLegacy) {
-    return new AssessmentMatrixService(assessmentMatrixRepository, performanceCycleService, 
-        questionService, employeeAssessmentService, teamServiceLegacy);
-  }
 
-  @Provides
-  @Singleton  
-  static EmployeeAssessmentService provideEmployeeAssessmentService(
-      EmployeeAssessmentRepository employeeAssessmentRepository,
-      AssessmentMatrixService assessmentMatrixService,
-      TeamService teamService,
-      AnswerRepository answerRepository) {
-    return new EmployeeAssessmentService(employeeAssessmentRepository, assessmentMatrixService,
-        teamService, answerRepository);
-  }
 
-  @Provides
-  @Singleton  
-  static DashboardAnalyticsService provideDashboardAnalyticsService(
-      DashboardAnalyticsRepository dashboardAnalyticsRepository,
-      AssessmentMatrixServiceV2 assessmentMatrixService,
-      EmployeeAssessmentServiceV2 employeeAssessmentService,
-      CompanyServiceV2 companyServiceV2,
-      PerformanceCycleServiceV2 performanceCycleServiceV2,
-      TeamRepositoryV2 teamRepository,
-      AnswerRepositoryV2 answerRepository) {
-    return new DashboardAnalyticsService(dashboardAnalyticsRepository, assessmentMatrixService, 
-        employeeAssessmentService, companyServiceV2, performanceCycleServiceV2, teamRepository, answerRepository);
-  }
 
   @Provides
   @Singleton  
@@ -132,8 +68,6 @@ public abstract class ServiceModule {
         employeeAssessmentService, companyServiceV2, performanceCycleServiceV2, teamRepository, answerRepository);
   }
 
-  @Binds
-  abstract AbstractCrudService provideAnswerService(AnswerService answerService);
 
   @Provides
   @Singleton
@@ -146,11 +80,11 @@ public abstract class ServiceModule {
   static AssessmentMatrixServiceV2 provideAssessmentMatrixServiceV2(
       AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
       PerformanceCycleServiceV2 performanceCycleServiceV2,
-      Lazy<QuestionService> questionService,
+      Lazy<QuestionServiceV2> questionServiceV2,
       Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
-      Lazy<TeamService> teamServiceLegacy) {
+      Lazy<TeamServiceV2> teamServiceV2) {
     return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleServiceV2,
-        questionService, employeeAssessmentServiceV2, teamServiceLegacy);
+        questionServiceV2, employeeAssessmentServiceV2, teamServiceV2);
   }
 
   @Provides

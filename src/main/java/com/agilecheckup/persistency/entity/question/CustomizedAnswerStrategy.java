@@ -24,7 +24,7 @@ public class CustomizedAnswerStrategy extends AnswerStrategy<String> {
     if (!isStringValid(value)) return false;
     for (String stringValue : getSplitValues(value)) {
       int intValue = Integer.parseInt(stringValue);
-      if (intValue < MIN_VALUE || intValue > getQuestion().getOptionGroup().getOptionMap().size()) {
+      if (intValue < MIN_VALUE || intValue > getQuestionV2().getOptionGroup().getOptionMap().size()) {
         return false;
       }
     }
@@ -46,7 +46,7 @@ public class CustomizedAnswerStrategy extends AnswerStrategy<String> {
   }
 
   private Pattern getPattern() {
-    if (getQuestion().getOptionGroup().isMultipleChoice()) return MULTIPLE_CHOICE_PATTERN;
+    if (getQuestionV2().getOptionGroup().isMultipleChoice()) return MULTIPLE_CHOICE_PATTERN;
     return SINGLEs_CHOICE_PATTERN;
   }
 }

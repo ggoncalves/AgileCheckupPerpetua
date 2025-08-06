@@ -1,8 +1,17 @@
 package com.agilecheckup.persistency.entity.person;
 
-import com.agilecheckup.persistency.entity.base.AuditableEntity;
-import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import lombok.*;
+import com.agilecheckup.persistency.entity.base.AuditableEntityV2;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTyped;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
@@ -12,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @DynamoDBDocument
-public class Person extends AuditableEntity {
+public class Person extends AuditableEntityV2 {
 
   @NonNull
   @DynamoDBAttribute(attributeName = "name")
