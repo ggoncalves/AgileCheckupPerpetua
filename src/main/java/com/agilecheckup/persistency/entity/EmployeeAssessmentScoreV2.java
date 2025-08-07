@@ -5,6 +5,7 @@ import com.agilecheckup.persistency.entity.score.Scorable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
@@ -20,10 +21,10 @@ import java.util.Map;
 @DynamoDbBean
 public class EmployeeAssessmentScoreV2 implements Scorable {
 
-  @lombok.Getter(onMethod_ = @__({@DynamoDbAttribute("pillarIdToPillarScoreMap")}))
+  @Getter(onMethod_ = @__({@DynamoDbAttribute("pillarIdToPillarScoreMap")}))
   private Map<String, PillarScoreV2> pillarIdToPillarScoreMap;
   
-  @lombok.Getter(onMethod_ = @__({@DynamoDbAttribute("score")}))
+  @Getter(onMethod_ = @__({@DynamoDbAttribute("score")}))
   private Double score;
 
 }

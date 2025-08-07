@@ -4,6 +4,7 @@ import com.agilecheckup.persistency.converter.InstantAttributeConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -26,105 +27,51 @@ import java.time.Instant;
 @DynamoDbBean
 public class DashboardAnalyticsV2 implements Serializable {
 
+    @Getter(onMethod_ = @__({@DynamoDbPartitionKey, @DynamoDbAttribute("companyPerformanceCycleId")}))
     private String companyPerformanceCycleId; // Format: companyId#performanceCycleId
+    
+    @Getter(onMethod_ = @__({@DynamoDbSortKey, @DynamoDbAttribute("assessmentMatrixTeamId")}))
     private String assessmentMatrixScopeId; // Format: assessmentMatrixId#scope#teamId (teamId is null for ASSESSMENT_MATRIX scope)
+    
+    @Getter(onMethod_ = @__({@DynamoDbSecondaryPartitionKey(indexNames = {"company-cycle-index"}), @DynamoDbAttribute("companyId")}))
     private String companyId;
+    
+    @Getter(onMethod_ = @__({@DynamoDbSecondarySortKey(indexNames = {"company-cycle-index"}), @DynamoDbAttribute("performanceCycleId")}))
     private String performanceCycleId;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("assessmentMatrixId")))
     private String assessmentMatrixId;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("scope")))
     private AnalyticsScope scope;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("teamId")))
     private String teamId;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("teamName")))
     private String teamName;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("companyName")))
     private String companyName;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("performanceCycleName")))
     private String performanceCycleName;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("assessmentMatrixName")))
     private String assessmentMatrixName;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("generalAverage")))
     private Double generalAverage;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("employeeCount")))
     private Integer employeeCount;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("completionPercentage")))
     private Double completionPercentage;
+    
+    @Getter(onMethod_ = @__({@DynamoDbAttribute("lastUpdated"), @DynamoDbConvertedBy(InstantAttributeConverter.class)}))
     private Instant lastUpdated;
+    
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("analyticsDataJson")))
     private String analyticsDataJson;
-
-    @DynamoDbPartitionKey
-    @DynamoDbAttribute("companyPerformanceCycleId")
-    public String getCompanyPerformanceCycleId() {
-        return companyPerformanceCycleId;
-    }
-
-    @DynamoDbSortKey
-    @DynamoDbAttribute("assessmentMatrixTeamId")
-    public String getAssessmentMatrixScopeId() {
-        return assessmentMatrixScopeId;
-    }
-
-    @DynamoDbSecondaryPartitionKey(indexNames = {"company-cycle-index"})
-    @DynamoDbAttribute("companyId")
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    @DynamoDbSecondarySortKey(indexNames = {"company-cycle-index"})
-    @DynamoDbAttribute("performanceCycleId")
-    public String getPerformanceCycleId() {
-        return performanceCycleId;
-    }
-
-    @DynamoDbAttribute("assessmentMatrixId")
-    public String getAssessmentMatrixId() {
-        return assessmentMatrixId;
-    }
-
-    @DynamoDbAttribute("scope")
-    public AnalyticsScope getScope() {
-        return scope;
-    }
-
-    @DynamoDbAttribute("teamId")
-    public String getTeamId() {
-        return teamId;
-    }
-
-    @DynamoDbAttribute("teamName")
-    public String getTeamName() {
-        return teamName;
-    }
-
-    @DynamoDbAttribute("companyName")
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    @DynamoDbAttribute("performanceCycleName")
-    public String getPerformanceCycleName() {
-        return performanceCycleName;
-    }
-
-    @DynamoDbAttribute("assessmentMatrixName")
-    public String getAssessmentMatrixName() {
-        return assessmentMatrixName;
-    }
-
-    @DynamoDbAttribute("generalAverage")
-    public Double getGeneralAverage() {
-        return generalAverage;
-    }
-
-    @DynamoDbAttribute("employeeCount")
-    public Integer getEmployeeCount() {
-        return employeeCount;
-    }
-
-    @DynamoDbAttribute("completionPercentage")
-    public Double getCompletionPercentage() {
-        return completionPercentage;
-    }
-
-    @DynamoDbAttribute("lastUpdated")
-    @DynamoDbConvertedBy(InstantAttributeConverter.class)
-    public Instant getLastUpdated() {
-        return lastUpdated;
-    }
-
-    @DynamoDbAttribute("analyticsDataJson")
-    public String getAnalyticsDataJson() {
-        return analyticsDataJson;
-    }
 }

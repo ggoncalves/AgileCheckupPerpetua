@@ -17,11 +17,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 public class TeamV2 extends TenantDescribableEntityV2 {
 
     @NonNull
+    @Getter(onMethod_ = @__({@DynamoDbAttribute("departmentId"), @DynamoDbSecondaryPartitionKey(indexNames = "departmentId-index")}))
     private String departmentId;
-
-    @DynamoDbAttribute("departmentId")
-    @DynamoDbSecondaryPartitionKey(indexNames = "departmentId-index")
-    public String getDepartmentId() {
-        return departmentId;
-    }
 }

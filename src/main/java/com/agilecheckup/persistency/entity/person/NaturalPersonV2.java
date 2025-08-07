@@ -1,5 +1,7 @@
 package com.agilecheckup.persistency.entity.person;
 
+import com.agilecheckup.persistency.converter.GenderConverter;
+import com.agilecheckup.persistency.converter.GenderPronounConverter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,55 +32,4 @@ public class NaturalPersonV2 extends PersonV2 {
 
     @Getter(onMethod_=@__({@DynamoDbAttribute("genderPronoun"), @DynamoDbConvertedBy(GenderPronounConverter.class)}))
     private GenderPronoun genderPronoun;
-
-    // Converters for enums
-    public static class GenderConverter implements AttributeConverter<Gender> {
-        @Override
-        public AttributeValue transformFrom(Gender input) {
-            return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder().nul(true).build();
-        }
-
-        @Override
-        public Gender transformTo(AttributeValue input) {
-            if (input == null || input.nul() != null && input.nul()) {
-                return null;
-            }
-            return Gender.valueOf(input.s());
-        }
-
-        @Override
-        public EnhancedType<Gender> type() {
-            return EnhancedType.of(Gender.class);
-        }
-
-        @Override
-        public AttributeValueType attributeValueType() {
-            return AttributeValueType.S;
-        }
-    }
-
-    public static class GenderPronounConverter implements AttributeConverter<GenderPronoun> {
-        @Override
-        public AttributeValue transformFrom(GenderPronoun input) {
-            return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder().nul(true).build();
-        }
-
-        @Override
-        public GenderPronoun transformTo(AttributeValue input) {
-            if (input == null || input.nul() != null && input.nul()) {
-                return null;
-            }
-            return GenderPronoun.valueOf(input.s());
-        }
-
-        @Override
-        public EnhancedType<GenderPronoun> type() {
-            return EnhancedType.of(GenderPronoun.class);
-        }
-
-        @Override
-        public AttributeValueType attributeValueType() {
-            return AttributeValueType.S;
-        }
-    }
 }
