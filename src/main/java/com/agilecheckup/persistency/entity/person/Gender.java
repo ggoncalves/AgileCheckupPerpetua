@@ -1,5 +1,10 @@
 package com.agilecheckup.persistency.entity.person;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Getter
 public enum Gender {
   MALE("Male"),
   FEMALE("Female"),
@@ -11,11 +16,4 @@ public enum Gender {
 
   private final String label;
 
-  Gender(String label) {
-    this.label = label;
-  }
-
-  public String getLabel() {
-    return label;
-  }
 }

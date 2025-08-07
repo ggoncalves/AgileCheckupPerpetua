@@ -19,41 +19,20 @@ import java.time.LocalDate;
 public class PerformanceCycleV2 extends TenantDescribableEntityV2 {
 
     @NonNull
+    @Getter(onMethod_ = @__({@DynamoDbAttribute("companyId"), @DynamoDbSecondaryPartitionKey(indexNames = "companyId-index")}))
     private String companyId;
 
     @NonNull
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("isTimeSensitive")))
     private Boolean isTimeSensitive;
 
     @NonNull
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("isActive")))
     private Boolean isActive;
 
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("startDate")))
     private LocalDate startDate;
 
+    @Getter(onMethod_ = @__(@DynamoDbAttribute("endDate")))
     private LocalDate endDate;
-
-    @DynamoDbAttribute("companyId")
-    @DynamoDbSecondaryPartitionKey(indexNames = "companyId-index")
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    @DynamoDbAttribute("isTimeSensitive")
-    public Boolean getIsTimeSensitive() {
-        return isTimeSensitive;
-    }
-
-    @DynamoDbAttribute("isActive")
-    public Boolean getIsActive() {
-        return isActive;
-    }
-
-    @DynamoDbAttribute("startDate")
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    @DynamoDbAttribute("endDate")
-    public LocalDate getEndDate() {
-        return endDate;
-    }
 }
