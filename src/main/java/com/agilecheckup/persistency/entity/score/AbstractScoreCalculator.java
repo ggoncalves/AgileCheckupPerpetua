@@ -12,9 +12,9 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractScoreCalculator {
 
   @NonNull
-  final String value;
+  protected final String value;
   
-  final QuestionV2 questionV2;
+  protected final QuestionV2 questionV2;
 
   public abstract Double getCalculatedScore();
   

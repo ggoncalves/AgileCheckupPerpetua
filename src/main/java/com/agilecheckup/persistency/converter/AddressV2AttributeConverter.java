@@ -15,12 +15,12 @@ public class AddressV2AttributeConverter implements AttributeConverter<AddressV2
     // Convert AddressV2 to JSON string for storage
     return AttributeValue.builder().s(String.format(
         "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}",
-        input.getId() != null ? input.getId() : "",
-        input.getStreet() != null ? input.getStreet().replace("\"", "\\\"") : "",
-        input.getCity() != null ? input.getCity().replace("\"", "\\\"") : "",
-        input.getState() != null ? input.getState().replace("\"", "\\\"") : "",
-        input.getZipcode() != null ? input.getZipcode().replace("\"", "\\\"") : "",
-        input.getCountry() != null ? input.getCountry().replace("\"", "\\\"") : ""
+        escapeJsonValue(input.getId()),
+        escapeJsonValue(input.getStreet()),
+        escapeJsonValue(input.getCity()),
+        escapeJsonValue(input.getState()),
+        escapeJsonValue(input.getZipcode()),
+        escapeJsonValue(input.getCountry())
     )).build();
   }
 
@@ -59,14 +59,66 @@ public class AddressV2AttributeConverter implements AttributeConverter<AddressV2
     return address;
   }
 
+  private String escapeJsonValue(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value.replace("\\", "\\\\")    // Escape backslashes first
+                .replace("\"", "\\\"")    // Escape quotes
+                .replace("\n", "\\n")     // Escape newlines
+                .replace("\r", "\\r")     // Escape carriage returns
+                .replace("\t", "\\t");    // Escape tabs
+  }
+
   private String extractJsonValue(String json, String key) {
     String pattern = "\"" + key + "\":\"";
     int startIndex = json.indexOf(pattern);
     if (startIndex == -1) return "";
+    
     startIndex += pattern.length();
-    int endIndex = json.indexOf("\"", startIndex);
-    if (endIndex == -1) return "";
-    return json.substring(startIndex, endIndex).replace("\\\"", "\"");
+    StringBuilder result = new StringBuilder();
+    
+    for (int i = startIndex; i < json.length(); i++) {
+      char ch = json.charAt(i);
+      
+      if (ch == '"') {
+        // Found closing quote, we're done
+        break;
+      } else if (ch == '\\' && i + 1 < json.length()) {
+        // Handle escaped characters
+        char nextChar = json.charAt(i + 1);
+        switch (nextChar) {
+          case '"':
+            result.append('"');
+            i++; // Skip the escaped character
+            break;
+          case '\\':
+            result.append('\\');
+            i++; // Skip the escaped character
+            break;
+          case 'n':
+            result.append('\n');
+            i++; // Skip the escaped character
+            break;
+          case 'r':
+            result.append('\r');
+            i++; // Skip the escaped character
+            break;
+          case 't':
+            result.append('\t');
+            i++; // Skip the escaped character
+            break;
+          default:
+            // Unknown escape sequence, keep the backslash
+            result.append(ch);
+            break;
+        }
+      } else {
+        result.append(ch);
+      }
+    }
+    
+    return result.toString();
   }
 
   @Override
