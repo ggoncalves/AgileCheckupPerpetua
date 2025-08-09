@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.PillarV2;
+import com.agilecheckup.persistency.entity.Pillar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,15 +13,15 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.Map;
 
-public class PillarMapAttributeConverter implements AttributeConverter<Map<String, PillarV2>> {
+public class PillarMapAttributeConverter implements AttributeConverter<Map<String, Pillar>> {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setDateFormat(new StdDateFormat());
-    private static final TypeReference<Map<String, PillarV2>> TYPE_REFERENCE = new TypeReference<Map<String, PillarV2>>() {};
+    private static final TypeReference<Map<String, Pillar>> TYPE_REFERENCE = new TypeReference<Map<String, Pillar>>() {};
 
     @Override
-    public AttributeValue transformFrom(Map<String, PillarV2> input) {
+    public AttributeValue transformFrom(Map<String, Pillar> input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
@@ -34,7 +34,7 @@ public class PillarMapAttributeConverter implements AttributeConverter<Map<Strin
     }
 
     @Override
-    public Map<String, PillarV2> transformTo(AttributeValue input) {
+    public Map<String, Pillar> transformTo(AttributeValue input) {
         if (input.nul() != null && input.nul()) {
             return null;
         }
@@ -46,8 +46,8 @@ public class PillarMapAttributeConverter implements AttributeConverter<Map<Strin
     }
 
     @Override
-    public EnhancedType<Map<String, PillarV2>> type() {
-        return EnhancedType.mapOf(String.class, PillarV2.class);
+    public EnhancedType<Map<String, Pillar>> type() {
+        return EnhancedType.mapOf(String.class, Pillar.class);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package com.agilecheckup.persistency.entity.score.strategy;
 
-import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.AbstractScoreCalculator;
 
 public class ScoreCalculationStrategyFactory {
 
-  public static AbstractScoreCalculator createStrategy(QuestionV2 question, String value) {
+  public static AbstractScoreCalculator createStrategy(Question question, String value) {
     switch (question.getQuestionType()) {
       case STAR_THREE:
         return StarThreeScoreCalculationStrategy.builder().questionV2(question).value(value).build();

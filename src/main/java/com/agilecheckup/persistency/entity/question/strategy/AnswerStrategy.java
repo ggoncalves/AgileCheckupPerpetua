@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity.question.strategy;
 
-import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.entity.question.Question;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -16,7 +16,7 @@ public abstract class AnswerStrategy<T> {
 
   private T value;
   
-  private QuestionV2 questionV2;
+  private Question questionV2;
 
   // TODO: Must refactor to be inside QuestionValidationRules
   // QuestionValidationRules must have allowNullValue, answerMaxCharacters.

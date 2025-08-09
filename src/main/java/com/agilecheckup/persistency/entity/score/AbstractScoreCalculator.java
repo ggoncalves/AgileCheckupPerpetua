@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.entity.score;
 
-import com.agilecheckup.persistency.entity.question.QuestionV2;
+import com.agilecheckup.persistency.entity.question.Question;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -14,7 +14,7 @@ public abstract class AbstractScoreCalculator {
   @NonNull
   protected final String value;
   
-  protected final QuestionV2 questionV2;
+  protected final Question questionV2;
 
   public abstract Double getCalculatedScore();
   

@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
+import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -10,14 +10,14 @@ import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-public class PotentialScoreAttributeConverter implements AttributeConverter<PotentialScoreV2> {
+public class PotentialScoreAttributeConverter implements AttributeConverter<PotentialScore> {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setDateFormat(new StdDateFormat());
 
     @Override
-    public AttributeValue transformFrom(PotentialScoreV2 input) {
+    public AttributeValue transformFrom(PotentialScore input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
@@ -30,7 +30,7 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
     }
 
     @Override
-    public PotentialScoreV2 transformTo(AttributeValue input) {
+    public PotentialScore transformTo(AttributeValue input) {
         if (input.nul() != null && input.nul()) {
             return null;
         }
@@ -41,15 +41,15 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
         }
         
         try {
-            return OBJECT_MAPPER.readValue(content, PotentialScoreV2.class);
+            return OBJECT_MAPPER.readValue(content, PotentialScore.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to deserialize PotentialScoreV2", e);
         }
     }
 
     @Override
-    public EnhancedType<PotentialScoreV2> type() {
-        return EnhancedType.of(PotentialScoreV2.class);
+    public EnhancedType<PotentialScore> type() {
+        return EnhancedType.of(PotentialScore.class);
     }
 
     @Override
