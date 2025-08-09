@@ -1,25 +1,24 @@
 package com.agilecheckup.dagger.module;
 
-import com.agilecheckup.persistency.repository.AnswerRepositoryV2;
-import com.agilecheckup.persistency.repository.AssessmentMatrixRepositoryV2;
-import com.agilecheckup.persistency.repository.CompanyRepositoryV2;
-import com.agilecheckup.persistency.repository.DepartmentRepositoryV2;
-import com.agilecheckup.persistency.repository.DashboardAnalyticsRepositoryV2;
-import com.agilecheckup.persistency.repository.EmployeeAssessmentRepositoryV2;
-import com.agilecheckup.persistency.repository.QuestionRepositoryV2;
-import com.agilecheckup.persistency.repository.TeamRepositoryV2;
-import com.agilecheckup.persistency.repository.PerformanceCycleRepositoryV2;
-import com.agilecheckup.service.AnswerServiceV2;
-import com.agilecheckup.service.AssessmentMatrixServiceV2;
-import com.agilecheckup.service.AssessmentNavigationServiceV2;
-import com.agilecheckup.service.CompanyServiceV2;
-import com.agilecheckup.service.DashboardAnalyticsServiceV2;
-import com.agilecheckup.service.DepartmentServiceV2;
-import com.agilecheckup.service.EmployeeAssessmentServiceV2;
-import com.agilecheckup.service.PerformanceCycleServiceV2;
-import com.agilecheckup.service.QuestionServiceV2;
-import com.agilecheckup.service.TeamServiceV2;
-import dagger.Binds;
+import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.persistency.repository.CompanyRepository;
+import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
+import com.agilecheckup.persistency.repository.DepartmentRepository;
+import com.agilecheckup.persistency.repository.EmployeeAssessmentRepository;
+import com.agilecheckup.persistency.repository.QuestionRepository;
+import com.agilecheckup.persistency.repository.TeamRepository;
+import com.agilecheckup.persistency.repository.PerformanceCycleRepository;
+import com.agilecheckup.service.AnswerService;
+import com.agilecheckup.service.AssessmentMatrixService;
+import com.agilecheckup.service.AssessmentNavigationService;
+import com.agilecheckup.service.CompanyService;
+import com.agilecheckup.service.DashboardAnalyticsService;
+import com.agilecheckup.service.DepartmentService;
+import com.agilecheckup.service.EmployeeAssessmentService;
+import com.agilecheckup.service.PerformanceCycleService;
+import com.agilecheckup.service.QuestionService;
+import com.agilecheckup.service.TeamService;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
@@ -32,22 +31,22 @@ public abstract class ServiceModule {
 
   @Provides
   @Singleton
-  static DepartmentServiceV2 provideDepartmentService(DepartmentRepositoryV2 departmentRepositoryV2,
-                                                      CompanyServiceV2 companyServiceV2) {
-    return new DepartmentServiceV2(departmentRepositoryV2, companyServiceV2);
+  static DepartmentService provideDepartmentService(DepartmentRepository departmentRepositoryV2,
+                                                    CompanyService companyServiceV2) {
+    return new DepartmentService(departmentRepositoryV2, companyServiceV2);
   }
 
   @Provides
   @Singleton
-  static TeamServiceV2 provideTeamService(TeamRepositoryV2 teamRepositoryV2) {
-    return new TeamServiceV2(teamRepositoryV2);
+  static TeamService provideTeamService(TeamRepository teamRepositoryV2) {
+    return new TeamService(teamRepositoryV2);
   }
 
 
   @Provides
   @Singleton
-  static PerformanceCycleServiceV2 providePerformanceCycleService(PerformanceCycleRepositoryV2 performanceCycleRepositoryV2, CompanyServiceV2 companyServiceV2) {
-    return new PerformanceCycleServiceV2(performanceCycleRepositoryV2, companyServiceV2);
+  static PerformanceCycleService providePerformanceCycleService(PerformanceCycleRepository performanceCycleRepositoryV2, CompanyService companyServiceV2) {
+    return new PerformanceCycleService(performanceCycleRepositoryV2, companyServiceV2);
   }
 
 
@@ -56,75 +55,75 @@ public abstract class ServiceModule {
 
   @Provides
   @Singleton  
-  static DashboardAnalyticsServiceV2 provideDashboardAnalyticsServiceV2(
-      DashboardAnalyticsRepositoryV2 dashboardAnalyticsRepositoryV2,
-      AssessmentMatrixServiceV2 assessmentMatrixService,
-      EmployeeAssessmentServiceV2 employeeAssessmentService,
-      CompanyServiceV2 companyServiceV2,
-      PerformanceCycleServiceV2 performanceCycleServiceV2,
-      TeamRepositoryV2 teamRepository,
-      AnswerRepositoryV2 answerRepository) {
-    return new DashboardAnalyticsServiceV2(dashboardAnalyticsRepositoryV2, assessmentMatrixService, 
+  static DashboardAnalyticsService provideDashboardAnalyticsServiceV2(
+      DashboardAnalyticsRepository dashboardAnalyticsRepository,
+      AssessmentMatrixService assessmentMatrixService,
+      EmployeeAssessmentService employeeAssessmentService,
+      CompanyService companyServiceV2,
+      PerformanceCycleService performanceCycleServiceV2,
+      TeamRepository teamRepository,
+      AnswerRepository answerRepository) {
+    return new DashboardAnalyticsService(dashboardAnalyticsRepository, assessmentMatrixService,
         employeeAssessmentService, companyServiceV2, performanceCycleServiceV2, teamRepository, answerRepository);
   }
 
 
   @Provides
   @Singleton
-  static CompanyServiceV2 provideCompanyService(CompanyRepositoryV2 companyRepositoryV2) {
-    return new CompanyServiceV2(companyRepositoryV2);
+  static CompanyService provideCompanyService(CompanyRepository companyRepositoryV2) {
+    return new CompanyService(companyRepositoryV2);
   }
 
   @Provides
   @Singleton
-  static AssessmentMatrixServiceV2 provideAssessmentMatrixServiceV2(
-      AssessmentMatrixRepositoryV2 assessmentMatrixRepositoryV2,
-      PerformanceCycleServiceV2 performanceCycleServiceV2,
-      Lazy<QuestionServiceV2> questionServiceV2,
-      Lazy<EmployeeAssessmentServiceV2> employeeAssessmentServiceV2,
-      Lazy<TeamServiceV2> teamServiceV2) {
-    return new AssessmentMatrixServiceV2(assessmentMatrixRepositoryV2, performanceCycleServiceV2,
+  static AssessmentMatrixService provideAssessmentMatrixServiceV2(
+      AssessmentMatrixRepository assessmentMatrixRepositoryV2,
+      PerformanceCycleService performanceCycleServiceV2,
+      Lazy<QuestionService> questionServiceV2,
+      Lazy<EmployeeAssessmentService> employeeAssessmentServiceV2,
+      Lazy<TeamService> teamServiceV2) {
+    return new AssessmentMatrixService(assessmentMatrixRepositoryV2, performanceCycleServiceV2,
         questionServiceV2, employeeAssessmentServiceV2, teamServiceV2);
   }
 
   @Provides
   @Singleton  
-  static EmployeeAssessmentServiceV2 provideEmployeeAssessmentServiceV2(
-      EmployeeAssessmentRepositoryV2 employeeAssessmentRepositoryV2,
-      AssessmentMatrixServiceV2 assessmentMatrixServiceV2,
-      TeamServiceV2 teamService,
-      AnswerRepositoryV2 answerRepository) {
-    return new EmployeeAssessmentServiceV2(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2,
+  static EmployeeAssessmentService provideEmployeeAssessmentServiceV2(
+      EmployeeAssessmentRepository employeeAssessmentRepositoryV2,
+      AssessmentMatrixService assessmentMatrixServiceV2,
+      TeamService teamService,
+      AnswerRepository answerRepository) {
+    return new EmployeeAssessmentService(employeeAssessmentRepositoryV2, assessmentMatrixServiceV2,
         teamService, answerRepository);
   }
 
   @Provides
   @Singleton
-  static QuestionServiceV2 provideQuestionServiceV2(
-      QuestionRepositoryV2 questionRepositoryV2,
-      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
-    return new QuestionServiceV2(questionRepositoryV2, assessmentMatrixServiceV2);
+  static QuestionService provideQuestionServiceV2(
+      QuestionRepository questionRepositoryV2,
+      AssessmentMatrixService assessmentMatrixServiceV2) {
+    return new QuestionService(questionRepositoryV2, assessmentMatrixServiceV2);
   }
 
   @Provides
   @Singleton
-  static AnswerServiceV2 provideAnswerServiceV2(
-      AnswerRepositoryV2 answerRepositoryV2,
-      EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
-      QuestionServiceV2 questionServiceV2,
-      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
-    return new AnswerServiceV2(answerRepositoryV2, employeeAssessmentServiceV2, 
+  static AnswerService provideAnswerServiceV2(
+      AnswerRepository answerRepositoryV2,
+      EmployeeAssessmentService employeeAssessmentServiceV2,
+      QuestionService questionServiceV2,
+      AssessmentMatrixService assessmentMatrixServiceV2) {
+    return new AnswerService(answerRepositoryV2, employeeAssessmentServiceV2,
         questionServiceV2, assessmentMatrixServiceV2);
   }
 
   @Provides
   @Singleton
-  static AssessmentNavigationServiceV2 provideAssessmentNavigationServiceV2(
-      QuestionServiceV2 questionService,
-      AnswerServiceV2 answerServiceV2,
-      EmployeeAssessmentServiceV2 employeeAssessmentServiceV2,
-      AssessmentMatrixServiceV2 assessmentMatrixServiceV2) {
-    return new AssessmentNavigationServiceV2(questionService, answerServiceV2, 
+  static AssessmentNavigationService provideAssessmentNavigationServiceV2(
+      QuestionService questionService,
+      AnswerService answerServiceV2,
+      EmployeeAssessmentService employeeAssessmentServiceV2,
+      AssessmentMatrixService assessmentMatrixServiceV2) {
+    return new AssessmentNavigationService(questionService, answerServiceV2,
         employeeAssessmentServiceV2, assessmentMatrixServiceV2);
   }
 

@@ -1,6 +1,6 @@
 package com.agilecheckup.service.dto;
 
-import com.agilecheckup.persistency.entity.score.PotentialScoreV2;
+import com.agilecheckup.persistency.entity.score.PotentialScore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,9 +21,9 @@ public class AssessmentDashboardData {
     
     private String assessmentMatrixId;
     private String matrixName;
-    private PotentialScoreV2 potentialScore;
-    private List<TeamAssessmentSummaryV2> teamSummaries;
-    private List<EmployeeAssessmentSummaryV2> employeeSummaries;
+    private PotentialScore potentialScore;
+    private List<TeamAssessmentSummary> teamSummaries;
+    private List<EmployeeAssessmentSummary> employeeSummaries;
     private int totalEmployees;
     private int completedAssessments;
 }

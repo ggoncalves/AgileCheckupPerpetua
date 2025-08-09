@@ -1,6 +1,6 @@
 package com.agilecheckup.persistency.converter;
 
-import com.agilecheckup.persistency.entity.person.NaturalPersonV2;
+import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
@@ -8,12 +8,12 @@ import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-public class NaturalPersonAttributeConverter implements AttributeConverter<NaturalPersonV2> {
+public class NaturalPersonAttributeConverter implements AttributeConverter<NaturalPerson> {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
-    public AttributeValue transformFrom(NaturalPersonV2 input) {
+    public AttributeValue transformFrom(NaturalPerson input) {
         if (input == null) {
             return AttributeValue.builder().nul(true).build();
         }
@@ -27,7 +27,7 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
     }
 
     @Override
-    public NaturalPersonV2 transformTo(AttributeValue input) {
+    public NaturalPerson transformTo(AttributeValue input) {
         if (input.nul() != null && input.nul()) {
             return null;
         }
@@ -38,15 +38,15 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
         }
         
         try {
-            return OBJECT_MAPPER.readValue(content, NaturalPersonV2.class);
+            return OBJECT_MAPPER.readValue(content, NaturalPerson.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to deserialize NaturalPersonV2", e);
         }
     }
 
     @Override
-    public EnhancedType<NaturalPersonV2> type() {
-        return EnhancedType.of(NaturalPersonV2.class);
+    public EnhancedType<NaturalPerson> type() {
+        return EnhancedType.of(NaturalPerson.class);
     }
 
     @Override

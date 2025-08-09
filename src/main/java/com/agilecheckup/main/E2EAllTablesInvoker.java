@@ -1,11 +1,7 @@
 package com.agilecheckup.main;
 
-import com.agilecheckup.main.runner.AnswerV2TableRunner;
-import com.agilecheckup.main.runner.AssessmentMatrixTableRunnerV2;
 import com.agilecheckup.main.runner.CrudRunner;
-import com.agilecheckup.main.runner.DashboardAnalyticsV2TableRunner;
-import com.agilecheckup.main.runner.EmployeeAssessmentTableRunnerV2;
-import com.agilecheckup.main.runner.QuestionTableRunnerV2;
+import com.agilecheckup.main.runner.DashboardAnalyticsTableRunner;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
@@ -29,7 +25,7 @@ public class E2EAllTablesInvoker {
 //        new EmployeeAssessmentTableRunnerV2(true)
 //        new QuestionTableRunnerV2(true)
 //        new AnswerV2TableRunner(true),
-        new DashboardAnalyticsV2TableRunner(true)
+        new DashboardAnalyticsTableRunner(true)
     );
   }
 
