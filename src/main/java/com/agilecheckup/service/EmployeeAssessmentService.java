@@ -33,28 +33,28 @@ import java.util.stream.Collectors;
 
 public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAssessment, EmployeeAssessmentRepository> {
 
-    private final AssessmentMatrixService assessmentMatrixServiceV2;
+    private final AssessmentMatrixService assessmentMatrixService;
 
     private final TeamService teamService;
 
-    private final EmployeeAssessmentRepository employeeAssessmentRepositoryV2;
+    private final EmployeeAssessmentRepository employeeAssessmentRepository;
 
     private final AnswerRepository answerRepository;
 
     @Inject
-    public EmployeeAssessmentService(EmployeeAssessmentRepository employeeAssessmentRepositoryV2,
-                                     AssessmentMatrixService assessmentMatrixServiceV2,
+    public EmployeeAssessmentService(EmployeeAssessmentRepository employeeAssessmentRepository,
+                                     AssessmentMatrixService assessmentMatrixService,
                                      TeamService teamService,
                                      AnswerRepository answerRepository) {
-        this.employeeAssessmentRepositoryV2 = employeeAssessmentRepositoryV2;
-        this.assessmentMatrixServiceV2 = assessmentMatrixServiceV2;
+        this.employeeAssessmentRepository = employeeAssessmentRepository;
+        this.assessmentMatrixService = assessmentMatrixService;
         this.teamService = teamService;
         this.answerRepository = answerRepository;
     }
 
     @Override
     public EmployeeAssessmentRepository getRepository() {
-        return employeeAssessmentRepositoryV2;
+        return employeeAssessmentRepository;
     }
 
     public Optional<EmployeeAssessment> create(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
@@ -66,7 +66,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(id);
         if (optionalEmployeeAssessment.isPresent()) {
             EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
-            Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixServiceV2.findById(assessmentMatrixId);
+            Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
             AssessmentMatrix assessmentMatrixEntity = assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
             
             employeeAssessment.setAssessmentMatrixId(assessmentMatrixEntity.getId());
@@ -78,7 +78,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
             } else {
                 employeeAssessment.setTeamId(null);
             }
-            employeeAssessment.setEmployee(createNaturalPersonV2(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
+            employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
             employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim());
             return super.update(employeeAssessment);
         } else {
@@ -87,7 +87,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     }
 
     private EmployeeAssessment createEmployeeAssessment(@NonNull String assessmentMatrixId, String teamId, String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun) {
-        Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixServiceV2.findById(assessmentMatrixId);
+        Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
         AssessmentMatrix assessmentMatrixEntity = assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
         
         String finalTeamId = null;
@@ -103,14 +103,14 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
             .assessmentMatrixId(assessmentMatrixEntity.getId())
             .teamId(finalTeamId)
             .tenantId(tenantId)
-            .employee(createNaturalPersonV2(name, email, documentNumber, documentType, gender, genderPronoun, null))
+            .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
             .employeeEmailNormalized(email.toLowerCase().trim())
             .answeredQuestionCount(0)
             .assessmentStatus(AssessmentStatus.INVITED)
             .build();
     }
 
-    public static NaturalPerson createNaturalPersonV2(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
+    public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
         return NaturalPerson.builder()
             .id(personId)
             .name(name)
@@ -280,21 +280,21 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
      * Find all employee assessments by tenant ID
      */
     public List<EmployeeAssessment> findAllByTenantId(String tenantId) {
-        return employeeAssessmentRepositoryV2.findAllByTenantId(tenantId);
+        return employeeAssessmentRepository.findAllByTenantId(tenantId);
     }
     
     /**
      * Find all employee assessments by assessment matrix ID and tenant ID
      */
     public List<EmployeeAssessment> findByAssessmentMatrix(String assessmentMatrixId, String tenantId) {
-        return employeeAssessmentRepositoryV2.findByAssessmentMatrixId(assessmentMatrixId, tenantId);
+        return employeeAssessmentRepository.findByAssessmentMatrixId(assessmentMatrixId, tenantId);
     }
     
     /**
      * Find employee assessment by ID and tenant ID
      */
     public Optional<EmployeeAssessment> findById(String id, String tenantId) {
-        Optional<EmployeeAssessment> optionalEa = employeeAssessmentRepositoryV2.findById(id);
+        Optional<EmployeeAssessment> optionalEa = employeeAssessmentRepository.findById(id);
         if (optionalEa.isPresent() && tenantId.equals(optionalEa.get().getTenantId())) {
             return optionalEa;
         }
@@ -306,7 +306,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
      */
     @Override
     public boolean deleteById(String id) {
-        return employeeAssessmentRepositoryV2.deleteById(id);
+        return employeeAssessmentRepository.deleteById(id);
     }
     
     /**
@@ -326,7 +326,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
                 .orElseThrow(() -> new IllegalArgumentException("Employee email is required"));
             validateEmployeeAssessmentUniqueness(email, employeeAssessment.getAssessmentMatrixId());
         }
-        return employeeAssessmentRepositoryV2.save(employeeAssessment).orElse(employeeAssessment);
+        return employeeAssessmentRepository.save(employeeAssessment).orElse(employeeAssessment);
     }
     
     /**
@@ -334,7 +334,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
      * Uses efficient GSI query instead of expensive table scan.
      */
     private void validateEmployeeAssessmentUniqueness(String employeeEmail, String assessmentMatrixId) {
-        boolean exists = employeeAssessmentRepositoryV2.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, employeeEmail);
+        boolean exists = employeeAssessmentRepository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, employeeEmail);
         
         if (exists) {
             throw new EmployeeAssessmentAlreadyExistsException(employeeEmail, assessmentMatrixId);
@@ -346,7 +346,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
      * WARNING: This is an expensive operation - use only for debugging or data migration
      */
     public List<EmployeeAssessment> scanAllEmployeeAssessments() {
-        return employeeAssessmentRepositoryV2.findAll();
+        return employeeAssessmentRepository.findAll();
     }
 
     /**
@@ -365,7 +365,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
 
     private void confirmEmployeeAssessment(EmployeeAssessment assessment) {
         assessment.setAssessmentStatus(AssessmentStatus.CONFIRMED);
-        employeeAssessmentRepositoryV2.save(assessment);
+        employeeAssessmentRepository.save(assessment);
         // Update lastActivityDate for status transition
         updateLastActivityDate(assessment.getId());
     }

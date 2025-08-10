@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * V2 Service for calculating and managing dashboard analytics.
+ *  Service for calculating and managing dashboard analytics.
  */
 @Slf4j
 @Singleton
@@ -56,8 +56,8 @@ public class DashboardAnalyticsService {
     private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
     private final AssessmentMatrixService assessmentMatrixService;
     private final EmployeeAssessmentService employeeAssessmentService;
-    private final CompanyService companyServiceV2;
-    private final PerformanceCycleService performanceCycleServiceV2;
+    private final CompanyService companyService;
+    private final PerformanceCycleService performanceCycleService;
     private final TeamRepository teamRepository;
     private final AnswerRepository answerRepository;
     private final ObjectMapper objectMapper;
@@ -67,15 +67,15 @@ public class DashboardAnalyticsService {
             DashboardAnalyticsRepository dashboardAnalyticsRepository,
             AssessmentMatrixService assessmentMatrixService,
             EmployeeAssessmentService employeeAssessmentService,
-            CompanyService companyServiceV2,
-            PerformanceCycleService performanceCycleServiceV2,
+            CompanyService companyService,
+            PerformanceCycleService performanceCycleService,
             TeamRepository teamRepository,
             AnswerRepository answerRepository) {
         this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
         this.assessmentMatrixService = assessmentMatrixService;
         this.employeeAssessmentService = employeeAssessmentService;
-        this.companyServiceV2 = companyServiceV2;
-        this.performanceCycleServiceV2 = performanceCycleServiceV2;
+        this.companyService = companyService;
+        this.performanceCycleService = performanceCycleService;
         this.teamRepository = teamRepository;
         this.answerRepository = answerRepository;
         this.objectMapper = new ObjectMapper();
@@ -95,7 +95,7 @@ public class DashboardAnalyticsService {
         AssessmentMatrix matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycle> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
+        Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
 
         try {
@@ -124,7 +124,7 @@ public class DashboardAnalyticsService {
         AssessmentMatrix matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycle> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
+        Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
 
         try {
@@ -152,7 +152,7 @@ public class DashboardAnalyticsService {
         AssessmentMatrix matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycle> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
+        Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
 
         if (companyId == null) {
@@ -178,12 +178,12 @@ public class DashboardAnalyticsService {
         AssessmentMatrix matrix = matrixOpt.get();
         String performanceCycleId = matrix.getPerformanceCycleId();
 
-        Optional<PerformanceCycle> cycleOpt = performanceCycleServiceV2.findById(performanceCycleId);
+        Optional<PerformanceCycle> cycleOpt = performanceCycleService.findById(performanceCycleId);
         String companyId = cycleOpt.map(PerformanceCycle::getCompanyId).orElse(null);
         String performanceCycleName = cycleOpt.map(PerformanceCycle::getName).orElse("Unknown Cycle");
 
         Optional<Company> companyOpt = companyId != null ?
-                companyServiceV2.findById(companyId) : Optional.empty();
+                companyService.findById(companyId) : Optional.empty();
         String companyName = companyOpt.map(Company::getName).orElse("Unknown Company");
 
         String assessmentMatrixName = matrix.getName();

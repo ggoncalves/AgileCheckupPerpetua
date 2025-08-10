@@ -29,9 +29,9 @@ public class TestObjectFactory {
   public static final String DEFAULT_COMPANY_EMAIL = "company@email.com";
   public static final String DEFAULT_COMPANY_DOCUMENT = "0001";
 
-  // === Department V2 Factory Methods ===
+  // === Department  Factory Methods ===
 
-  public static Department createMockedDepartmentV2() {
+  public static Department createMockedDepartment() {
     Department department = new Department();
     department.setName("DepartmentName");
     department.setDescription("Department description");
@@ -42,19 +42,19 @@ public class TestObjectFactory {
     return department;
   }
 
-  public static Department createMockedDepartmentV2WithDependenciesId(String companyId) {
-    Department department = createMockedDepartmentV2();
+  public static Department createMockedDepartmentWithDependenciesId(String companyId) {
+    Department department = createMockedDepartment();
     department.setCompanyId(companyId);
     return department;
   }
 
-  public static Department createMockedDepartmentV2(String id) {
-    Department department = createMockedDepartmentV2();
+  public static Department createMockedDepartment(String id) {
+    Department department = createMockedDepartment();
     department.setId(id);
     return department;
   }
 
-  public static Department createMockedDepartmentV2(@NonNull String name, @NonNull String description,
+  public static Department createMockedDepartment(@NonNull String name, @NonNull String description,
                                                     @NonNull String tenantId, @NonNull String companyId) {
     Department department = new Department();
     department.setName(name);
@@ -66,7 +66,7 @@ public class TestObjectFactory {
     return department;
   }
 
-  public static Department copyDepartmentV2AndAddId(Department department, String id) {
+  public static Department copyDepartmentAndAddId(Department department, String id) {
     Department copy = new Department();
     copy.setId(id);
     copy.setName(department.getName());
@@ -78,11 +78,11 @@ public class TestObjectFactory {
     return copy;
   }
 
-  // === Team V2 Factory Methods ===
+  // === Team  Factory Methods ===
 
   public static final String DEFAULT_DEPARTMENT_ID = "dept-789";
 
-  public static Team createMockedTeamV2() {
+  public static Team createMockedTeam() {
     Team team = new Team();
     team.setName("Team Name");
     team.setDescription("Team description");
@@ -93,19 +93,19 @@ public class TestObjectFactory {
     return team;
   }
 
-  public static Team createMockedTeamV2WithDependenciesId(String departmentId) {
-    Team team = createMockedTeamV2();
+  public static Team createMockedTeamWithDependenciesId(String departmentId) {
+    Team team = createMockedTeam();
     team.setDepartmentId(departmentId);
     return team;
   }
 
-  public static Team createMockedTeamV2(String id) {
-    Team team = createMockedTeamV2();
+  public static Team createMockedTeam(String id) {
+    Team team = createMockedTeam();
     team.setId(id);
     return team;
   }
 
-  public static Team createMockedTeamV2(@NonNull String name, @NonNull String description,
+  public static Team createMockedTeam(@NonNull String name, @NonNull String description,
                                         @NonNull String tenantId, @NonNull String departmentId) {
     Team team = new Team();
     team.setName(name);
@@ -117,7 +117,7 @@ public class TestObjectFactory {
     return team;
   }
 
-  public static Team copyTeamV2AndAddId(Team team, String id) {
+  public static Team copyTeamAndAddId(Team team, String id) {
     Team copy = new Team();
     copy.setId(id);
     copy.setName(team.getName());
@@ -129,9 +129,9 @@ public class TestObjectFactory {
     return copy;
   }
 
-  // === Company V2 Factory Methods ===
+  // === Company  Factory Methods ===
 
-  public static Company createMockedCompanyV2() {
+  public static Company createMockedCompany() {
     return Company.builder()
         .name(DEFAULT_COMPANY_NAME)
         .email(DEFAULT_COMPANY_EMAIL)
@@ -143,20 +143,20 @@ public class TestObjectFactory {
         .industry(Industry.TECHNOLOGY)
         .website("https://www.company.com")
         .legalName("Company Legal Name Inc.")
-        .contactPerson(createMockedNaturalPersonV2())
-        .address(createMockedAddressV2())
+        .contactPerson(createMockedNaturalPerson())
+        .address(createMockedAddress())
         .createdDate(Instant.now().minusSeconds(86400))
         .lastUpdatedDate(Instant.now())
         .build();
   }
 
-  public static Company createMockedCompanyV2(String id) {
-    Company company = createMockedCompanyV2();
+  public static Company createMockedCompany(String id) {
+    Company company = createMockedCompany();
     company.setId(id);
     return company;
   }
 
-  public static Company createMockedCompanyV2(@NonNull String name, @NonNull String email, @NonNull String description,
+  public static Company createMockedCompany(@NonNull String name, @NonNull String email, @NonNull String description,
                                               @NonNull String tenantId, @NonNull String documentNumber) {
     return Company.builder()
         .name(name)
@@ -172,7 +172,7 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Company copyCompanyV2AndAddId(Company company, String id) {
+  public static Company copyCompanyAndAddId(Company company, String id) {
     return Company.builder()
         .id(id)
         .name(company.getName())
@@ -193,9 +193,9 @@ public class TestObjectFactory {
         .build();
   }
 
-  // === Address V2 Factory Methods ===
+  // === Address  Factory Methods ===
 
-  public static Address createMockedAddressV2() {
+  public static Address createMockedAddress() {
     return Address.builder()
         .street("123 Main Street")
         .city("São Paulo")
@@ -205,13 +205,13 @@ public class TestObjectFactory {
         .build();
   }
 
-  // === NaturalPerson V2 Factory Methods ===
+  // === NaturalPerson  Factory Methods ===
 
-  public static NaturalPerson createMockedNaturalPersonV2() {
-    return createMockedNaturalPersonV2("John Doe");
+  public static NaturalPerson createMockedNaturalPerson() {
+    return createMockedNaturalPerson("John Doe");
   }
 
-  public static NaturalPerson createMockedNaturalPersonV2(String name) {
+  public static NaturalPerson createMockedNaturalPerson(String name) {
     return NaturalPerson.builder()
         .name(name)
         .email("john.doe@company.com")
@@ -221,13 +221,13 @@ public class TestObjectFactory {
         .aliasName("Johnny")
         .gender(Gender.MALE)
         .genderPronoun(GenderPronoun.HE)
-        .address(createMockedAddressV2())
+        .address(createMockedAddress())
         .createdDate(Instant.now().minusSeconds(86400))
         .lastUpdatedDate(Instant.now())
         .build();
   }
 
-  public static Category createMockedCategoryV2() {
+  public static Category createMockedCategory() {
     return Category.builder()
         .name("Test Category")
         .description("Test category description")
@@ -236,7 +236,7 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Category createMockedCategoryV2(String name, String description) {
+  public static Category createMockedCategory(String name, String description) {
     return Category.builder()
         .name(name)
         .description(description)
@@ -245,11 +245,11 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Pillar createMockedPillarV2() {
+  public static Pillar createMockedPillar() {
     Map<String, Category> categoryMap = new HashMap<>();
-    categoryMap.put("cat1", createMockedCategoryV2("Category 1", "First category"));
-    categoryMap.put("cat2", createMockedCategoryV2("Category 2", "Second category"));
-    categoryMap.put("cat3", createMockedCategoryV2("Category 3", "Third category"));
+    categoryMap.put("cat1", createMockedCategory("Category 1", "First category"));
+    categoryMap.put("cat2", createMockedCategory("Category 2", "Second category"));
+    categoryMap.put("cat3", createMockedCategory("Category 3", "Third category"));
 
     return Pillar.builder()
         .name("Test Pillar")
@@ -260,9 +260,9 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Pillar createMockedPillarV2(String name, String description) {
+  public static Pillar createMockedPillar(String name, String description) {
     Map<String, Category> categoryMap = new HashMap<>();
-    categoryMap.put("default", createMockedCategoryV2("Default Category", "Default category for " + name));
+    categoryMap.put("default", createMockedCategory("Default Category", "Default category for " + name));
 
     return Pillar.builder()
         .name(name)
@@ -273,7 +273,7 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Pillar createMockedPillarV2WithCategories(String name, String description, Map<String, Category> categories) {
+  public static Pillar createMockedPillarWithCategories(String name, String description, Map<String, Category> categories) {
     return Pillar.builder()
         .name(name)
         .description(description)
@@ -287,7 +287,7 @@ public class TestObjectFactory {
     Map<String, Category> categoryMap = new HashMap<>();
     for (int i = 1; i <= categoryCount; i++) {
       String key = "category" + i;
-      categoryMap.put(key, createMockedCategoryV2("Category " + i, "Description for category " + i));
+      categoryMap.put(key, createMockedCategory("Category " + i, "Description for category " + i));
     }
     return categoryMap;
   }
@@ -296,36 +296,36 @@ public class TestObjectFactory {
     Map<String, Pillar> pillarMap = new HashMap<>();
     for (int i = 1; i <= pillarCount; i++) {
       String key = "pillar" + i;
-      pillarMap.put(key, createMockedPillarV2("Pillar " + i, "Description for pillar " + i));
+      pillarMap.put(key, createMockedPillar("Pillar " + i, "Description for pillar " + i));
     }
     return pillarMap;
   }
 
-  // === Question V2 Factory Methods ===
+  // === Question  Factory Methods ===
 
-  public static Question createMockedQuestionV2() {
-    return createMockedQuestionV2(5d);
+  public static Question createMockedQuestion() {
+    return createMockedQuestion(5d);
   }
 
-  public static Question createMockedQuestionV2(Double points) {
-    return createMockedQuestionV2(GENERIC_ID_1234, points);
+  public static Question createMockedQuestion(Double points) {
+    return createMockedQuestion(GENERIC_ID_1234, points);
   }
 
-  public static Question createMockedQuestionV2(String id) {
-    return createMockedQuestionV2(id, 5d);
+  public static Question createMockedQuestion(String id) {
+    return createMockedQuestion(id, 5d);
   }
 
-  public static Question createMockedQuestionV2(String id, Double points) {
-    return createMockedQuestionV2(id, QuestionType.YES_NO, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, 
+  public static Question createMockedQuestion(String id, Double points) {
+    return createMockedQuestion(id, QuestionType.YES_NO, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234,
         "Category Name", points);
   }
 
-  public static Question createMockedQuestionV2(Double points, QuestionType questionType) {
-    return createMockedQuestionV2(GENERIC_ID_1234, questionType, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234, 
+  public static Question createMockedQuestion(Double points, QuestionType questionType) {
+    return createMockedQuestion(GENERIC_ID_1234, questionType, GENERIC_ID_1234, "Pillar Name", GENERIC_ID_1234,
         "Category Name", points);
   }
 
-  public static Question createMockedQuestionV2(String id, QuestionType questionType, @NonNull String pillarId,
+  public static Question createMockedQuestion(String id, QuestionType questionType, @NonNull String pillarId,
                                                 @NonNull String pillarName, @NonNull String categoryId,
                                                 @NonNull String categoryName, Double points) {
     return Question.builder()
@@ -344,8 +344,8 @@ public class TestObjectFactory {
         .build();
   }
 
-  public static Question createMockedQuestionV2(String id, QuestionType questionType) {
-    Question question = createMockedQuestionV2(id);
+  public static Question createMockedQuestion(String id, QuestionType questionType) {
+    Question question = createMockedQuestion(id);
     question.setQuestionType(questionType);
     return question;
   }

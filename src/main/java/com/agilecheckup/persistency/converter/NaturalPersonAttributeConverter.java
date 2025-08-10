@@ -22,7 +22,7 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize NaturalPersonV2", e);
+            throw new RuntimeException("Failed to serialize NaturalPerson", e);
         }
     }
 
@@ -40,7 +40,7 @@ public class NaturalPersonAttributeConverter implements AttributeConverter<Natur
         try {
             return OBJECT_MAPPER.readValue(content, NaturalPerson.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize NaturalPersonV2", e);
+            throw new RuntimeException("Failed to deserialize NaturalPerson", e);
         }
     }
 

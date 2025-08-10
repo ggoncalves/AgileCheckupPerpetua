@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_TENANT_ID;
-import static com.agilecheckup.util.TestObjectFactory.createMockedDepartmentV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedDepartment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     
-    private DepartmentRepository departmentRepositoryV2;
+    private DepartmentRepository departmentRepository;
     
     @Mock
     private DynamoDbIndex<Department> mockIndex;
@@ -53,16 +53,16 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     @BeforeEach
     void setUp() {
         super.setUp();
-        departmentRepositoryV2 = new DepartmentRepository(mockEnhancedClient);
+        departmentRepository = new DepartmentRepository(mockEnhancedClient);
     }
     
     @Test
     @DisplayName("Should save department successfully")
     void shouldSaveDepartmentSuccessfully() {
-        Department department = createMockedDepartmentV2();
+        Department department = createMockedDepartment();
         mockTablePutItem(department);
         
-        Optional<Department> result = departmentRepositoryV2.save(department);
+        Optional<Department> result = departmentRepository.save(department);
         
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(department);
@@ -73,10 +73,10 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     @Test
     @DisplayName("Should find department by id successfully")
     void shouldFindDepartmentByIdSuccessfully() {
-        Department department = createMockedDepartmentV2("test-id");
+        Department department = createMockedDepartment("test-id");
         mockTableGetItem(department);
         
-        Optional<Department> result = departmentRepositoryV2.findById("test-id");
+        Optional<Department> result = departmentRepository.findById("test-id");
         
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(department);
@@ -88,7 +88,7 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     void shouldReturnEmptyWhenDepartmentNotFound() {
         mockTableGetItemNull();
         
-        Optional<Department> result = departmentRepositoryV2.findById("non-existent-id");
+        Optional<Department> result = departmentRepository.findById("non-existent-id");
         
         assertThat(result).isEmpty();
         verify(mockTable).getItem(any(Key.class));
@@ -97,15 +97,15 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     @Test
     @DisplayName("Should find all departments by tenant id")
     void shouldFindAllDepartmentsByTenantId() {
-        Department department1 = createMockedDepartmentV2("id1");
-        Department department2 = createMockedDepartmentV2("id2");
+        Department department1 = createMockedDepartment("id1");
+        Department department2 = createMockedDepartment("id2");
         
         when(mockTable.index(anyString())).thenReturn(mockIndex);
         when(mockIndex.query(any(QueryEnhancedRequest.class))).thenReturn(mockPages);
         when(mockPages.stream()).thenReturn(Stream.of(mockPage));
         when(mockPage.items()).thenReturn(List.of(department1, department2));
         
-        List<Department> result = departmentRepositoryV2.findAllByTenantId(GENERIC_TENANT_ID);
+        List<Department> result = departmentRepository.findAllByTenantId(GENERIC_TENANT_ID);
         
         assertThat(result).hasSize(2);
         assertThat(result).contains(department1, department2);
@@ -114,7 +114,7 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     @Test
     @DisplayName("Should delete department by id successfully")
     void shouldDeleteDepartmentByIdSuccessfully() {
-        boolean result = departmentRepositoryV2.deleteById("test-id");
+        boolean result = departmentRepository.deleteById("test-id");
         
         assertThat(result).isTrue();
         verify(mockTable).deleteItem(any(Key.class));
@@ -123,10 +123,10 @@ class DepartmentRepositoryTest extends AbstractRepositoryTest<Department> {
     @Test
     @DisplayName("Should check if department exists by id")
     void shouldCheckIfDepartmentExistsById() {
-        Department department = createMockedDepartmentV2("test-id");
+        Department department = createMockedDepartment("test-id");
         mockTableGetItem(department);
         
-        boolean result = departmentRepositoryV2.existsById("test-id");
+        boolean result = departmentRepository.existsById("test-id");
         
         assertThat(result).isTrue();
         verify(mockTable).getItem(any(Key.class));

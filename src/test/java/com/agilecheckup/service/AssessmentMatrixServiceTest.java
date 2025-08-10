@@ -39,16 +39,16 @@ import static org.mockito.Mockito.verify;
 class AssessmentMatrixServiceTest {
 
     @Mock
-    private AssessmentMatrixRepository assessmentMatrixRepositoryV2;
+    private AssessmentMatrixRepository assessmentMatrixRepository;
 
     @Mock
-    private PerformanceCycleService performanceCycleServiceV2;
+    private PerformanceCycleService performanceCycleService;
 
     @Mock
     private Lazy<QuestionService> questionService;
 
     @Mock
-    private Lazy<EmployeeAssessmentService> employeeAssessmentServiceV2;
+    private Lazy<EmployeeAssessmentService> employeeAssessmentService;
 
     @Mock
     private Lazy<TeamService> teamService;
@@ -57,7 +57,7 @@ class AssessmentMatrixServiceTest {
     private QuestionService mockQuestionService;
 
     @Mock
-    private EmployeeAssessmentService mockEmployeeAssessmentServiceV2;
+    private EmployeeAssessmentService mockEmployeeAssessmentService;
 
     @Mock
     private TeamService mockTeamService;
@@ -68,14 +68,14 @@ class AssessmentMatrixServiceTest {
     void setUp() {
         // Set up lazy mocks
         lenient().doReturn(mockQuestionService).when(questionService).get();
-        lenient().doReturn(mockEmployeeAssessmentServiceV2).when(employeeAssessmentServiceV2).get();
+        lenient().doReturn(mockEmployeeAssessmentService).when(employeeAssessmentService).get();
         lenient().doReturn(mockTeamService).when(teamService).get();
         
         service = new AssessmentMatrixService(
-                assessmentMatrixRepositoryV2,
-            performanceCycleServiceV2,
+                assessmentMatrixRepository,
+            performanceCycleService,
                 questionService,
-                employeeAssessmentServiceV2,
+                employeeAssessmentService,
                 teamService
         );
     }
@@ -108,8 +108,8 @@ class AssessmentMatrixServiceTest {
                 .questionCount(0)
                 .build();
 
-        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleServiceV2).findById(performanceCycleId);
-        doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleService).findById(performanceCycleId);
+        doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
 
         Optional<AssessmentMatrix> result = service.create(name, description, tenantId, performanceCycleId, pillarMap);
 
@@ -119,7 +119,7 @@ class AssessmentMatrixServiceTest {
         assertThat(result.get().getTenantId()).isEqualTo(tenantId);
         assertThat(result.get().getPerformanceCycleId()).isEqualTo(performanceCycleId);
         assertThat(result.get().getPillarMap()).isEqualTo(pillarMap);
-        verify(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
     }
 
     @Test
@@ -155,14 +155,14 @@ class AssessmentMatrixServiceTest {
                 .questionCount(0)
                 .build();
 
-        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleServiceV2).findById(performanceCycleId);
-        doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        lenient().doReturn(Optional.of(mockCycle)).when(performanceCycleService).findById(performanceCycleId);
+        doReturn(Optional.of(savedMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
 
         Optional<AssessmentMatrix> result = service.create(name, description, tenantId, performanceCycleId, pillarMap, configuration);
 
         assertThat(result).isPresent();
         assertThat(result.get().getConfiguration()).isEqualTo(configuration);
-        verify(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
     }
 
     @Test
@@ -185,13 +185,13 @@ class AssessmentMatrixServiceTest {
                         .build()
         );
 
-        doReturn(expectedList).when(assessmentMatrixRepositoryV2).findAllByTenantId(tenantId);
+        doReturn(expectedList).when(assessmentMatrixRepository).findAllByTenantId(tenantId);
 
         List<AssessmentMatrix> result = service.findAllByTenantId(tenantId);
 
         assertThat(result).hasSize(2);
         assertThat(result).isEqualTo(expectedList);
-        verify(assessmentMatrixRepositoryV2).findAllByTenantId(tenantId);
+        verify(assessmentMatrixRepository).findAllByTenantId(tenantId);
     }
 
     @Test
@@ -225,14 +225,14 @@ class AssessmentMatrixServiceTest {
                 .questionCount(6)
                 .build();
 
-        doReturn(Optional.of(existingMatrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        doReturn(Optional.of(existingMatrix)).when(assessmentMatrixRepository).findById(matrixId);
+        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
 
         AssessmentMatrix result = service.incrementQuestionCount(matrixId);
 
         assertThat(result.getQuestionCount()).isEqualTo(6);
-        verify(assessmentMatrixRepositoryV2).findById(matrixId);
-        verify(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        verify(assessmentMatrixRepository).findById(matrixId);
+        verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
     }
 
     @Test
@@ -256,14 +256,14 @@ class AssessmentMatrixServiceTest {
                 .questionCount(4)
                 .build();
 
-        doReturn(Optional.of(existingMatrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        doReturn(Optional.of(existingMatrix)).when(assessmentMatrixRepository).findById(matrixId);
+        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
 
         AssessmentMatrix result = service.decrementQuestionCount(matrixId);
 
         assertThat(result.getQuestionCount()).isEqualTo(4);
-        verify(assessmentMatrixRepositoryV2).findById(matrixId);
-        verify(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        verify(assessmentMatrixRepository).findById(matrixId);
+        verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
     }
 
     @Test
@@ -335,8 +335,8 @@ class AssessmentMatrixServiceTest {
                 .build();
 
         // Set up mocks
-        doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
+        doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
         lenient().doReturn(Optional.of(team)).when(mockTeamService).findById("team-1");
 
         // Execute
@@ -363,7 +363,7 @@ class AssessmentMatrixServiceTest {
         String matrixId = "nonexistent-matrix";
         String tenantId = "tenant-123";
         
-        doReturn(Optional.empty()).when(assessmentMatrixRepositoryV2).findById(matrixId);
+        doReturn(Optional.empty()).when(assessmentMatrixRepository).findById(matrixId);
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         
@@ -384,7 +384,7 @@ class AssessmentMatrixServiceTest {
                 .performanceCycleId("cycle-123")
                 .build();
                 
-        doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
+        doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         
@@ -404,8 +404,8 @@ class AssessmentMatrixServiceTest {
                 .performanceCycleId("cycle-123")
                 .build();
                 
-        doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(Collections.emptyList()).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
+        doReturn(Collections.emptyList()).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
         
@@ -445,8 +445,8 @@ class AssessmentMatrixServiceTest {
 
         List<EmployeeAssessment> employeeAssessments = Arrays.asList(assessment);
         
-        doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
-        doReturn(employeeAssessments).when(mockEmployeeAssessmentServiceV2).findByAssessmentMatrix(matrixId, tenantId);
+        doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
+        doReturn(employeeAssessments).when(mockEmployeeAssessmentService).findByAssessmentMatrix(matrixId, tenantId);
         lenient().doReturn(Optional.empty()).when(mockTeamService).findById("nonexistent-team");
         
         Optional<AssessmentDashboardData> result = service.getAssessmentDashboard(matrixId, tenantId);
@@ -507,9 +507,9 @@ class AssessmentMatrixServiceTest {
                     .build())
                 .build();
 
-        doReturn(Optional.of(matrix)).when(assessmentMatrixRepositoryV2).findById(matrixId);
+        doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
         doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
-        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        doReturn(Optional.of(updatedMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
 
         AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
 
@@ -518,8 +518,8 @@ class AssessmentMatrixServiceTest {
         assertThat(result.getPotentialScore().getScore()).isEqualTo(15.0);
         
         verify(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
-        verify(assessmentMatrixRepositoryV2).findById(matrixId);
-        verify(assessmentMatrixRepositoryV2).save(any(AssessmentMatrix.class));
+        verify(assessmentMatrixRepository).findById(matrixId);
+        verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
     }
 
     @Test
@@ -530,7 +530,7 @@ class AssessmentMatrixServiceTest {
         List<Question> questions = Arrays.asList();
         
         doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
-        doReturn(Optional.empty()).when(assessmentMatrixRepositoryV2).findById(matrixId);
+        doReturn(Optional.empty()).when(assessmentMatrixRepository).findById(matrixId);
         
         RuntimeException exception = org.junit.jupiter.api.Assertions.assertThrows(
             RuntimeException.class,

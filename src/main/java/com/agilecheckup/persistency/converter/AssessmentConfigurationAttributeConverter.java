@@ -25,7 +25,7 @@ public class AssessmentConfigurationAttributeConverter implements AttributeConve
             String jsonString = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(jsonString).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize AssessmentConfigurationV2", e);
+            throw new RuntimeException("Failed to serialize AssessmentConfiguration", e);
         }
     }
 
@@ -37,7 +37,7 @@ public class AssessmentConfigurationAttributeConverter implements AttributeConve
         try {
             return OBJECT_MAPPER.readValue(input.s(), AssessmentConfiguration.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize AssessmentConfigurationV2", e);
+            throw new RuntimeException("Failed to deserialize AssessmentConfiguration", e);
         }
     }
 

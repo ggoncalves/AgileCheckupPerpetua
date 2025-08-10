@@ -12,7 +12,7 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
     if (input == null) {
       return AttributeValue.builder().nul(true).build();
     }
-    // Convert AddressV2 to JSON string for storage
+    // Convert Address to JSON string for storage
     return AttributeValue.builder().s(String.format(
         "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}",
         escapeJsonValue(input.getId()),
@@ -29,7 +29,7 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
     if (input == null || input.nul() != null && input.nul()) {
       return null;
     }
-    // Simple JSON parsing for AddressV2
+    // Simple JSON parsing for Address
     String json = input.s();
     if (json == null || json.trim().isEmpty()) {
       return null;

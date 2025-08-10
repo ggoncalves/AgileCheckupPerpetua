@@ -26,7 +26,7 @@ class PillarTest {
     private final CategoryMapAttributeConverter converter = new CategoryMapAttributeConverter();
 
     @Test
-    void shouldCreatePillarV2WithAllFields() {
+    void shouldCreatePillarWithAllFields() {
         Map<String, Category> categoryMap = TestObjectFactory.createMockedCategoryMap(3);
         Instant now = Instant.now();
 
@@ -46,8 +46,8 @@ class PillarTest {
     }
 
     @Test
-    void shouldCreatePillarV2UsingTestFactory() {
-        Pillar pillar = TestObjectFactory.createMockedPillarV2();
+    void shouldCreatePillarUsingTestFactory() {
+        Pillar pillar = TestObjectFactory.createMockedPillar();
 
         assertThat(pillar.getName()).isEqualTo("Test Pillar");
         assertThat(pillar.getDescription()).isEqualTo("Test pillar description");
@@ -58,8 +58,8 @@ class PillarTest {
     }
 
     @Test
-    void shouldCreatePillarV2WithCustomNameAndDescription() {
-        Pillar pillar = TestObjectFactory.createMockedPillarV2("Custom Pillar", "Custom description");
+    void shouldCreatePillarWithCustomNameAndDescription() {
+        Pillar pillar = TestObjectFactory.createMockedPillar("Custom Pillar", "Custom description");
 
         assertThat(pillar.getName()).isEqualTo("Custom Pillar");
         assertThat(pillar.getDescription()).isEqualTo("Custom description");
@@ -68,13 +68,13 @@ class PillarTest {
     }
 
     @Test
-    void shouldCreatePillarV2WithCustomCategories() {
+    void shouldCreatePillarWithCustomCategories() {
         Map<String, Category> customCategories = new HashMap<>();
-        customCategories.put("quality", TestObjectFactory.createMockedCategoryV2("Quality", "Code quality"));
-        customCategories.put("testing", TestObjectFactory.createMockedCategoryV2("Testing", "Test practices"));
-        customCategories.put("deployment", TestObjectFactory.createMockedCategoryV2("Deployment", "Deployment practices"));
+        customCategories.put("quality", TestObjectFactory.createMockedCategory("Quality", "Code quality"));
+        customCategories.put("testing", TestObjectFactory.createMockedCategory("Testing", "Test practices"));
+        customCategories.put("deployment", TestObjectFactory.createMockedCategory("Deployment", "Deployment practices"));
 
-        Pillar pillar = TestObjectFactory.createMockedPillarV2WithCategories("DevOps", "DevOps practices", customCategories);
+        Pillar pillar = TestObjectFactory.createMockedPillarWithCategories("DevOps", "DevOps practices", customCategories);
 
         assertThat(pillar.getName()).isEqualTo("DevOps");
         assertThat(pillar.getDescription()).isEqualTo("DevOps practices");
@@ -83,7 +83,7 @@ class PillarTest {
     }
 
     @Test
-    void shouldSerializeAndDeserializePillarV2ToJson() throws Exception {
+    void shouldSerializeAndDeserializePillarToJson() throws Exception {
         Map<String, Category> categoryMap = new HashMap<>();
         categoryMap.put("test", Category.builder().name("Test Category").description("Test description").build());
         
@@ -168,11 +168,11 @@ class PillarTest {
 
         assertThatThrownBy(() -> converter.transformTo(invalidJsonAttribute))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Failed to deserialize CategoryV2 map");
+                .hasMessageContaining("Failed to deserialize Category map");
     }
 
     @Test
-    void shouldHandleNullFieldsInPillarV2() {
+    void shouldHandleNullFieldsInPillar() {
         Pillar pillar = new Pillar();
 
         assertThat(pillar.getName()).isNull();
@@ -183,7 +183,7 @@ class PillarTest {
     }
 
     @Test
-    void shouldHandleEqualsAndHashCodeForPillarV2() {
+    void shouldHandleEqualsAndHashCodeForPillar() {
         Map<String, Category> categoryMap = TestObjectFactory.createMockedCategoryMap(2);
         Instant now = Instant.now();
 
@@ -220,8 +220,8 @@ class PillarTest {
     }
 
     @Test
-    void shouldHandleToStringForPillarV2() {
-        Pillar pillar = TestObjectFactory.createMockedPillarV2("ToString Test", "Test toString method");
+    void shouldHandleToStringForPillar() {
+        Pillar pillar = TestObjectFactory.createMockedPillar("ToString Test", "Test toString method");
         String toStringResult = pillar.toString();
 
         assertThat(toStringResult).contains("ToString Test");

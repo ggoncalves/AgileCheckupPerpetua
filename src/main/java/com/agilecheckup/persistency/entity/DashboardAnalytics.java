@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * V2 Entity for storing precomputed dashboard analytics data.
+ *  Entity for storing precomputed dashboard analytics data.
  */
 @Data
 @Builder

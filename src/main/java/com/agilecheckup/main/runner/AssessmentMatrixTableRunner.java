@@ -28,10 +28,10 @@ import java.util.Optional;
 @Log4j2
 public class AssessmentMatrixTableRunner implements CrudRunner {
 
-    private AssessmentMatrixService assessmentMatrixServiceV2;
-    private PerformanceCycleService performanceCycleServiceV2;
-    private CompanyService companyServiceV2;
-    private QuestionService questionServiceV2;
+    private AssessmentMatrixService assessmentMatrixService;
+    private PerformanceCycleService performanceCycleService;
+    private CompanyService companyService;
+    private QuestionService questionService;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
     private final boolean shouldCleanAfterComplete;
@@ -49,7 +49,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
 
     @Override
     public void run() {
-        log.info("\n=== AssessmentMatrixV2 Comprehensive CRUD Operations Demo ===");
+        log.info("\n=== AssessmentMatrix Comprehensive CRUD Operations Demo ===");
         
         try {
             // 1. Setup test dependencies
@@ -61,7 +61,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
             }
             
             // 2. Test Create Operations
-            log.info("\n1. Testing V2 Create Operations...");
+            log.info("\n1. Testing  Create Operations...");
             testCreateOperations();
             
             // 3. Create test questions (before updates, so pillar/category IDs exist)
@@ -69,25 +69,25 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
             createTestQuestionsForCalculateOperations();
             
             // 4. Test Update Operations
-            log.info("\n3. Testing V2 Update Operations...");
+            log.info("\n3. Testing  Update Operations...");
             testUpdateOperations();
             
             // 5. Test Calculate Points Operations
-            log.info("\n4. Testing V2 Calculate Points Operations...");
+            log.info("\n4. Testing  Calculate Points Operations...");
             testCalculatePointsOperations();
             
             // 6. Test Query Operations
-            log.info("\n5. Testing V2 Query Operations...");
+            log.info("\n5. Testing  Query Operations...");
             testQueryOperations();
             
             // 7. Test Delete Operations
-            log.info("\n6. Testing V2 Delete Operations...");
+            log.info("\n6. Testing  Delete Operations...");
             testDeleteOperations();
             
-            log.info("\n=== AssessmentMatrixV2 Demo Completed Successfully ===");
+            log.info("\n=== AssessmentMatrix Demo Completed Successfully ===");
             
         } catch (Exception e) {
-            log.error("Error during AssessmentMatrixV2 demo: {}", e.getMessage(), e);
+            log.error("Error during AssessmentMatrix demo: {}", e.getMessage(), e);
         } finally {
             // 8. Cleanup all test data
             if (shouldCleanAfterComplete) {
@@ -103,9 +103,9 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         // Create test company
         Optional<Company> companyOpt = getCompanyService().create(
             "12345678901",
-            "Test Company V2 - " + System.currentTimeMillis(),
+            "Test Company  - " + System.currentTimeMillis(),
             "test@company.com",
-            "Test company for AssessmentMatrixV2 demo",
+            "Test company for AssessmentMatrix demo",
             testTenantId
         );
         
@@ -120,8 +120,8 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         // Create test performance cycle
         Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
             testTenantId,
-            "Test Cycle V2 - " + System.currentTimeMillis(),
-            "Test performance cycle for AssessmentMatrixV2 demo",
+            "Test Cycle  - " + System.currentTimeMillis(),
+            "Test performance cycle for AssessmentMatrix demo",
             testCompany.getId(),
             true,
             true,
@@ -141,10 +141,10 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         log.info("Testing create operations with different configurations...");
         
         // Create matrix with basic configuration
-        Map<String, Pillar> pillarMap1 = tableRunnerHelper.createPillarsWithCategoriesMapV2();
-        Optional<AssessmentMatrix> matrix1Opt = getAssessmentMatrixServiceV2().create(
-            "Basic Assessment Matrix V2",
-            "Basic matrix created for V2 testing",
+        Map<String, Pillar> pillarMap1 = tableRunnerHelper.createPillarsWithCategoriesMap();
+        Optional<AssessmentMatrix> matrix1Opt = getAssessmentMatrixService().create(
+            "Basic Assessment Matrix ",
+            "Basic matrix created for  testing",
             testTenantId,
             testPerformanceCycle.getId(),
             pillarMap1
@@ -166,10 +166,10 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
             .navigationMode(QuestionNavigationType.SEQUENTIAL)
             .build();
             
-        Map<String, Pillar> pillarMap2 = tableRunnerHelper.createPillarsWithCategoriesMapV2();
-        Optional<AssessmentMatrix> matrix2Opt = getAssessmentMatrixServiceV2().create(
-            "Custom Config Matrix V2",
-            "Matrix with custom configuration for V2 testing",
+        Map<String, Pillar> pillarMap2 = tableRunnerHelper.createPillarsWithCategoriesMap();
+        Optional<AssessmentMatrix> matrix2Opt = getAssessmentMatrixService().create(
+            "Custom Config Matrix ",
+            "Matrix with custom configuration for  testing",
             testTenantId,
             testPerformanceCycle.getId(),
             pillarMap2,
@@ -201,7 +201,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         
         // Update with new pillar structure
         Map<String, Pillar> newPillarMap = createEnhancedPillarStructure();
-        Optional<AssessmentMatrix> updatedMatrixOpt = getAssessmentMatrixServiceV2().update(
+        Optional<AssessmentMatrix> updatedMatrixOpt = getAssessmentMatrixService().update(
             matrixToUpdate.getId(),
             originalName + " (Updated)",
             matrixToUpdate.getDescription() + " - Updated with enhanced structure",
@@ -228,7 +228,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
                 .navigationMode(QuestionNavigationType.RANDOM)
                 .build();
                 
-            Optional<AssessmentMatrix> updatedMatrix2Opt = getAssessmentMatrixServiceV2().update(
+            Optional<AssessmentMatrix> updatedMatrix2Opt = getAssessmentMatrixService().update(
                 matrix2.getId(),
                 matrix2.getName() + " (Config Updated)",
                 matrix2.getDescription() + " - Configuration updated",
@@ -276,18 +276,18 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         AssessmentMatrix testMatrix = createdMatrices.get(0);
         
         // Test increment question count
-        Optional<AssessmentMatrix> currentMatrixOpt = getAssessmentMatrixServiceV2().findById(testMatrix.getId());
+        Optional<AssessmentMatrix> currentMatrixOpt = getAssessmentMatrixService().findById(testMatrix.getId());
         AssessmentMatrix currentMatrix = currentMatrixOpt.orElse(testMatrix);
         int originalCount = currentMatrix.getQuestionCount() != null ? currentMatrix.getQuestionCount() : 0;
-        AssessmentMatrix incrementedMatrix = getAssessmentMatrixServiceV2().incrementQuestionCount(testMatrix.getId());
+        AssessmentMatrix incrementedMatrix = getAssessmentMatrixService().incrementQuestionCount(testMatrix.getId());
         log.info("✓ Incremented question count: {} -> {}", originalCount, incrementedMatrix.getQuestionCount());
         
         // Test decrement question count
-        AssessmentMatrix decrementedMatrix = getAssessmentMatrixServiceV2().decrementQuestionCount(testMatrix.getId());
+        AssessmentMatrix decrementedMatrix = getAssessmentMatrixService().decrementQuestionCount(testMatrix.getId());
         log.info("✓ Decremented question count: {} -> {}", incrementedMatrix.getQuestionCount(), decrementedMatrix.getQuestionCount());
         
         // Test potential score calculation
-        AssessmentMatrix scoredMatrix = getAssessmentMatrixServiceV2().updateCurrentPotentialScore(testMatrix.getId(), testTenantId);
+        AssessmentMatrix scoredMatrix = getAssessmentMatrixService().updateCurrentPotentialScore(testMatrix.getId(), testTenantId);
         if (scoredMatrix.getPotentialScore() != null) {
             log.info("✓ Updated potential score - Total potential: {}", scoredMatrix.getPotentialScore().getScore());
             log.info("  Pillar scores: {}", scoredMatrix.getPotentialScore().getPillarIdToPillarScoreMap().size());
@@ -309,7 +309,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         AssessmentMatrix testMatrix = createdMatrices.get(0);
         
         // Test findById
-        Optional<AssessmentMatrix> foundMatrixOpt = getAssessmentMatrixServiceV2().findById(testMatrix.getId());
+        Optional<AssessmentMatrix> foundMatrixOpt = getAssessmentMatrixService().findById(testMatrix.getId());
         if (foundMatrixOpt.isPresent()) {
             log.info("✓ Found matrix by ID: {}", foundMatrixOpt.get().getName());
         } else {
@@ -317,11 +317,11 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         }
         
         // Test findAllByTenantId
-        List<AssessmentMatrix> tenantMatrices = getAssessmentMatrixServiceV2().findAllByTenantId(testTenantId);
+        List<AssessmentMatrix> tenantMatrices = getAssessmentMatrixService().findAllByTenantId(testTenantId);
         log.info("✓ Found {} matrices for tenant: {}", tenantMatrices.size(), testTenantId);
         
         // Test getAssessmentDashboard
-        Optional<AssessmentDashboardData> dashboardOpt = getAssessmentMatrixServiceV2().getAssessmentDashboard(testMatrix.getId(), testTenantId);
+        Optional<AssessmentDashboardData> dashboardOpt = getAssessmentMatrixService().getAssessmentDashboard(testMatrix.getId(), testTenantId);
         if (dashboardOpt.isPresent()) {
             AssessmentDashboardData dashboard = dashboardOpt.get();
             log.info("✓ Retrieved assessment dashboard - Matrix: {}, Total employees: {}", 
@@ -346,7 +346,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
             AssessmentMatrix matrixToDelete = createdMatrices.get(createdMatrices.size() - 1);
             String matrixName = matrixToDelete.getName();
             
-            boolean deleted = getAssessmentMatrixServiceV2().deleteById(matrixToDelete.getId());
+            boolean deleted = getAssessmentMatrixService().deleteById(matrixToDelete.getId());
             if (deleted) {
                 log.info("✓ Successfully deleted matrix: {}", matrixName);
                 createdMatrices.remove(matrixToDelete);
@@ -371,15 +371,15 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         
         Category firstCategory = firstPillar.getCategoryMap().values().iterator().next();
         
-        Optional<Question> questionOpt = getQuestionServiceV2().create(
-            "Test Question V2",
+        Optional<Question> questionOpt = getQuestionService().create(
+            "Test Question ",
             QuestionType.STAR_FIVE,
             testTenantId,
             10.0,
             matrix.getId(),
             firstPillar.getId(),
             firstCategory.getId(),
-            "Test question for V2 demo"
+            "Test question for  demo"
         );
         
         if (questionOpt.isPresent()) {
@@ -390,7 +390,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
 
     private Map<String, Pillar> createEnhancedPillarStructure() {
         // Create a more complex pillar structure for update testing
-        Map<String, Pillar> enhancedPillars = new HashMap<>(tableRunnerHelper.createPillarsWithCategoriesMapV2());
+        Map<String, Pillar> enhancedPillars = new HashMap<>(tableRunnerHelper.createPillarsWithCategoriesMap());
         
         // Add an additional pillar
         Map<String, Category> additionalCategories = new HashMap<>();
@@ -424,7 +424,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         // Delete remaining assessment matrices
         for (AssessmentMatrix matrix : createdMatrices) {
             try {
-                boolean deleted = getAssessmentMatrixServiceV2().deleteById(matrix.getId());
+                boolean deleted = getAssessmentMatrixService().deleteById(matrix.getId());
                 if (deleted) {
                     log.info("✓ Cleaned up matrix: {}", matrix.getName());
                 } else {
@@ -438,7 +438,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
         // Delete test questions
         for (Question question : createdQuestions) {
             try {
-                getQuestionServiceV2().deleteById(question.getId());
+                getQuestionService().deleteById(question.getId());
                 log.info("✓ Cleaned up question: {}", question.getQuestion());
             } catch (Exception e) {
                 log.error("Error cleaning up question {}: {}", question.getQuestion(), e.getMessage());
@@ -478,35 +478,35 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     }
 
     // Service getters with lazy initialization
-    private AssessmentMatrixService getAssessmentMatrixServiceV2() {
-        if (assessmentMatrixServiceV2 == null) {
+    private AssessmentMatrixService getAssessmentMatrixService() {
+        if (assessmentMatrixService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            assessmentMatrixServiceV2 = serviceComponent.buildAssessmentMatrixServiceV2();
+            assessmentMatrixService = serviceComponent.buildAssessmentMatrixService();
         }
-        return assessmentMatrixServiceV2;
+        return assessmentMatrixService;
     }
 
     private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleServiceV2 == null) {
+        if (performanceCycleService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
+            performanceCycleService = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleServiceV2;
+        return performanceCycleService;
     }
 
     private CompanyService getCompanyService() {
-        if (companyServiceV2 == null) {
+        if (companyService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyServiceV2 = serviceComponent.buildCompanyService();
+            companyService = serviceComponent.buildCompanyService();
         }
-        return companyServiceV2;
+        return companyService;
     }
 
-    private QuestionService getQuestionServiceV2() {
-        if (questionServiceV2 == null) {
+    private QuestionService getQuestionService() {
+        if (questionService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            questionServiceV2 = serviceComponent.buildQuestionServiceV2();
+            questionService = serviceComponent.buildQuestionService();
         }
-        return questionServiceV2;
+        return questionService;
     }
 }

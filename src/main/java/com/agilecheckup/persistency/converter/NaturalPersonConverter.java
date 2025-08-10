@@ -12,7 +12,7 @@ public class NaturalPersonConverter implements AttributeConverter<NaturalPerson>
     if (input == null) {
       return AttributeValue.builder().nul(true).build();
     }
-    // Convert NaturalPersonV2 to JSON string for storage
+    // Convert NaturalPerson to JSON string for storage
     StringBuilder json = new StringBuilder("{");
     if (input.getId() != null) {
       json.append("\"id\":\"").append(escapeJson(input.getId())).append("\",");
@@ -62,7 +62,7 @@ public class NaturalPersonConverter implements AttributeConverter<NaturalPerson>
       return null;
     }
 
-    // Simple JSON parsing for NaturalPersonV2
+    // Simple JSON parsing for NaturalPerson
     NaturalPerson.NaturalPersonBuilder<?, ?> builder = NaturalPerson.builder();
 
     if (json.contains("\"id\":\"")) {

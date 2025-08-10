@@ -16,8 +16,8 @@ import java.util.Optional;
 
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_COMPANY_ID;
 import static com.agilecheckup.util.TestObjectFactory.GENERIC_TENANT_ID;
-import static com.agilecheckup.util.TestObjectFactory.createMockedCompanyV2;
-import static com.agilecheckup.util.TestObjectFactory.createMockedDepartmentV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
+import static com.agilecheckup.util.TestObjectFactory.createMockedDepartment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,16 +29,16 @@ import static org.mockito.Mockito.verify;
 class DepartmentServiceTest extends AbstractCrudServiceTest<Department, DepartmentRepository> {
     
     @Mock
-    private DepartmentRepository mockDepartmentRepositoryV2;
+    private DepartmentRepository mockDepartmentRepository;
     
     @Mock
-    private CompanyService mockCompanyServiceV2;
+    private CompanyService mockCompanyService;
     
-    private DepartmentService departmentServiceV2;
+    private DepartmentService departmentService;
     
     @BeforeEach
     void setUp() {
-        departmentServiceV2 = new DepartmentService(mockDepartmentRepositoryV2, mockCompanyServiceV2);
+        departmentService = new DepartmentService(mockDepartmentRepository, mockCompanyService);
     }
     
     @Test
@@ -46,31 +46,31 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Departme
     void shouldCreateDepartmentSuccessfully() {
         String name = "Engineering";
         String description = "Engineering Department";
-        Company company = createMockedCompanyV2(GENERIC_COMPANY_ID);
-        Department expectedDepartment = createMockedDepartmentV2(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
+        Company company = createMockedCompany(GENERIC_COMPANY_ID);
+        Department expectedDepartment = createMockedDepartment(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
         
-        doReturn(Optional.of(company)).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
-        doReturnForSaveWithRandomEntityId(expectedDepartment, mockDepartmentRepositoryV2);
+        doReturn(Optional.of(company)).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturnForSaveWithRandomEntityId(expectedDepartment, mockDepartmentRepository);
         
-        Optional<Department> result = departmentServiceV2.create(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
+        Optional<Department> result = departmentService.create(name, description, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
         
         assertThat(result).isPresent();
         assertThat(result.get().getName()).isEqualTo(name);
         assertThat(result.get().getDescription()).isEqualTo(description);
         assertThat(result.get().getTenantId()).isEqualTo(GENERIC_TENANT_ID);
         assertThat(result.get().getCompanyId()).isEqualTo(GENERIC_COMPANY_ID);
-        verify(mockDepartmentRepositoryV2).save(any(Department.class));
+        verify(mockDepartmentRepository).save(any(Department.class));
     }
     
     @Test
     @DisplayName("Should throw exception when company not found during creation")
     void shouldThrowExceptionWhenCompanyNotFoundDuringCreation() {
-        doReturn(Optional.empty()).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
+        doReturn(Optional.empty()).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
         
-        assertThatThrownBy(() -> departmentServiceV2.create("Engineering", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
+        assertThatThrownBy(() -> departmentService.create("Engineering", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
                 .isInstanceOf(InvalidIdReferenceException.class);
         
-        verify(mockDepartmentRepositoryV2, never()).save(any(Department.class));
+        verify(mockDepartmentRepository, never()).save(any(Department.class));
     }
     
     @Test
@@ -80,23 +80,23 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Departme
         String newName = "Updated Engineering";
         String newDescription = "Updated Description";
         
-        Department existingDepartment = createMockedDepartmentV2(departmentId);
-        Department updatedDepartment = createMockedDepartmentV2(departmentId);
+        Department existingDepartment = createMockedDepartment(departmentId);
+        Department updatedDepartment = createMockedDepartment(departmentId);
         updatedDepartment.setName(newName);
         updatedDepartment.setDescription(newDescription);
         
-        Company company = createMockedCompanyV2(GENERIC_COMPANY_ID);
+        Company company = createMockedCompany(GENERIC_COMPANY_ID);
         
-        doReturnForFindById(existingDepartment, mockDepartmentRepositoryV2);
-        doReturn(Optional.of(company)).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
-        doReturnForUpdate(updatedDepartment, mockDepartmentRepositoryV2);
+        doReturnForFindById(existingDepartment, mockDepartmentRepository);
+        doReturn(Optional.of(company)).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
+        doReturnForUpdate(updatedDepartment, mockDepartmentRepository);
         
-        Optional<Department> result = departmentServiceV2.update(departmentId, newName, newDescription, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
+        Optional<Department> result = departmentService.update(departmentId, newName, newDescription, GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
         
         assertThat(result).isPresent();
         assertThat(result.get().getName()).isEqualTo(newName);
         assertThat(result.get().getDescription()).isEqualTo(newDescription);
-        verify(mockDepartmentRepositoryV2).save(any(Department.class));
+        verify(mockDepartmentRepository).save(any(Department.class));
     }
     
     @Test
@@ -104,58 +104,58 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Departme
     void shouldReturnEmptyWhenUpdatingNonExistentDepartment() {
         String nonExistentId = "non-existent";
         
-        doReturnEmptyForFindById(mockDepartmentRepositoryV2, nonExistentId);
+        doReturnEmptyForFindById(mockDepartmentRepository, nonExistentId);
         
-        Optional<Department> result = departmentServiceV2.update(nonExistentId, "Name", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
+        Optional<Department> result = departmentService.update(nonExistentId, "Name", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID);
         
         assertThat(result).isEmpty();
-        verify(mockDepartmentRepositoryV2, never()).save(any(Department.class));
+        verify(mockDepartmentRepository, never()).save(any(Department.class));
     }
     
     @Test
     @DisplayName("Should throw exception when company not found during update")
     void shouldThrowExceptionWhenCompanyNotFoundDuringUpdate() {
         String departmentId = "dept-id";
-        Department existingDepartment = createMockedDepartmentV2(departmentId);
+        Department existingDepartment = createMockedDepartment(departmentId);
         
-        doReturnForFindById(existingDepartment, mockDepartmentRepositoryV2);
-        doReturn(Optional.empty()).when(mockCompanyServiceV2).findById(GENERIC_COMPANY_ID);
+        doReturnForFindById(existingDepartment, mockDepartmentRepository);
+        doReturn(Optional.empty()).when(mockCompanyService).findById(GENERIC_COMPANY_ID);
         
-        assertThatThrownBy(() -> departmentServiceV2.update(departmentId, "Name", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
+        assertThatThrownBy(() -> departmentService.update(departmentId, "Name", "Description", GENERIC_TENANT_ID, GENERIC_COMPANY_ID))
                 .isInstanceOf(InvalidIdReferenceException.class);
         
-        verify(mockDepartmentRepositoryV2, never()).save(any(Department.class));
+        verify(mockDepartmentRepository, never()).save(any(Department.class));
     }
     
     @Test
     @DisplayName("Should find all departments by tenant id")
     void shouldFindAllDepartmentsByTenantId() {
-        Department dept1 = createMockedDepartmentV2("id1");
-        Department dept2 = createMockedDepartmentV2("id2");
+        Department dept1 = createMockedDepartment("id1");
+        Department dept2 = createMockedDepartment("id2");
         List<Department> expectedDepartments = List.of(dept1, dept2);
         
-        doReturn(expectedDepartments).when(mockDepartmentRepositoryV2).findAllByTenantId(GENERIC_TENANT_ID);
+        doReturn(expectedDepartments).when(mockDepartmentRepository).findAllByTenantId(GENERIC_TENANT_ID);
         
-        List<Department> result = departmentServiceV2.findAllByTenantId(GENERIC_TENANT_ID);
+        List<Department> result = departmentService.findAllByTenantId(GENERIC_TENANT_ID);
         
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(dept1, dept2);
-        verify(mockDepartmentRepositoryV2).findAllByTenantId(GENERIC_TENANT_ID);
+        verify(mockDepartmentRepository).findAllByTenantId(GENERIC_TENANT_ID);
     }
     
     @Test
     @DisplayName("Should find department by id")
     void shouldFindDepartmentById() {
         String departmentId = "dept-id";
-        Department expectedDepartment = createMockedDepartmentV2(departmentId);
+        Department expectedDepartment = createMockedDepartment(departmentId);
         
-        doReturnForFindById(expectedDepartment, mockDepartmentRepositoryV2);
+        doReturnForFindById(expectedDepartment, mockDepartmentRepository);
         
-        Optional<Department> result = departmentServiceV2.findById(departmentId);
+        Optional<Department> result = departmentService.findById(departmentId);
         
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(expectedDepartment);
-        verify(mockDepartmentRepositoryV2).findById(departmentId);
+        verify(mockDepartmentRepository).findById(departmentId);
     }
     
     @Test
@@ -163,11 +163,11 @@ class DepartmentServiceTest extends AbstractCrudServiceTest<Department, Departme
     void shouldDeleteDepartmentById() {
         String departmentId = "dept-id";
         
-        doReturn(true).when(mockDepartmentRepositoryV2).deleteById(departmentId);
+        doReturn(true).when(mockDepartmentRepository).deleteById(departmentId);
         
-        boolean result = departmentServiceV2.deleteById(departmentId);
+        boolean result = departmentService.deleteById(departmentId);
         
         assertThat(result).isTrue();
-        verify(mockDepartmentRepositoryV2).deleteById(departmentId);
+        verify(mockDepartmentRepository).deleteById(departmentId);
     }
 }

@@ -26,16 +26,16 @@ import static org.mockito.Mockito.when;
 class PerformanceCycleServiceTest {
 
     @Mock
-    private PerformanceCycleRepository performanceCycleRepositoryV2;
+    private PerformanceCycleRepository performanceCycleRepository;
 
     @Mock
-    private CompanyService companyServiceV2;
+    private CompanyService companyService;
 
-    private PerformanceCycleService performanceCycleServiceV2;
+    private PerformanceCycleService performanceCycleService;
 
     @BeforeEach
     void setUp() {
-        performanceCycleServiceV2 = new PerformanceCycleService(performanceCycleRepositoryV2, companyServiceV2);
+        performanceCycleService = new PerformanceCycleService(performanceCycleRepository, companyService);
     }
 
     @Test
@@ -54,11 +54,11 @@ class PerformanceCycleServiceTest {
         PerformanceCycle expectedCycle = createMockPerformanceCycle(tenantId, name, description, companyId,
                 isActive, true, startDate, endDate); // isTimeSensitive calculated as true because endDate is present
 
-        doReturn(Optional.of(mockCompany)).when(companyServiceV2).findById(companyId);
-        doReturn(Optional.of(expectedCycle)).when(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        doReturn(Optional.of(mockCompany)).when(companyService).findById(companyId);
+        doReturn(Optional.of(expectedCycle)).when(performanceCycleRepository).save(any(PerformanceCycle.class));
 
         // When
-        Optional<PerformanceCycle> result = performanceCycleServiceV2.create(tenantId, name, description, companyId,
+        Optional<PerformanceCycle> result = performanceCycleService.create(tenantId, name, description, companyId,
                 isActive, isTimeSensitive, startDate, endDate);
 
         // Then
@@ -72,8 +72,8 @@ class PerformanceCycleServiceTest {
         assertThat(result.get().getStartDate()).isEqualTo(startDate);
         assertThat(result.get().getEndDate()).isEqualTo(endDate);
 
-        verify(companyServiceV2).findById(companyId);
-        verify(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        verify(companyService).findById(companyId);
+        verify(performanceCycleRepository).save(any(PerformanceCycle.class));
     }
 
     @Test
@@ -92,18 +92,18 @@ class PerformanceCycleServiceTest {
         PerformanceCycle expectedCycle = createMockPerformanceCycle(tenantId, name, description, companyId,
                 isActive, false, startDate, endDate); // isTimeSensitive calculated as false because endDate is null
 
-        doReturn(Optional.of(mockCompany)).when(companyServiceV2).findById(companyId);
-        doReturn(Optional.of(expectedCycle)).when(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        doReturn(Optional.of(mockCompany)).when(companyService).findById(companyId);
+        doReturn(Optional.of(expectedCycle)).when(performanceCycleRepository).save(any(PerformanceCycle.class));
 
         // When
-        Optional<PerformanceCycle> result = performanceCycleServiceV2.create(tenantId, name, description, companyId,
+        Optional<PerformanceCycle> result = performanceCycleService.create(tenantId, name, description, companyId,
                 isActive, isTimeSensitive, startDate, endDate);
 
         // Then
         assertThat(result).isPresent();
         assertThat(result.get().getIsTimeSensitive()).isFalse(); // Business rule applied
-        verify(companyServiceV2).findById(companyId);
-        verify(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        verify(companyService).findById(companyId);
+        verify(performanceCycleRepository).save(any(PerformanceCycle.class));
     }
 
     @Test
@@ -118,17 +118,17 @@ class PerformanceCycleServiceTest {
         LocalDate startDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 3, 31);
 
-        doReturn(Optional.empty()).when(companyServiceV2).findById(companyId);
+        doReturn(Optional.empty()).when(companyService).findById(companyId);
 
         // When/Then
-        assertThatThrownBy(() -> performanceCycleServiceV2.create(tenantId, name, description, companyId,
+        assertThatThrownBy(() -> performanceCycleService.create(tenantId, name, description, companyId,
                 isActive, isTimeSensitive, startDate, endDate))
                 .isInstanceOf(InvalidIdReferenceException.class)
                 .hasMessageContaining(companyId)
                 .hasMessageContaining("PerformanceCycle")
                 .hasMessageContaining("Company");
 
-        verify(companyServiceV2).findById(companyId);
+        verify(companyService).findById(companyId);
     }
 
     @Test
@@ -150,12 +150,12 @@ class PerformanceCycleServiceTest {
         PerformanceCycle updatedCycle = createMockPerformanceCycle(tenantId, name, description, companyId,
                 isActive, true, startDate, endDate); // isTimeSensitive calculated as true
 
-        doReturn(Optional.of(existingCycle)).when(performanceCycleRepositoryV2).findById(id);
-        doReturn(Optional.of(mockCompany)).when(companyServiceV2).findById(companyId);
-        doReturn(Optional.of(updatedCycle)).when(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        doReturn(Optional.of(existingCycle)).when(performanceCycleRepository).findById(id);
+        doReturn(Optional.of(mockCompany)).when(companyService).findById(companyId);
+        doReturn(Optional.of(updatedCycle)).when(performanceCycleRepository).save(any(PerformanceCycle.class));
 
         // When
-        Optional<PerformanceCycle> result = performanceCycleServiceV2.update(id, tenantId, name, description,
+        Optional<PerformanceCycle> result = performanceCycleService.update(id, tenantId, name, description,
                 companyId, isActive, isTimeSensitive, startDate, endDate);
 
         // Then
@@ -165,24 +165,24 @@ class PerformanceCycleServiceTest {
         assertThat(result.get().getIsActive()).isEqualTo(isActive);
         assertThat(result.get().getIsTimeSensitive()).isTrue(); // Business rule applied
 
-        verify(performanceCycleRepositoryV2).findById(id);
-        verify(companyServiceV2).findById(companyId);
-        verify(performanceCycleRepositoryV2).save(any(PerformanceCycle.class));
+        verify(performanceCycleRepository).findById(id);
+        verify(companyService).findById(companyId);
+        verify(performanceCycleRepository).save(any(PerformanceCycle.class));
     }
 
     @Test
     void shouldReturnEmptyWhenUpdatingNonExistentPerformanceCycle() {
         // Given
         String id = "non-existent-cycle";
-        doReturn(Optional.empty()).when(performanceCycleRepositoryV2).findById(id);
+        doReturn(Optional.empty()).when(performanceCycleRepository).findById(id);
 
         // When
-        Optional<PerformanceCycle> result = performanceCycleServiceV2.update(id, "tenant-123", "Name",
+        Optional<PerformanceCycle> result = performanceCycleService.update(id, "tenant-123", "Name",
                 "Description", "company-123", true, false, LocalDate.now(), null);
 
         // Then
         assertThat(result).isEmpty();
-        verify(performanceCycleRepositoryV2).findById(id);
+        verify(performanceCycleRepository).findById(id);
     }
 
     @Test
@@ -196,15 +196,15 @@ class PerformanceCycleServiceTest {
                         LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
         );
 
-        when(performanceCycleRepositoryV2.findAllByTenantId(tenantId)).thenReturn(expectedCycles);
+        when(performanceCycleRepository.findAllByTenantId(tenantId)).thenReturn(expectedCycles);
 
         // When
-        List<PerformanceCycle> result = performanceCycleServiceV2.findAllByTenantId(tenantId);
+        List<PerformanceCycle> result = performanceCycleService.findAllByTenantId(tenantId);
 
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).extracting(PerformanceCycle::getName).containsExactly("Q1 2024", "Q2 2024");
-        verify(performanceCycleRepositoryV2).findAllByTenantId(tenantId);
+        verify(performanceCycleRepository).findAllByTenantId(tenantId);
     }
 
     @Test
@@ -218,15 +218,15 @@ class PerformanceCycleServiceTest {
                         LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31))
         );
 
-        when(performanceCycleRepositoryV2.findByCompanyId(companyId)).thenReturn(expectedCycles);
+        when(performanceCycleRepository.findByCompanyId(companyId)).thenReturn(expectedCycles);
 
         // When
-        List<PerformanceCycle> result = performanceCycleServiceV2.findByCompanyId(companyId);
+        List<PerformanceCycle> result = performanceCycleService.findByCompanyId(companyId);
 
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).allMatch(cycle -> cycle.getCompanyId().equals(companyId));
-        verify(performanceCycleRepositoryV2).findByCompanyId(companyId);
+        verify(performanceCycleRepository).findByCompanyId(companyId);
     }
 
     @Test
@@ -240,15 +240,15 @@ class PerformanceCycleServiceTest {
                         LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
         );
 
-        when(performanceCycleRepositoryV2.findActiveByTenantId(tenantId)).thenReturn(expectedCycles);
+        when(performanceCycleRepository.findActiveByTenantId(tenantId)).thenReturn(expectedCycles);
 
         // When
-        List<PerformanceCycle> result = performanceCycleServiceV2.findActiveByTenantId(tenantId);
+        List<PerformanceCycle> result = performanceCycleService.findActiveByTenantId(tenantId);
 
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).allMatch(cycle -> cycle.getIsActive().equals(true));
-        verify(performanceCycleRepositoryV2).findActiveByTenantId(tenantId);
+        verify(performanceCycleRepository).findActiveByTenantId(tenantId);
     }
 
     @Test
@@ -258,15 +258,15 @@ class PerformanceCycleServiceTest {
         PerformanceCycle expectedCycle = createMockPerformanceCycle("tenant-123", "Q1 2024", "First quarter",
                 "company-123", true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31));
 
-        when(performanceCycleRepositoryV2.findById(id)).thenReturn(Optional.of(expectedCycle));
+        when(performanceCycleRepository.findById(id)).thenReturn(Optional.of(expectedCycle));
 
         // When
-        Optional<PerformanceCycle> result = performanceCycleServiceV2.findById(id);
+        Optional<PerformanceCycle> result = performanceCycleService.findById(id);
 
         // Then
         assertThat(result).isPresent();
         assertThat(result.get().getName()).isEqualTo("Q1 2024");
-        verify(performanceCycleRepositoryV2).findById(id);
+        verify(performanceCycleRepository).findById(id);
     }
 
     @Test
@@ -275,10 +275,10 @@ class PerformanceCycleServiceTest {
         String id = "cycle-123";
 
         // When
-        performanceCycleServiceV2.deleteById(id);
+        performanceCycleService.deleteById(id);
 
         // Then
-        verify(performanceCycleRepositoryV2).deleteById(id);
+        verify(performanceCycleRepository).deleteById(id);
     }
 
     // Helper methods

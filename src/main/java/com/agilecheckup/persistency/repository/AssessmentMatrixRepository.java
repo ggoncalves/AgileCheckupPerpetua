@@ -18,7 +18,7 @@ public class AssessmentMatrixRepository extends AbstractCrudRepository<Assessmen
     }
 
     public List<AssessmentMatrix> findAllByTenantId(String tenantId) {
-        log.info("AssessmentMatrixRepositoryV2.findAllByTenantId called with tenantId: {}", tenantId);
+        log.info("AssessmentMatrixRepository.findAllByTenantId called with tenantId: {}", tenantId);
         return queryBySecondaryIndex("tenantId-index", "tenantId", tenantId);
     }
 }

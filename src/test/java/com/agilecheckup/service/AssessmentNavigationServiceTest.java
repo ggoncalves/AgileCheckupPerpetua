@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -221,7 +221,7 @@ class AssessmentNavigationServiceTest {
         String value = "Yes";
         String notes = "Test notes";
         
-        Answer savedAnswer = createMockAnswerV2();
+        Answer savedAnswer = createMockAnswer();
         EmployeeAssessment assessment = createMockAssessment(AssessmentStatus.IN_PROGRESS, 1);
         AssessmentMatrix matrix = createMockMatrix(5);
         List<Question> questions = createMockQuestions(2);
@@ -314,7 +314,7 @@ class AssessmentNavigationServiceTest {
     }
 
     private Question createMockQuestion(String id, String text) {
-        Question question = createMockedQuestionV2(id, 10.0);
+        Question question = createMockedQuestion(id, 10.0);
         question.setQuestion(text);
         question.setTenantId(TENANT_ID);
         question.setAssessmentMatrixId(MATRIX_ID);
@@ -327,7 +327,7 @@ class AssessmentNavigationServiceTest {
             .build();
     }
 
-    private Answer createMockAnswerV2() {
+    private Answer createMockAnswer() {
         Answer answer = new Answer();
         answer.setId("answer-123");
         answer.setEmployeeAssessmentId(EMPLOYEE_ASSESSMENT_ID);

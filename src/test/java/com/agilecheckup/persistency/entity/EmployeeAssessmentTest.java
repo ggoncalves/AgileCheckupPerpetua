@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EmployeeAssessmentTest {
 
     @Test
-    void testEmployeeAssessmentV2Construction() {
+    void testEmployeeAssessmentConstruction() {
         NaturalPerson employee = NaturalPerson.builder()
             .id("person-123")
             .name("John Doe")

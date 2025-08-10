@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,16 +57,16 @@ class AnswerServiceTest {
 
     @BeforeEach
     void setUp() {
-        testQuestion = createMockedQuestionV2();
-        testEmployeeAssessment = createMockedEmployeeAssessmentV2();
-        testAssessmentMatrix = createMockedAssessmentMatrixV2();
+        testQuestion = createMockedQuestion();
+        testEmployeeAssessment = createMockedEmployeeAssessment();
+        testAssessmentMatrix = createMockedAssessmentMatrix();
 
         lenient().doReturn(Optional.of(testQuestion)).when(questionService).findById(anyString());
         lenient().doReturn(Optional.of(testEmployeeAssessment)).when(employeeAssessmentService).findById(anyString());
         lenient().doReturn(Optional.of(testAssessmentMatrix)).when(assessmentMatrixService).findById(anyString());
     }
 
-    private EmployeeAssessment createMockedEmployeeAssessmentV2() {
+    private EmployeeAssessment createMockedEmployeeAssessment() {
         EmployeeAssessment assessment = new EmployeeAssessment();
         assessment.setId("assessment-123");
         assessment.setAssessmentMatrixId("matrix-123");
@@ -76,7 +76,7 @@ class AnswerServiceTest {
         return assessment;
     }
 
-    private AssessmentMatrix createMockedAssessmentMatrixV2() {
+    private AssessmentMatrix createMockedAssessmentMatrix() {
         AssessmentMatrix matrix = new AssessmentMatrix();
         matrix.setId("matrix-123");
         matrix.setQuestionCount(10);
@@ -97,7 +97,7 @@ class AnswerServiceTest {
         when(answerRepository.findByEmployeeAssessmentIdAndQuestionId(employeeAssessmentId, questionId, tenantId))
                 .thenReturn(Optional.empty());
 
-        Answer savedAnswer = createMockAnswerV2("answer-123", employeeAssessmentId, questionId, tenantId);
+        Answer savedAnswer = createMockAnswer("answer-123", employeeAssessmentId, questionId, tenantId);
         doReturn(Optional.of(savedAnswer)).when(answerRepository).save(any(Answer.class));
 
         // When
@@ -120,7 +120,7 @@ class AnswerServiceTest {
         String tenantId = "tenant-123";
         String notes = "Updated notes";
 
-        Answer existingAnswer = createMockAnswerV2("answer-123", employeeAssessmentId, questionId, tenantId);
+        Answer existingAnswer = createMockAnswer("answer-123", employeeAssessmentId, questionId, tenantId);
         when(answerRepository.findByEmployeeAssessmentIdAndQuestionId(employeeAssessmentId, questionId, tenantId))
                 .thenReturn(Optional.of(existingAnswer));
 
@@ -144,7 +144,7 @@ class AnswerServiceTest {
         String value = "Updated value";
         String notes = "Updated notes";
 
-        Answer existingAnswer = createMockAnswerV2(answerId, "assessment-123", "question-123", "tenant-123");
+        Answer existingAnswer = createMockAnswer(answerId, "assessment-123", "question-123", "tenant-123");
         when(answerRepository.findById(answerId)).thenReturn(Optional.of(existingAnswer));
         doReturn(Optional.of(existingAnswer)).when(answerRepository).save(any(Answer.class));
 
@@ -213,8 +213,8 @@ class AnswerServiceTest {
         String employeeAssessmentId = "assessment-123";
         String tenantId = "tenant-123";
         List<Answer> expectedAnswers = Arrays.asList(
-                createMockAnswerV2("answer-1", employeeAssessmentId, "question-1", tenantId),
-                createMockAnswerV2("answer-2", employeeAssessmentId, "question-2", tenantId)
+                createMockAnswer("answer-1", employeeAssessmentId, "question-1", tenantId),
+                createMockAnswer("answer-2", employeeAssessmentId, "question-2", tenantId)
         );
 
         when(answerRepository.findByEmployeeAssessmentId(employeeAssessmentId, tenantId))
@@ -256,7 +256,7 @@ class AnswerServiceTest {
         testEmployeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
         testAssessmentMatrix.setQuestionCount(10);
 
-        Answer savedAnswer = createMockAnswerV2("answer-123", employeeAssessmentId, "question-123", "tenant-123");
+        Answer savedAnswer = createMockAnswer("answer-123", employeeAssessmentId, "question-123", "tenant-123");
         doReturn(Optional.of(savedAnswer)).when(answerRepository).save(any(Answer.class));
         when(answerRepository.findByEmployeeAssessmentIdAndQuestionId(anyString(), anyString(), anyString()))
                 .thenReturn(Optional.empty());
@@ -276,7 +276,7 @@ class AnswerServiceTest {
         // Given
         testEmployeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
         
-        Answer savedAnswer = createMockAnswerV2("answer-123", "assessment-123", "question-123", "tenant-123");
+        Answer savedAnswer = createMockAnswer("answer-123", "assessment-123", "question-123", "tenant-123");
         doReturn(Optional.of(savedAnswer)).when(answerRepository).save(any(Answer.class));
         when(answerRepository.findByEmployeeAssessmentIdAndQuestionId(anyString(), anyString(), anyString()))
                 .thenReturn(Optional.empty());
@@ -290,7 +290,7 @@ class AnswerServiceTest {
     }
 
 
-    private Answer createMockAnswerV2(String answerId, String employeeAssessmentId, String questionId, String tenantId) {
+    private Answer createMockAnswer(String answerId, String employeeAssessmentId, String questionId, String tenantId) {
         return Answer.builder()
                 .id(answerId)
                 .employeeAssessmentId(employeeAssessmentId)

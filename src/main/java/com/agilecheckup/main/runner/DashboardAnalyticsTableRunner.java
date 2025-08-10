@@ -50,13 +50,13 @@ import java.util.stream.IntStream;
 public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     private DashboardAnalyticsService dashboardAnalyticsService;
-    private AssessmentMatrixService assessmentMatrixServiceV2;
-    private EmployeeAssessmentService employeeAssessmentServiceV2;
-    private AnswerService answerServiceV2;
-    private CompanyService companyServiceV2;
-    private PerformanceCycleService performanceCycleServiceV2;
-    private DepartmentService departmentServiceV2;
-    private TeamService teamServiceV2;
+    private AssessmentMatrixService assessmentMatrixService;
+    private EmployeeAssessmentService employeeAssessmentService;
+    private AnswerService answerService;
+    private CompanyService companyService;
+    private PerformanceCycleService performanceCycleService;
+    private DepartmentService departmentService;
+    private TeamService teamService;
     private QuestionService questionService;
 
     private final TableRunnerHelper tableRunnerHelper = new TableRunnerHelper();
@@ -81,7 +81,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     @Override
     public void run() {
-        log.info("\n=== DashboardAnalyticsV2 Comprehensive Service Operations Demo ===");
+        log.info("\n=== DashboardAnalytics Comprehensive Service Operations Demo ===");
         
         try {
             // 1. Setup test dependencies
@@ -116,10 +116,10 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
             log.info("\n6. Testing Data Verification...");
             testDataVerification();
             
-            log.info("\n=== DashboardAnalyticsV2 Demo Completed Successfully ===");
+            log.info("\n=== DashboardAnalytics Demo Completed Successfully ===");
             
         } catch (Exception e) {
-            log.error("Error during DashboardAnalyticsV2 demo: {}", e.getMessage(), e);
+            log.error("Error during DashboardAnalytics demo: {}", e.getMessage(), e);
         } finally {
             // 8. Cleanup all test data
             if (shouldCleanAfterComplete) {
@@ -135,9 +135,9 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Create test company
         Optional<Company> companyOpt = getCompanyService().create(
             "12345678901",
-            "Test Company Dashboard V2 - " + System.currentTimeMillis(),
+            "Test Company Dashboard  - " + System.currentTimeMillis(),
             "testdashboard@company.com",
-            "Test company for DashboardAnalyticsV2 demo",
+            "Test company for DashboardAnalytics demo",
             testTenantId
         );
         
@@ -151,8 +151,8 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         
         // Create test department
         Optional<Department> departmentOpt = getDepartmentService().create(
-            "Test Department Dashboard V2",
-            "Test department for DashboardAnalyticsV2 demo",
+            "Test Department Dashboard ",
+            "Test department for DashboardAnalytics demo",
             testTenantId,
             testCompany.getId()
         );
@@ -193,8 +193,8 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Create test performance cycle
         Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
             testTenantId,
-            "Test Cycle Dashboard V2 - " + System.currentTimeMillis(),
-            "Test performance cycle for DashboardAnalyticsV2 demo",
+            "Test Cycle Dashboard  - " + System.currentTimeMillis(),
+            "Test performance cycle for DashboardAnalytics demo",
             testCompany.getId(),
             true,
             true,
@@ -211,10 +211,10 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         }
         
         // Create test assessment matrix
-        Map<String, Pillar> pillarMap = tableRunnerHelper.createPillarsWithCategoriesMapV2();
-        Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixServiceV2().create(
-            "Test Assessment Matrix Dashboard V2",
-            "Assessment matrix for DashboardAnalyticsV2 demo",
+        Map<String, Pillar> pillarMap = tableRunnerHelper.createPillarsWithCategoriesMap();
+        Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
+            "Test Assessment Matrix Dashboard ",
+            "Assessment matrix for DashboardAnalytics demo",
             testTenantId,
             testPerformanceCycle.getId(),
             pillarMap
@@ -321,7 +321,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         
         for (int i = 0; i < devEmployees.length; i++) {
             NaturalPerson employee = createTestEmployee(devEmployees[i], devEmails[i], "1234567890" + i);
-            Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentServiceV2().create(
+            Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentService().create(
                 testAssessmentMatrix.getId(),
                 testTeam1.getId(),
                 employee.getName(),
@@ -344,7 +344,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         
         for (int i = 0; i < qaEmployees.length; i++) {
             NaturalPerson employee = createTestEmployee(qaEmployees[i], qaEmails[i], "2234567890" + i);
-            Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentServiceV2().create(
+            Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentService().create(
                 testAssessmentMatrix.getId(),
                 testTeam2.getId(),
                 employee.getName(),
@@ -380,7 +380,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
                 Question question = createdQuestions.get(i);
                 String value = generateAnswerValue(question.getQuestionType(), assessment, i);
                 
-                Optional<Answer> answerOpt = getAnswerServiceV2().create(
+                Optional<Answer> answerOpt = getAnswerService().create(
                     assessment.getId(),
                     question.getId(),
                     answeredAt.plusMinutes(i * 5),
@@ -499,7 +499,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         
         try {
             // Generate analytics for the assessment matrix
-            getDashboardAnalyticsServiceV2().updateAssessmentMatrixAnalytics(testAssessmentMatrix.getId());
+            getDashboardAnalyticsService().updateAssessmentMatrixAnalytics(testAssessmentMatrix.getId());
             log.info("✓ Successfully triggered analytics generation for matrix: {}", testAssessmentMatrix.getId());
             
             // Give some time for analytics to be computed and stored
@@ -514,7 +514,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         log.info("Testing read operations for dashboard analytics...");
         
         // Test get overview
-        Optional<DashboardAnalytics> overviewOpt = getDashboardAnalyticsServiceV2().getOverview(testAssessmentMatrix.getId());
+        Optional<DashboardAnalytics> overviewOpt = getDashboardAnalyticsService().getOverview(testAssessmentMatrix.getId());
         if (overviewOpt.isPresent()) {
             DashboardAnalytics overview = overviewOpt.get();
             log.info("✓ Found overview analytics:");
@@ -531,7 +531,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         }
         
         // Test get team analytics
-        Optional<DashboardAnalytics> team1AnalyticsOpt = getDashboardAnalyticsServiceV2().getTeamAnalytics(
+        Optional<DashboardAnalytics> team1AnalyticsOpt = getDashboardAnalyticsService().getTeamAnalytics(
             testAssessmentMatrix.getId(), testTeam1.getId());
         if (team1AnalyticsOpt.isPresent()) {
             DashboardAnalytics team1Analytics = team1AnalyticsOpt.get();
@@ -544,7 +544,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
             log.warn("✗ No team analytics found for team1");
         }
         
-        Optional<DashboardAnalytics> team2AnalyticsOpt = getDashboardAnalyticsServiceV2().getTeamAnalytics(
+        Optional<DashboardAnalytics> team2AnalyticsOpt = getDashboardAnalyticsService().getTeamAnalytics(
             testAssessmentMatrix.getId(), testTeam2.getId());
         if (team2AnalyticsOpt.isPresent()) {
             DashboardAnalytics team2Analytics = team2AnalyticsOpt.get();
@@ -562,7 +562,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         log.info("Testing query operations...");
         
         // Test get all analytics for assessment matrix
-        List<DashboardAnalytics> allAnalytics = getDashboardAnalyticsServiceV2().getAllAnalytics(testAssessmentMatrix.getId());
+        List<DashboardAnalytics> allAnalytics = getDashboardAnalyticsService().getAllAnalytics(testAssessmentMatrix.getId());
         log.info("✓ Found {} total analytics for assessment matrix", allAnalytics.size());
         
         // Verify we have both team and overview analytics
@@ -604,7 +604,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
                 newValue = "5"; // Increase rating
             }
             
-            Optional<Answer> updatedAnswerOpt = getAnswerServiceV2().update(
+            Optional<Answer> updatedAnswerOpt = getAnswerService().update(
                 answerToUpdate.getId(),
                 LocalDateTime.now(),
                 newValue,
@@ -615,7 +615,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
                 log.info("✓ Updated answer: {} -> {}", originalValue, newValue);
                 
                 // Regenerate analytics
-                getDashboardAnalyticsServiceV2().updateAssessmentMatrixAnalytics(testAssessmentMatrix.getId());
+                getDashboardAnalyticsService().updateAssessmentMatrixAnalytics(testAssessmentMatrix.getId());
                 log.info("✓ Regenerated analytics after data update");
                 
                 // Give time for processing
@@ -626,7 +626,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
                 }
                 
                 // Verify analytics were updated
-                Optional<DashboardAnalytics> updatedOverviewOpt = getDashboardAnalyticsServiceV2().getOverview(testAssessmentMatrix.getId());
+                Optional<DashboardAnalytics> updatedOverviewOpt = getDashboardAnalyticsService().getOverview(testAssessmentMatrix.getId());
                 if (updatedOverviewOpt.isPresent()) {
                     log.info("✓ Analytics successfully updated after data change");
                     log.info("  New general average: {}", updatedOverviewOpt.get().getGeneralAverage());
@@ -819,7 +819,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Delete created answers
         for (Answer answer : createdAnswers) {
             try {
-                boolean deleted = getAnswerServiceV2().deleteById(answer.getId());
+                boolean deleted = getAnswerService().deleteById(answer.getId());
                 if (deleted) {
                     log.info("✓ Cleaned up answer: {}", answer.getId());
                 } else {
@@ -833,7 +833,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Delete created employee assessments
         for (EmployeeAssessment assessment : createdAssessments) {
             try {
-                boolean deleted = getEmployeeAssessmentServiceV2().deleteById(assessment.getId());
+                boolean deleted = getEmployeeAssessmentService().deleteById(assessment.getId());
                 if (deleted) {
                     log.info("✓ Cleaned up employee assessment: {}", assessment.getId());
                 } else {
@@ -857,7 +857,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Delete created analytics explicitly (even though they may be auto-cleaned)
         for (DashboardAnalytics analytics : createdAnalytics) {
             try {
-                getDashboardAnalyticsServiceV2().deleteById(analytics.getCompanyPerformanceCycleId(), analytics.getAssessmentMatrixScopeId());
+                getDashboardAnalyticsService().deleteById(analytics.getCompanyPerformanceCycleId(), analytics.getAssessmentMatrixScopeId());
                 log.info("✓ Cleaned up analytics: {}", analytics.getAssessmentMatrixScopeId());
             } catch (Exception e) {
                 log.error("Error cleaning up analytics {}: {}", analytics.getAssessmentMatrixScopeId(), e.getMessage());
@@ -867,7 +867,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Delete test assessment matrix
         if (testAssessmentMatrix != null) {
             try {
-                boolean deleted = getAssessmentMatrixServiceV2().deleteById(testAssessmentMatrix.getId());
+                boolean deleted = getAssessmentMatrixService().deleteById(testAssessmentMatrix.getId());
                 if (deleted) {
                     log.info("✓ Cleaned up assessment matrix: {}", testAssessmentMatrix.getName());
                 } else {
@@ -958,74 +958,74 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
     }
 
     // Service getters with lazy initialization
-    private DashboardAnalyticsService getDashboardAnalyticsServiceV2() {
+    private DashboardAnalyticsService getDashboardAnalyticsService() {
         if (dashboardAnalyticsService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            dashboardAnalyticsService = serviceComponent.buildDashboardAnalyticsServiceV2();
+            dashboardAnalyticsService = serviceComponent.buildDashboardAnalyticsService();
         }
         return dashboardAnalyticsService;
     }
 
-    private AssessmentMatrixService getAssessmentMatrixServiceV2() {
-        if (assessmentMatrixServiceV2 == null) {
+    private AssessmentMatrixService getAssessmentMatrixService() {
+        if (assessmentMatrixService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            assessmentMatrixServiceV2 = serviceComponent.buildAssessmentMatrixServiceV2();
+            assessmentMatrixService = serviceComponent.buildAssessmentMatrixService();
         }
-        return assessmentMatrixServiceV2;
+        return assessmentMatrixService;
     }
 
-    private EmployeeAssessmentService getEmployeeAssessmentServiceV2() {
-        if (employeeAssessmentServiceV2 == null) {
+    private EmployeeAssessmentService getEmployeeAssessmentService() {
+        if (employeeAssessmentService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            employeeAssessmentServiceV2 = serviceComponent.buildEmployeeAssessmentServiceV2();
+            employeeAssessmentService = serviceComponent.buildEmployeeAssessmentService();
         }
-        return employeeAssessmentServiceV2;
+        return employeeAssessmentService;
     }
 
-    private AnswerService getAnswerServiceV2() {
-        if (answerServiceV2 == null) {
+    private AnswerService getAnswerService() {
+        if (answerService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            answerServiceV2 = serviceComponent.buildAnswerServiceV2();
+            answerService = serviceComponent.buildAnswerService();
         }
-        return answerServiceV2;
+        return answerService;
     }
 
     private CompanyService getCompanyService() {
-        if (companyServiceV2 == null) {
+        if (companyService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyServiceV2 = serviceComponent.buildCompanyService();
+            companyService = serviceComponent.buildCompanyService();
         }
-        return companyServiceV2;
+        return companyService;
     }
 
     private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleServiceV2 == null) {
+        if (performanceCycleService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
+            performanceCycleService = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleServiceV2;
+        return performanceCycleService;
     }
 
     private DepartmentService getDepartmentService() {
-        if (departmentServiceV2 == null) {
+        if (departmentService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            departmentServiceV2 = serviceComponent.buildDepartmentService();
+            departmentService = serviceComponent.buildDepartmentService();
         }
-        return departmentServiceV2;
+        return departmentService;
     }
 
     private TeamService getTeamService() {
-        if (teamServiceV2 == null) {
+        if (teamService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            teamServiceV2 = serviceComponent.buildTeamService();
+            teamService = serviceComponent.buildTeamService();
         }
-        return teamServiceV2;
+        return teamService;
     }
 
     private QuestionService getQuestionService() {
         if (questionService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            questionService = serviceComponent.buildQuestionServiceV2();
+            questionService = serviceComponent.buildQuestionService();
         }
         return questionService;
     }

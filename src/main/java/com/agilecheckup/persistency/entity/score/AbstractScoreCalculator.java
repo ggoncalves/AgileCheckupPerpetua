@@ -14,7 +14,7 @@ public abstract class AbstractScoreCalculator {
   @NonNull
   protected final String value;
   
-  protected final Question questionV2;
+  protected final Question question;
 
   public abstract Double getCalculatedScore();
   
@@ -22,10 +22,10 @@ public abstract class AbstractScoreCalculator {
    * Helper method to get points from question entity.
    */
   protected Double getQuestionPoints() {
-    if (questionV2 != null) {
-      return questionV2.getPoints();
+    if (question != null) {
+      return question.getPoints();
     } else {
-      throw new IllegalStateException("questionV2 is null");
+      throw new IllegalStateException("question is null");
     }
   }
 

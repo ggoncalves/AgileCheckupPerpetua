@@ -16,6 +16,6 @@ public interface ApplicationComponent {
 
     DynamoDbEnhancedClient dynamoDbEnhancedClient();
     
-    DepartmentRepository departmentRepositoryV2();
+    DepartmentRepository departmentRepository();
     
 }

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PerformanceCycleTest {
 
     @Test
-    void shouldCreatePerformanceCycleV2WithBuilder() {
+    void shouldCreatePerformanceCycleWithBuilder() {
         // Given
         String id = "cycle-123";
         String tenantId = "tenant-123";
@@ -57,7 +57,7 @@ class PerformanceCycleTest {
     }
 
     @Test
-    void shouldCreatePerformanceCycleV2WithoutOptionalFields() {
+    void shouldCreatePerformanceCycleWithoutOptionalFields() {
         // Given
         String tenantId = "tenant-123";
         String name = "Ongoing Performance Cycle";

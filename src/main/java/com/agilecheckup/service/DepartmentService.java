@@ -16,13 +16,13 @@ import java.util.Optional;
 @Log4j2
 public class DepartmentService extends AbstractCrudService<Department, AbstractCrudRepository<Department>> {
     
-    private final DepartmentRepository departmentRepositoryV2;
-    private final CompanyService companyServiceV2;
+    private final DepartmentRepository departmentRepository;
+    private final CompanyService companyService;
     
     @Inject
-    public DepartmentService(DepartmentRepository departmentRepositoryV2, CompanyService companyServiceV2) {
-        this.departmentRepositoryV2 = departmentRepositoryV2;
-        this.companyServiceV2 = companyServiceV2;
+    public DepartmentService(DepartmentRepository departmentRepository, CompanyService companyService) {
+        this.departmentRepository = departmentRepository;
+        this.companyService = companyService;
     }
     
     public Optional<Department> create(String name, String description, String tenantId, String companyId) {
@@ -33,7 +33,7 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
         Optional<Department> optionalDepartment = findById(id);
         if (optionalDepartment.isPresent()) {
             Department department = optionalDepartment.get();
-            Optional<Company> company = companyServiceV2.findById(companyId);
+            Optional<Company> company = companyService.findById(companyId);
             department.setName(name);
             department.setDescription(description);
             department.setTenantId(tenantId);
@@ -47,7 +47,7 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
     }
     
     private Department createDepartment(String name, String description, String tenantId, String companyId) {
-        Optional<Company> company = companyServiceV2.findById(companyId);
+        Optional<Company> company = companyService.findById(companyId);
         Department department = new Department();
         department.setName(name);
         department.setDescription(description);
@@ -60,13 +60,13 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
     
     public List<Department> findAllByTenantId(String tenantId) {
         log.info("DepartmentService.findAllByTenantId called with tenantId: {}", tenantId);
-        List<Department> results = departmentRepositoryV2.findAllByTenantId(tenantId);
+        List<Department> results = departmentRepository.findAllByTenantId(tenantId);
         log.info("DepartmentService.findAllByTenantId returning {} results", results.size());
         return results;
     }
     
     @Override
     AbstractCrudRepository<Department> getRepository() {
-        return departmentRepositoryV2;
+        return departmentRepository;
     }
 }

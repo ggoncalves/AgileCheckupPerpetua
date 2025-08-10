@@ -41,14 +41,14 @@ import java.util.Optional;
 @Log4j2
 public class EmployeeAssessmentTableRunner implements CrudRunner {
 
-    private EmployeeAssessmentService employeeAssessmentServiceV2;
-    private AssessmentMatrixService assessmentMatrixServiceV2;
+    private EmployeeAssessmentService employeeAssessmentService;
+    private AssessmentMatrixService assessmentMatrixService;
     private TeamService teamService;
-    private CompanyService companyServiceV2;
-    private DepartmentService departmentServiceV2;
-    private PerformanceCycleService performanceCycleServiceV2;
-    private AnswerService answerServiceV2;
-    private QuestionService questionServiceV2;
+    private CompanyService companyService;
+    private DepartmentService departmentService;
+    private PerformanceCycleService performanceCycleService;
+    private AnswerService answerService;
+    private QuestionService questionService;
     private AssessmentNavigationService assessmentNavigationService;
     private TableRunnerHelper tableRunnerHelper;
     private Company testCompany;
@@ -67,7 +67,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     }
 
     public void run() {
-        log.info("\n=== EmployeeAssessment V2 Migration Demo ===");
+        log.info("\n=== EmployeeAssessment  Migration Demo ===");
         
         try {
             // 1. Setup test data (Company, Department, Team, PerformanceCycle, AssessmentMatrix for FK relationships)
@@ -78,13 +78,13 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
                 return;
             }
             
-            // 2. Demonstrate V2 CRUD operations
-            log.info("\n1. Demonstrating V2 EmployeeAssessment operations...");
-            List<EmployeeAssessment> v2Assessments = demonstrateV2Operations();
+            // 2. Demonstrate  CRUD operations
+            log.info("\n1. Demonstrating  EmployeeAssessment operations...");
+            List<EmployeeAssessment> v2Assessments = demonstrateOperations();
             
             // 3. Demonstrate GSI query capabilities
-            log.info("\n2. Demonstrating V2 GSI query capabilities...");
-            demonstrateV2QueryCapabilities();
+            log.info("\n2. Demonstrating  GSI query capabilities...");
+            demonstrateQueryCapabilities();
             
             // 4. Demonstrate business logic (validation, status transitions, scoring)
             log.info("\n3. Demonstrating business logic...");
@@ -99,7 +99,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             demonstrateEmployeeValidation();
             
             // 7. Show side-by-side comparison with V1 if available
-            log.info("\n6. Side-by-side V1 vs V2 comparison:");
+            log.info("\n6. Side-by-side V1 vs  comparison:");
             demonstrateSideBySideComparison();
             
             // 8. Cleanup
@@ -109,13 +109,13 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             }
             
         } catch (Exception e) {
-            log.error("Error in EmployeeAssessmentTableRunnerV2: {}", e.getMessage(), e);
+            log.error("Error in EmployeeAssessmentTableRunner: {}", e.getMessage(), e);
         } finally {
             // Always cleanup test dependencies
             cleanupTestDependencies();
         }
         
-        log.info("\n=== EmployeeAssessment V2 Migration Demo Complete ===");
+        log.info("\n=== EmployeeAssessment  Migration Demo Complete ===");
     }
     
     private void setupTestData() {
@@ -126,7 +126,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             "12345678000199",  // documentNumber
             "EmployeeAssessment Test Company",  // name
             "ea-test@company.com",  // email
-            "Company for EmployeeAssessment V2 testing",  // description
+            "Company for EmployeeAssessment  testing",  // description
             "ea-test-tenant-" + System.currentTimeMillis()  // unique tenantId
         );
         
@@ -187,7 +187,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
                         }
                         
                         // Create test assessment matrix with pillarMap
-                        Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixServiceV2().create(
+                        Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
                             "Test Assessment Matrix",
                             "Assessment matrix for EmployeeAssessment testing",
                             testTenantId,
@@ -227,9 +227,9 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     private void createTestPillarsAndCategories() {
         log.info("Creating test pillars and categories...");
         
-        // In V2, pillars and categories are embedded within the AssessmentMatrix
+        // In , pillars and categories are embedded within the AssessmentMatrix
         // We use TableRunnerHelper to create a standard pillarMap structure
-        testPillarMap = getTableRunnerHelper().createPillarsWithCategoriesMapV2();
+        testPillarMap = getTableRunnerHelper().createPillarsWithCategoriesMap();
         
         log.info("Created pillar map with {} pillars", testPillarMap.size());
         for (Map.Entry<String, Pillar> entry : testPillarMap.entrySet()) {
@@ -274,7 +274,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         log.info("Creating questions with {} pillars", testPillarMap.size());
         
         // Create different types of questions using actual pillar and category IDs
-        Optional<Question> question1Opt = getQuestionServiceV2().create(
+        Optional<Question> question1Opt = getQuestionService().create(
             "How well do you communicate with your team?",
             QuestionType.ONE_TO_TEN,
             testTenantId,
@@ -285,7 +285,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             null // extraDescription
         );
         
-        Optional<Question> question2Opt = getQuestionServiceV2().create(
+        Optional<Question> question2Opt = getQuestionService().create(
             "Do you make decisions effectively?",
             QuestionType.YES_NO,
             testTenantId,
@@ -296,7 +296,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             null
         );
         
-        Optional<Question> question3Opt = getQuestionServiceV2().create(
+        Optional<Question> question3Opt = getQuestionService().create(
             "Rate your problem-solving abilities",
             QuestionType.STAR_FIVE,
             testTenantId,
@@ -323,14 +323,14 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         log.info("Created {} test questions", testQuestions.size());
     }
     
-    private List<EmployeeAssessment> demonstrateV2Operations() {
+    private List<EmployeeAssessment> demonstrateOperations() {
         List<EmployeeAssessment> assessments = new ArrayList<>();
         
-        // Create V2 EmployeeAssessments
-        log.info("Creating V2 EmployeeAssessments...");
+        // Create  EmployeeAssessments
+        log.info("Creating  EmployeeAssessments...");
         
         // Employee 1
-        Optional<EmployeeAssessment> assessment1Opt = getEmployeeAssessmentServiceV2().create(
+        Optional<EmployeeAssessment> assessment1Opt = getEmployeeAssessmentService().create(
             testAssessmentMatrix.getId(),
             testTeam.getId(),
             "John Doe",
@@ -344,7 +344,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         if (assessment1Opt.isPresent()) {
             EmployeeAssessment assessment1 = assessment1Opt.get();
             assessments.add(assessment1);
-            log.info("✓ V2 EmployeeAssessment created: {} (ID: {})", 
+            log.info("✓  EmployeeAssessment created: {} (ID: {})",
                 assessment1.getEmployee().getName(), assessment1.getId());
             log.info("  - Status: {}", assessment1.getAssessmentStatus());
             log.info("  - Email normalized: {}", assessment1.getEmployeeEmailNormalized());
@@ -352,7 +352,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         }
         
         // Employee 2
-        Optional<EmployeeAssessment> assessment2Opt = getEmployeeAssessmentServiceV2().create(
+        Optional<EmployeeAssessment> assessment2Opt = getEmployeeAssessmentService().create(
             testAssessmentMatrix.getId(),
             testTeam.getId(),
             "Jane Smith",
@@ -366,7 +366,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         if (assessment2Opt.isPresent()) {
             EmployeeAssessment assessment2 = assessment2Opt.get();
             assessments.add(assessment2);
-            log.info("✓ V2 EmployeeAssessment created: {} (ID: {})", 
+            log.info("✓  EmployeeAssessment created: {} (ID: {})",
                 assessment2.getEmployee().getName(), assessment2.getId());
             log.info("  - Email normalized: {} (from uppercase)", assessment2.getEmployeeEmailNormalized());
         }
@@ -374,7 +374,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         // Test uniqueness constraint
         log.info("Testing uniqueness constraint (should fail)...");
         try {
-            getEmployeeAssessmentServiceV2().create(
+            getEmployeeAssessmentService().create(
                 testAssessmentMatrix.getId(),
                 testTeam.getId(),
                 "John Duplicate",
@@ -392,8 +392,8 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         // Update assessment
         if (!assessments.isEmpty()) {
             EmployeeAssessment toUpdate = assessments.get(0);
-            log.info("Updating V2 EmployeeAssessment...");
-            Optional<EmployeeAssessment> updatedOpt = getEmployeeAssessmentServiceV2().update(
+            log.info("Updating  EmployeeAssessment...");
+            Optional<EmployeeAssessment> updatedOpt = getEmployeeAssessmentService().update(
                 toUpdate.getId(),
                 testAssessmentMatrix.getId(),
                 testTeam.getId(),
@@ -406,7 +406,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             );
             
             if (updatedOpt.isPresent()) {
-                log.info("✓ V2 EmployeeAssessment updated: {} -> {}", 
+                log.info("✓  EmployeeAssessment updated: {} -> {}",
                     toUpdate.getEmployee().getName(), updatedOpt.get().getEmployee().getName());
             }
         }
@@ -414,26 +414,26 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         return assessments;
     }
     
-    private void demonstrateV2QueryCapabilities() {
+    private void demonstrateQueryCapabilities() {
         // Test GSI queries
-        log.info("Testing V2 GSI query capabilities...");
+        log.info("Testing  GSI query capabilities...");
         
         // Query by tenant
-        List<EmployeeAssessment> tenantAssessments = getEmployeeAssessmentServiceV2().findAllByTenantId(testTenantId);
+        List<EmployeeAssessment> tenantAssessments = getEmployeeAssessmentService().findAllByTenantId(testTenantId);
         log.info("✓ Found {} assessments for tenant: {}", tenantAssessments.size(), testTenantId);
         
         // Query by assessment matrix
-        List<EmployeeAssessment> matrixAssessments = getEmployeeAssessmentServiceV2()
+        List<EmployeeAssessment> matrixAssessments = getEmployeeAssessmentService()
             .findByAssessmentMatrix(testAssessmentMatrix.getId(), testTenantId);
         log.info("✓ Found {} assessments for matrix: {}", matrixAssessments.size(), testAssessmentMatrix.getId());
         
         // Test existence query
-        boolean exists = getEmployeeAssessmentServiceV2().getRepository()
+        boolean exists = getEmployeeAssessmentService().getRepository()
             .existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "john.updated@example.com");
         log.info("✓ Employee exists check: {}", exists);
         
         // Test case-insensitive existence
-        boolean existsCase = getEmployeeAssessmentServiceV2().getRepository()
+        boolean existsCase = getEmployeeAssessmentService().getRepository()
             .existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "JOHN.UPDATED@EXAMPLE.COM");
         log.info("✓ Case-insensitive exists check: {}", existsCase);
     }
@@ -454,7 +454,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         log.info("Initial status: {}", assessment.getAssessmentStatus());
         
         // Transition to CONFIRMED
-        Optional<EmployeeAssessment> confirmedOpt = getEmployeeAssessmentServiceV2()
+        Optional<EmployeeAssessment> confirmedOpt = getEmployeeAssessmentService()
             .updateAssessmentStatus(assessmentId, AssessmentStatus.CONFIRMED);
         if (confirmedOpt.isPresent()) {
             log.info("✓ Status transitioned to: {}", confirmedOpt.get().getAssessmentStatus());
@@ -466,7 +466,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         
         // Test lastActivityDate update
         log.info("Testing lastActivityDate update...");
-        getEmployeeAssessmentServiceV2().updateLastActivityDate(assessmentId);
+        getEmployeeAssessmentService().updateLastActivityDate(assessmentId);
         log.info("✓ LastActivityDate updated");
     }
     
@@ -493,7 +493,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             log.info("Answer value: {}", value);
             
             try {
-                AnswerWithProgressResponse response = getAssessmentNavigationServiceV2().saveAnswerAndGetNext(
+                AnswerWithProgressResponse response = getAssessmentNavigationService().saveAnswerAndGetNext(
                     assessmentId,
                     question.getId(),
                     LocalDateTime.now(),
@@ -513,7 +513,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
                 }
                 
                 // Verify assessment status changes
-                Optional<EmployeeAssessment> updatedAssessment = getEmployeeAssessmentServiceV2().findById(assessmentId);
+                Optional<EmployeeAssessment> updatedAssessment = getEmployeeAssessmentService().findById(assessmentId);
                 if (updatedAssessment.isPresent()) {
                     EmployeeAssessment updated = updatedAssessment.get();
                     log.info("  - Assessment status: {}", updated.getAssessmentStatus());
@@ -531,7 +531,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         }
         
         // Verify final state
-        Optional<EmployeeAssessment> finalAssessment = getEmployeeAssessmentServiceV2().findById(assessmentId);
+        Optional<EmployeeAssessment> finalAssessment = getEmployeeAssessmentService().findById(assessmentId);
         if (finalAssessment.isPresent()) {
             EmployeeAssessment finalState = finalAssessment.get();
             log.info("Final assessment state:");
@@ -546,7 +546,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         }
         
         // Get all answers created for cleanup
-        List<Answer> allAnswers = getAnswerServiceV2().findByEmployeeAssessmentId(assessmentId, testTenantId);
+        List<Answer> allAnswers = getAnswerService().findByEmployeeAssessmentId(assessmentId, testTenantId);
         testAnswers.addAll(allAnswers);
         log.info("Created {} answers total for cleanup", testAnswers.size());
     }
@@ -581,7 +581,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         request.setTenantId(testTenantId);
         request.setEmail("john.updated@example.com");
         
-        EmployeeValidationResponse response = getEmployeeAssessmentServiceV2().validateEmployee(request);
+        EmployeeValidationResponse response = getEmployeeAssessmentService().validateEmployee(request);
         log.info("✓ Validation result: Success={}, Message={}", "SUCCESS".equals(response.getStatus()), response.getMessage());
         log.info("  - Employee: {}, Status: {}", response.getName(), response.getAssessmentStatus());
         
@@ -591,30 +591,30 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         notFoundRequest.setTenantId(testTenantId);
         notFoundRequest.setEmail("nonexistent@example.com");
         
-        EmployeeValidationResponse notFoundResponse = getEmployeeAssessmentServiceV2().validateEmployee(notFoundRequest);
+        EmployeeValidationResponse notFoundResponse = getEmployeeAssessmentService().validateEmployee(notFoundRequest);
         log.info("✓ Not found result: Success={}, Message={}", 
             "SUCCESS".equals(notFoundResponse.getStatus()), notFoundResponse.getMessage());
     }
     
     private void demonstrateSideBySideComparison() {
-        // Get V2 assessments to showcase features
-        List<EmployeeAssessment> v2Assessments = getEmployeeAssessmentServiceV2().findAllByTenantId(testTenantId);
+        // Get  assessments to showcase features
+        List<EmployeeAssessment> v2Assessments = getEmployeeAssessmentService().findAllByTenantId(testTenantId);
         
         if (!v2Assessments.isEmpty()) {
             EmployeeAssessment v2Assessment = v2Assessments.get(0);
             
-            log.info("V2 EmployeeAssessment Features (Migration Complete):");
+            log.info(" EmployeeAssessment Features (Migration Complete):");
             log.info("  - ID: {}", v2Assessment.getId());
             log.info("  - Employee: {}", v2Assessment.getEmployee().getName());
             log.info("  - Email normalized: {}", v2Assessment.getEmployeeEmailNormalized());
-            log.info("  - SDK Version: AWS SDK V2 Enhanced Client");
+            log.info("  - SDK Version: AWS SDK  Enhanced Client");
             log.info("  - Query Method: Efficient GSI queries");
             log.info("  - Attribute Converters: Custom JSON converters for complex types");
             log.info("  - Enhanced business logic and validation");
             log.info("  - Type-safe operations with enhanced error handling");
         } else {
-            log.info("V2 EmployeeAssessment Migration Benefits:");
-            log.info("  - AWS SDK V2 Enhanced Client with type-safe operations");
+            log.info(" EmployeeAssessment Migration Benefits:");
+            log.info("  - AWS SDK  Enhanced Client with type-safe operations");
             log.info("  - Efficient GSI queries for existence checks and filtering");
             log.info("  - Custom attribute converters for complex types");
             log.info("  - Preserved business logic and method signatures");
@@ -624,12 +624,12 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     }
     
     private void cleanupTestData(List<EmployeeAssessment> assessments) {
-        // Clean AnswersV2 first (FK dependency)
+        // Clean Answers first (FK dependency)
         if (testAnswers != null && !testAnswers.isEmpty()) {
             log.info("Cleaning up {} test answers...", testAnswers.size());
             for (Answer answer : testAnswers) {
                 try {
-                    getAnswerServiceV2().deleteById(answer.getId());
+                    getAnswerService().deleteById(answer.getId());
                     log.info("✓ Cleaned up answer: {}", answer.getId());
                 } catch (Exception e) {
                     log.warn("Failed to cleanup answer {}: {}", answer.getId(), e.getMessage());
@@ -640,9 +640,9 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         // Clean any remaining answers from assessments
         for (EmployeeAssessment assessment : assessments) {
             try {
-                List<Answer> remainingAnswers = getAnswerServiceV2().findByEmployeeAssessmentId(assessment.getId(), testTenantId);
+                List<Answer> remainingAnswers = getAnswerService().findByEmployeeAssessmentId(assessment.getId(), testTenantId);
                 for (Answer answer : remainingAnswers) {
-                    getAnswerServiceV2().deleteById(answer.getId());
+                    getAnswerService().deleteById(answer.getId());
                     log.info("✓ Cleaned up remaining answer: {}", answer.getId());
                 }
             } catch (Exception e) {
@@ -650,22 +650,22 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             }
         }
         
-        // Clean V2 assessments
+        // Clean  assessments
         for (EmployeeAssessment assessment : assessments) {
             try {
-                getEmployeeAssessmentServiceV2().deleteById(assessment.getId());
-                log.info("✓ Cleaned up V2 assessment: {}", assessment.getId());
+                getEmployeeAssessmentService().deleteById(assessment.getId());
+                log.info("✓ Cleaned up  assessment: {}", assessment.getId());
             } catch (Exception e) {
-                log.warn("Failed to cleanup V2 assessment {}: {}", assessment.getId(), e.getMessage());
+                log.warn("Failed to cleanup  assessment {}: {}", assessment.getId(), e.getMessage());
             }
         }
         
         // Clean any remaining test assessments from the tenant
         try {
-            List<EmployeeAssessment> remainingAssessments = getEmployeeAssessmentServiceV2().findAllByTenantId(testTenantId);
+            List<EmployeeAssessment> remainingAssessments = getEmployeeAssessmentService().findAllByTenantId(testTenantId);
             for (EmployeeAssessment assessment : remainingAssessments) {
-                getEmployeeAssessmentServiceV2().deleteById(assessment.getId());
-                log.info("✓ Cleaned up remaining V2 assessment: {}", assessment.getId());
+                getEmployeeAssessmentService().deleteById(assessment.getId());
+                log.info("✓ Cleaned up remaining  assessment: {}", assessment.getId());
             }
         } catch (Exception e) {
             log.warn("Error cleaning remaining assessments: {}", e.getMessage());
@@ -680,7 +680,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             log.info("Cleaning up {} test questions...", testQuestions.size());
             for (Question question : testQuestions) {
                 try {
-                    getQuestionServiceV2().deleteById(question.getId());
+                    getQuestionService().deleteById(question.getId());
                     log.info("✓ Cleaned up question: {}", question.getId());
                 } catch (Exception e) {
                     log.warn("Failed to cleanup question {}: {}", question.getId(), e.getMessage());
@@ -688,12 +688,12 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
             }
         }
         
-        // Note: In V2, pillars and categories are embedded in the AssessmentMatrix
+        // Note: In , pillars and categories are embedded in the AssessmentMatrix
         // They don't need separate cleanup - they'll be cleaned up with the matrix
         
         if (testAssessmentMatrix != null) {
             try {
-                getAssessmentMatrixServiceV2().deleteById(testAssessmentMatrix.getId());
+                getAssessmentMatrixService().deleteById(testAssessmentMatrix.getId());
                 log.info("✓ Cleaned up test assessment matrix: {}", testAssessmentMatrix.getId());
             } catch (Exception e) {
                 log.warn("Failed to cleanup test assessment matrix {}: {}", testAssessmentMatrix.getId(), e.getMessage());
@@ -738,21 +738,21 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     }
     
     // Service getters with lazy initialization
-    private EmployeeAssessmentService getEmployeeAssessmentServiceV2() {
-        if (employeeAssessmentServiceV2 == null) {
+    private EmployeeAssessmentService getEmployeeAssessmentService() {
+        if (employeeAssessmentService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            employeeAssessmentServiceV2 = serviceComponent.buildEmployeeAssessmentServiceV2();
+            employeeAssessmentService = serviceComponent.buildEmployeeAssessmentService();
         }
-        return employeeAssessmentServiceV2;
+        return employeeAssessmentService;
     }
     
     
-    private AssessmentMatrixService getAssessmentMatrixServiceV2() {
-        if (assessmentMatrixServiceV2 == null) {
+    private AssessmentMatrixService getAssessmentMatrixService() {
+        if (assessmentMatrixService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            assessmentMatrixServiceV2 = serviceComponent.buildAssessmentMatrixServiceV2();
+            assessmentMatrixService = serviceComponent.buildAssessmentMatrixService();
         }
-        return assessmentMatrixServiceV2;
+        return assessmentMatrixService;
     }
     
     private TeamService getTeamService() {
@@ -763,52 +763,52 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
         return teamService;
     }
     
-    private AnswerService getAnswerServiceV2() {
-        if (answerServiceV2 == null) {
+    private AnswerService getAnswerService() {
+        if (answerService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            answerServiceV2 = serviceComponent.buildAnswerServiceV2();
+            answerService = serviceComponent.buildAnswerService();
         }
-        return answerServiceV2;
+        return answerService;
     }
     
-    private QuestionService getQuestionServiceV2() {
-        if (questionServiceV2 == null) {
+    private QuestionService getQuestionService() {
+        if (questionService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            questionServiceV2 = serviceComponent.buildQuestionServiceV2();
+            questionService = serviceComponent.buildQuestionService();
         }
-        return questionServiceV2;
+        return questionService;
     }
     
-    private AssessmentNavigationService getAssessmentNavigationServiceV2() {
+    private AssessmentNavigationService getAssessmentNavigationService() {
         if (assessmentNavigationService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            assessmentNavigationService = serviceComponent.buildAssessmentNavigationServiceV2();
+            assessmentNavigationService = serviceComponent.buildAssessmentNavigationService();
         }
         return assessmentNavigationService;
     }
     
     private CompanyService getCompanyService() {
-        if (companyServiceV2 == null) {
+        if (companyService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            companyServiceV2 = serviceComponent.buildCompanyService();
+            companyService = serviceComponent.buildCompanyService();
         }
-        return companyServiceV2;
+        return companyService;
     }
     
     private DepartmentService getDepartmentService() {
-        if (departmentServiceV2 == null) {
+        if (departmentService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            departmentServiceV2 = serviceComponent.buildDepartmentService();
+            departmentService = serviceComponent.buildDepartmentService();
         }
-        return departmentServiceV2;
+        return departmentService;
     }
     
     private PerformanceCycleService getPerformanceCycleService() {
-        if (performanceCycleServiceV2 == null) {
+        if (performanceCycleService == null) {
             ServiceComponent serviceComponent = DaggerServiceComponent.create();
-            performanceCycleServiceV2 = serviceComponent.buildPerformanceCycleService();
+            performanceCycleService = serviceComponent.buildPerformanceCycleService();
         }
-        return performanceCycleServiceV2;
+        return performanceCycleService;
     }
     
     private TableRunnerHelper getTableRunnerHelper() {
