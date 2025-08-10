@@ -17,12 +17,12 @@ import java.util.Optional;
 public class PerformanceCycleService extends AbstractCrudService<PerformanceCycle, PerformanceCycleRepository> {
 
     private final PerformanceCycleRepository performanceCycleRepository;
-    private final CompanyService companyServiceV2;
+    private final CompanyService companyService;
 
     @Inject
-    public PerformanceCycleService(PerformanceCycleRepository performanceCycleRepository, CompanyService companyServiceV2) {
+    public PerformanceCycleService(PerformanceCycleRepository performanceCycleRepository, CompanyService companyService) {
         this.performanceCycleRepository = performanceCycleRepository;
-        this.companyServiceV2 = companyServiceV2;
+        this.companyService = companyService;
     }
 
     public Optional<PerformanceCycle> create(String tenantId, String name, String description, String companyId,
@@ -39,7 +39,7 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
         Optional<PerformanceCycle> optionalPerformanceCycle = findById(id);
         if (optionalPerformanceCycle.isPresent()) {
             PerformanceCycle performanceCycle = optionalPerformanceCycle.get();
-            Optional<Company> company = companyServiceV2.findById(companyId);
+            Optional<Company> company = companyService.findById(companyId);
             
             // Business rule: isTimeSensitive is true only if endDate is present
             Boolean calculatedIsTimeSensitive = (endDate != null);
@@ -65,7 +65,7 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
 
     private PerformanceCycle createPerformanceCycle(String tenantId, String name, String description, String companyId,
                                                     Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
-        Optional<Company> company = companyServiceV2.findById(companyId);
+        Optional<Company> company = companyService.findById(companyId);
         return PerformanceCycle.builder()
                 .tenantId(tenantId)
                 .name(name)

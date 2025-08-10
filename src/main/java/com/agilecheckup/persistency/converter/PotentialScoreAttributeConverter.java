@@ -25,7 +25,7 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
             String jsonString = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(jsonString).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize PotentialScoreV2", e);
+            throw new RuntimeException("Failed to serialize PotentialScore", e);
         }
     }
 
@@ -43,7 +43,7 @@ public class PotentialScoreAttributeConverter implements AttributeConverter<Pote
         try {
             return OBJECT_MAPPER.readValue(content, PotentialScore.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize PotentialScoreV2", e);
+            throw new RuntimeException("Failed to deserialize PotentialScore", e);
         }
     }
 

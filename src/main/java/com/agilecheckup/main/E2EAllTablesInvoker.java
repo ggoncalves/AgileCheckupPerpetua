@@ -21,10 +21,10 @@ public class E2EAllTablesInvoker {
   void initTableRunnerSet() {
     tableRunnerSet = ImmutableSet.of(
 //        new PerformanceCycleTableRunner(true),
-//        new AssessmentMatrixTableRunnerV2(true),
-//        new EmployeeAssessmentTableRunnerV2(true)
-//        new QuestionTableRunnerV2(true)
-//        new AnswerV2TableRunner(true),
+//        new AssessmentMatrixTableRunner(true),
+//        new EmployeeAssessmentTableRunner(true)
+//        new QuestionTableRunner(true)
+//        new AnswerTableRunner(true),
         new DashboardAnalyticsTableRunner(true)
     );
   }

@@ -27,11 +27,11 @@ class TeamServiceTest {
     @Mock
     private TeamRepository teamRepository;
 
-    private TeamService teamServiceV2;
+    private TeamService teamService;
 
     @BeforeEach
     void setUp() {
-        teamServiceV2 = new TeamService(teamRepository);
+        teamService = new TeamService(teamRepository);
     }
 
     @Test
@@ -42,13 +42,13 @@ class TeamServiceTest {
         String description = "Core engineering team";
         String departmentId = "dept-456";
 
-        Team savedTeam = TestObjectFactory.createMockedTeamV2(name, description, tenantId, departmentId);
+        Team savedTeam = TestObjectFactory.createMockedTeam(name, description, tenantId, departmentId);
         savedTeam.setId("team-789");
 
         when(teamRepository.save(any(Team.class))).thenReturn(Optional.of(savedTeam));
 
         // When
-        Optional<Team> result = teamServiceV2.create(tenantId, name, description, departmentId);
+        Optional<Team> result = teamService.create(tenantId, name, description, departmentId);
 
         // Then
         assertThat(result).isPresent();
@@ -68,15 +68,15 @@ class TeamServiceTest {
         String description = "Updated description";
         String departmentId = "dept-789";
 
-        Team existingTeam = TestObjectFactory.createMockedTeamV2(teamId);
-        Team updatedTeam = TestObjectFactory.createMockedTeamV2(name, description, tenantId, departmentId);
+        Team existingTeam = TestObjectFactory.createMockedTeam(teamId);
+        Team updatedTeam = TestObjectFactory.createMockedTeam(name, description, tenantId, departmentId);
         updatedTeam.setId(teamId);
 
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(existingTeam));
         when(teamRepository.save(any(Team.class))).thenReturn(Optional.of(updatedTeam));
 
         // When
-        Optional<Team> result = teamServiceV2.update(teamId, tenantId, name, description, departmentId);
+        Optional<Team> result = teamService.update(teamId, tenantId, name, description, departmentId);
 
         // Then
         assertThat(result).isPresent();
@@ -95,7 +95,7 @@ class TeamServiceTest {
         when(teamRepository.findById(teamId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> teamServiceV2.update(teamId, "tenant", "name", "desc", "dept"))
+        assertThatThrownBy(() -> teamService.update(teamId, "tenant", "name", "desc", "dept"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Team not found with id: nonexistent-team");
 
@@ -107,14 +107,14 @@ class TeamServiceTest {
     void testFindByDepartmentId() {
         // Given
         String departmentId = "dept-123";
-        Team team1 = TestObjectFactory.createMockedTeamV2("team-1");
-        Team team2 = TestObjectFactory.createMockedTeamV2("team-2");
+        Team team1 = TestObjectFactory.createMockedTeam("team-1");
+        Team team2 = TestObjectFactory.createMockedTeam("team-2");
         List<Team> expectedTeams = Arrays.asList(team1, team2);
 
         when(teamRepository.findByDepartmentId(departmentId)).thenReturn(expectedTeams);
 
         // When
-        List<Team> result = teamServiceV2.findByDepartmentId(departmentId);
+        List<Team> result = teamService.findByDepartmentId(departmentId);
 
         // Then
         assertThat(result).hasSize(2);
@@ -126,14 +126,14 @@ class TeamServiceTest {
     void testFindAllByTenantId() {
         // Given
         String tenantId = "tenant-123";
-        Team team1 = TestObjectFactory.createMockedTeamV2("team-1");
-        Team team2 = TestObjectFactory.createMockedTeamV2("team-2");
+        Team team1 = TestObjectFactory.createMockedTeam("team-1");
+        Team team2 = TestObjectFactory.createMockedTeam("team-2");
         List<Team> expectedTeams = Arrays.asList(team1, team2);
 
         when(teamRepository.findAllByTenantId(tenantId)).thenReturn(expectedTeams);
 
         // When
-        List<Team> result = teamServiceV2.findAllByTenantId(tenantId);
+        List<Team> result = teamService.findAllByTenantId(tenantId);
 
         // Then
         assertThat(result).hasSize(2);
@@ -145,12 +145,12 @@ class TeamServiceTest {
     void testFindById() {
         // Given
         String teamId = "team-123";
-        Team expectedTeam = TestObjectFactory.createMockedTeamV2(teamId);
+        Team expectedTeam = TestObjectFactory.createMockedTeam(teamId);
 
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(expectedTeam));
 
         // When
-        Optional<Team> result = teamServiceV2.findById(teamId);
+        Optional<Team> result = teamService.findById(teamId);
 
         // Then
         assertThat(result).isPresent();
@@ -165,7 +165,7 @@ class TeamServiceTest {
         when(teamRepository.deleteById(teamId)).thenReturn(true);
 
         // When
-        boolean result = teamServiceV2.deleteById(teamId);
+        boolean result = teamService.deleteById(teamId);
 
         // Then
         assertThat(result).isTrue();

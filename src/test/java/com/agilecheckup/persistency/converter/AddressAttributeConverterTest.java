@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("AddressV2AttributeConverter Tests")
+@DisplayName("AddressAttributeConverter Tests")
 class AddressAttributeConverterTest {
 
   private AddressAttributeConverter converter;
@@ -29,7 +29,7 @@ class AddressAttributeConverterTest {
 
   // CORRECT - Conformance tests
   @Test
-  @DisplayName("Should transform complete AddressV2 to JSON AttributeValue")
+  @DisplayName("Should transform complete Address to JSON AttributeValue")
   void shouldTransformCompleteAddressToJsonAttributeValue() {
     AttributeValue result = converter.transformFrom(completeAddress);
 
@@ -39,7 +39,7 @@ class AddressAttributeConverterTest {
   }
 
   @Test
-  @DisplayName("Should transform null AddressV2 to NULL AttributeValue")
+  @DisplayName("Should transform null Address to NULL AttributeValue")
   void shouldTransformNullAddressToNullAttributeValue() {
     AttributeValue result = converter.transformFrom(null);
 
@@ -49,7 +49,7 @@ class AddressAttributeConverterTest {
   }
 
   @Test
-  @DisplayName("Should transform JSON AttributeValue to complete AddressV2")
+  @DisplayName("Should transform JSON AttributeValue to complete Address")
   void shouldTransformJsonAttributeValueToCompleteAddress() {
     AttributeValue input = createJsonAttributeValue(expectedJsonString);
 
@@ -59,7 +59,7 @@ class AddressAttributeConverterTest {
   }
 
   @Test
-  @DisplayName("Should transform NULL AttributeValue to null AddressV2")
+  @DisplayName("Should transform NULL AttributeValue to null Address")
   void shouldTransformNullAttributeValueToNullAddress() {
     AttributeValue input = createNullAttributeValue();
 
@@ -99,7 +99,7 @@ class AddressAttributeConverterTest {
 
   // CORRECT - Cardinality tests
   @Test
-  @DisplayName("Should handle AddressV2 with partial fields")
+  @DisplayName("Should handle Address with partial fields")
   void shouldHandleAddressWithPartialFields() {
     Address partialAddress = createPartialAddress();
 
@@ -114,7 +114,7 @@ class AddressAttributeConverterTest {
   }
 
   @Test
-  @DisplayName("Should handle AddressV2 with quoted strings in fields")
+  @DisplayName("Should handle Address with quoted strings in fields")
   void shouldHandleAddressWithQuotedStrings() {
     Address quotedAddress = createAddressWithQuotes();
 
@@ -127,7 +127,7 @@ class AddressAttributeConverterTest {
 
   // CORRECT - Reference tests
   @Test
-  @DisplayName("Should return correct EnhancedType for AddressV2")
+  @DisplayName("Should return correct EnhancedType for Address")
   void shouldReturnCorrectEnhancedType() {
     EnhancedType<Address> result = converter.type();
 

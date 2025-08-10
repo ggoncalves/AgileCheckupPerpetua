@@ -21,9 +21,9 @@ public class DepartmentRepository extends AbstractCrudRepository<Department> {
     }
     
     public List<Department> findAllByTenantId(String tenantId) {
-        log.info("DepartmentRepositoryV2.findAllByTenantId called with tenantId: {}", tenantId);
+        log.info("DepartmentRepository.findAllByTenantId called with tenantId: {}", tenantId);
         List<Department> results = queryBySecondaryIndex(TENANT_INDEX_NAME, "tenantId", tenantId);
-        log.info("DepartmentRepositoryV2.findAllByTenantId returning {} results", results.size());
+        log.info("DepartmentRepository.findAllByTenantId returning {} results", results.size());
         return results;
     }
 }

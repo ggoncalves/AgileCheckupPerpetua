@@ -23,8 +23,8 @@ public class EmployeeAssessmentScoreAttributeConverter implements AttributeConve
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            log.error("Error converting EmployeeAssessmentScoreV2 to JSON", e);
-            throw new RuntimeException("Error converting EmployeeAssessmentScoreV2 to JSON", e);
+            log.error("Error converting EmployeeAssessmentScore to JSON", e);
+            throw new RuntimeException("Error converting EmployeeAssessmentScore to JSON", e);
         }
     }
     
@@ -36,8 +36,8 @@ public class EmployeeAssessmentScoreAttributeConverter implements AttributeConve
         try {
             return OBJECT_MAPPER.readValue(input.s(), EmployeeAssessmentScore.class);
         } catch (JsonProcessingException e) {
-            log.error("Error converting JSON to EmployeeAssessmentScoreV2", e);
-            throw new RuntimeException("Error converting JSON to EmployeeAssessmentScoreV2", e);
+            log.error("Error converting JSON to EmployeeAssessmentScore", e);
+            throw new RuntimeException("Error converting JSON to EmployeeAssessmentScore", e);
         }
     }
     

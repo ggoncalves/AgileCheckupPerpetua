@@ -29,7 +29,7 @@ public class CategoryMapAttributeConverter implements AttributeConverter<Map<Str
             String jsonString = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(jsonString).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize CategoryV2 map", e);
+            throw new RuntimeException("Failed to serialize Category map", e);
         }
     }
 
@@ -41,7 +41,7 @@ public class CategoryMapAttributeConverter implements AttributeConverter<Map<Str
         try {
             return OBJECT_MAPPER.readValue(input.s(), TYPE_REFERENCE);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize CategoryV2 map", e);
+            throw new RuntimeException("Failed to deserialize Category map", e);
         }
     }
 

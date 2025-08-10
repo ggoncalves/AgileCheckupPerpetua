@@ -29,7 +29,7 @@ public class PillarMapAttributeConverter implements AttributeConverter<Map<Strin
             String jsonString = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(jsonString).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize PillarV2 map", e);
+            throw new RuntimeException("Failed to serialize Pillar map", e);
         }
     }
 
@@ -41,7 +41,7 @@ public class PillarMapAttributeConverter implements AttributeConverter<Map<Strin
         try {
             return OBJECT_MAPPER.readValue(input.s(), TYPE_REFERENCE);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize PillarV2 map", e);
+            throw new RuntimeException("Failed to deserialize Pillar map", e);
         }
     }
 

@@ -47,10 +47,10 @@ import static org.mockito.Mockito.verify;
 class EmployeeAssessmentServiceTest {
 
     @Mock
-    private EmployeeAssessmentRepository employeeAssessmentRepositoryV2;
+    private EmployeeAssessmentRepository employeeAssessmentRepository;
 
     @Mock
-    private AssessmentMatrixService assessmentMatrixServiceV2;
+    private AssessmentMatrixService assessmentMatrixService;
 
     @Mock
     private TeamService teamService;
@@ -69,8 +69,8 @@ class EmployeeAssessmentServiceTest {
     @BeforeEach
     void setUp() {
         service = new EmployeeAssessmentService(
-            employeeAssessmentRepositoryV2,
-            assessmentMatrixServiceV2,
+            employeeAssessmentRepository,
+            assessmentMatrixService,
             teamService,
             answerRepository
         );
@@ -104,16 +104,16 @@ class EmployeeAssessmentServiceTest {
             .pillarMap(emptyPillarMap)
             .build();
         
-        lenient().doReturn(Optional.of(mockMatrix)).when(assessmentMatrixServiceV2).findById(ASSESSMENT_MATRIX_ID);
+        lenient().doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
     }
 
     @Test
     void testCreateEmployeeAssessment_Success() {
-        doReturn(false).when(employeeAssessmentRepositoryV2)
+        doReturn(false).when(employeeAssessmentRepository)
             .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
         
         EmployeeAssessment savedAssessment = createMockEmployeeAssessment();
-        doReturn(Optional.of(savedAssessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(savedAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         Optional<EmployeeAssessment> result = service.create(
             ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL,
@@ -126,13 +126,13 @@ class EmployeeAssessmentServiceTest {
         assertThat(result.get().getAssessmentStatus()).isEqualTo(AssessmentStatus.INVITED);
         assertThat(result.get().getAnsweredQuestionCount()).isEqualTo(0);
 
-        verify(employeeAssessmentRepositoryV2).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
-        verify(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+        verify(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
     }
 
     @Test
     void testCreateEmployeeAssessment_ThrowsExceptionWhenAlreadyExists() {
-        doReturn(true).when(employeeAssessmentRepositoryV2)
+        doReturn(true).when(employeeAssessmentRepository)
             .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
 
         assertThatThrownBy(() -> service.create(
@@ -140,8 +140,8 @@ class EmployeeAssessmentServiceTest {
             "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
         )).isInstanceOf(EmployeeAssessmentAlreadyExistsException.class);
 
-        verify(employeeAssessmentRepositoryV2).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
-        verify(employeeAssessmentRepositoryV2, never()).save(any(EmployeeAssessment.class));
+        verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+        verify(employeeAssessmentRepository, never()).save(any(EmployeeAssessment.class));
     }
 
     @Test
@@ -156,7 +156,7 @@ class EmployeeAssessmentServiceTest {
 
     @Test
     void testCreateEmployeeAssessment_ThrowsExceptionWhenAssessmentMatrixNotFound() {
-        doReturn(Optional.empty()).when(assessmentMatrixServiceV2).findById(ASSESSMENT_MATRIX_ID);
+        doReturn(Optional.empty()).when(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
 
         assertThatThrownBy(() -> service.create(
             ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL,
@@ -170,8 +170,8 @@ class EmployeeAssessmentServiceTest {
         EmployeeAssessment existingAssessment = createMockEmployeeAssessment();
         existingAssessment.setId(assessmentId);
 
-        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         Optional<EmployeeAssessment> result = service.update(
             assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com",
@@ -187,7 +187,7 @@ class EmployeeAssessmentServiceTest {
     @Test
     void testUpdateEmployeeAssessment_ReturnsEmptyWhenNotFound() {
         String assessmentId = "assessment-123";
-        doReturn(Optional.empty()).when(employeeAssessmentRepositoryV2).findById(assessmentId);
+        doReturn(Optional.empty()).when(employeeAssessmentRepository).findById(assessmentId);
 
         Optional<EmployeeAssessment> result = service.update(
             assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com",
@@ -205,14 +205,14 @@ class EmployeeAssessmentServiceTest {
         assessment.setAnsweredQuestionCount(0);
         assessment.setAssessmentStatus(AssessmentStatus.INVITED);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         service.incrementAnsweredQuestionCount(assessmentId);
 
         assertThat(assessment.getAnsweredQuestionCount()).isEqualTo(1);
         assertThat(assessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.IN_PROGRESS);
-        verify(employeeAssessmentRepositoryV2, atLeast(1)).save(assessment);
+        verify(employeeAssessmentRepository, atLeast(1)).save(assessment);
     }
 
     @Test
@@ -223,14 +223,14 @@ class EmployeeAssessmentServiceTest {
         assessment.setAnsweredQuestionCount(5);
         assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         service.incrementAnsweredQuestionCount(assessmentId);
 
         assertThat(assessment.getAnsweredQuestionCount()).isEqualTo(6);
         assertThat(assessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.IN_PROGRESS);
-        verify(employeeAssessmentRepositoryV2).save(assessment);
+        verify(employeeAssessmentRepository).save(assessment);
     }
 
     @Test
@@ -240,14 +240,14 @@ class EmployeeAssessmentServiceTest {
         assessment.setId(assessmentId);
         assessment.setAssessmentStatus(AssessmentStatus.INVITED);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         Optional<EmployeeAssessment> result = service.updateAssessmentStatus(assessmentId, AssessmentStatus.CONFIRMED);
 
         assertThat(result).isPresent();
         assertThat(result.get().getAssessmentStatus()).isEqualTo(AssessmentStatus.CONFIRMED);
-        verify(employeeAssessmentRepositoryV2, atLeast(1)).save(assessment);
+        verify(employeeAssessmentRepository, atLeast(1)).save(assessment);
     }
 
     @Test
@@ -258,41 +258,41 @@ class EmployeeAssessmentServiceTest {
 
         List<Answer> mockAnswers = createMockAnswers();
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
         doReturn(mockAnswers).when(answerRepository).findByEmployeeAssessmentId(assessmentId, TENANT_ID);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         EmployeeAssessment result = service.updateEmployeeAssessmentScore(assessmentId, TENANT_ID);
 
         assertThat(result).isNotNull();
         assertThat(result.getEmployeeAssessmentScore()).isNotNull();
         assertThat(result.getEmployeeAssessmentScore().getScore()).isGreaterThan(0);
-        verify(employeeAssessmentRepositoryV2).save(assessment);
+        verify(employeeAssessmentRepository).save(assessment);
     }
 
     @Test
     void testFindAllByTenantId() {
         List<EmployeeAssessment> expectedAssessments = Arrays.asList(createMockEmployeeAssessment());
-        doReturn(expectedAssessments).when(employeeAssessmentRepositoryV2).findAllByTenantId(TENANT_ID);
+        doReturn(expectedAssessments).when(employeeAssessmentRepository).findAllByTenantId(TENANT_ID);
 
         List<EmployeeAssessment> result = service.findAllByTenantId(TENANT_ID);
 
         assertThat(result).hasSize(1);
         assertThat(result).isEqualTo(expectedAssessments);
-        verify(employeeAssessmentRepositoryV2).findAllByTenantId(TENANT_ID);
+        verify(employeeAssessmentRepository).findAllByTenantId(TENANT_ID);
     }
 
     @Test
     void testFindByAssessmentMatrix() {
         List<EmployeeAssessment> expectedAssessments = Arrays.asList(createMockEmployeeAssessment());
-        doReturn(expectedAssessments).when(employeeAssessmentRepositoryV2)
+        doReturn(expectedAssessments).when(employeeAssessmentRepository)
             .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
         List<EmployeeAssessment> result = service.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
         assertThat(result).hasSize(1);
         assertThat(result).isEqualTo(expectedAssessments);
-        verify(employeeAssessmentRepositoryV2).findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
+        verify(employeeAssessmentRepository).findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
     }
 
     @Test
@@ -302,7 +302,7 @@ class EmployeeAssessmentServiceTest {
         assessment.setId(assessmentId);
         assessment.setTenantId(TENANT_ID);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
 
         Optional<EmployeeAssessment> result = service.findById(assessmentId, TENANT_ID);
 
@@ -317,7 +317,7 @@ class EmployeeAssessmentServiceTest {
         assessment.setId(assessmentId);
         assessment.setTenantId("different-tenant");
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
 
         Optional<EmployeeAssessment> result = service.findById(assessmentId, TENANT_ID);
 
@@ -330,7 +330,7 @@ class EmployeeAssessmentServiceTest {
 
         service.deleteById(assessmentId);
 
-        verify(employeeAssessmentRepositoryV2).deleteById(assessmentId);
+        verify(employeeAssessmentRepository).deleteById(assessmentId);
     }
 
     @Test
@@ -338,15 +338,15 @@ class EmployeeAssessmentServiceTest {
         EmployeeAssessment newAssessment = createMockEmployeeAssessment();
         newAssessment.setId(null); // New assessment
 
-        doReturn(false).when(employeeAssessmentRepositoryV2)
+        doReturn(false).when(employeeAssessmentRepository)
             .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
-        doReturn(Optional.of(newAssessment)).when(employeeAssessmentRepositoryV2).save(newAssessment);
+        doReturn(Optional.of(newAssessment)).when(employeeAssessmentRepository).save(newAssessment);
 
         EmployeeAssessment result = service.save(newAssessment);
 
         assertThat(result).isEqualTo(newAssessment);
-        verify(employeeAssessmentRepositoryV2).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
-        verify(employeeAssessmentRepositoryV2).save(newAssessment);
+        verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+        verify(employeeAssessmentRepository).save(newAssessment);
     }
 
     @Test
@@ -357,9 +357,9 @@ class EmployeeAssessmentServiceTest {
         assessment.setAssessmentStatus(AssessmentStatus.INVITED);
 
         List<EmployeeAssessment> assessments = Arrays.asList(assessment);
-        doReturn(assessments).when(employeeAssessmentRepositoryV2)
+        doReturn(assessments).when(employeeAssessmentRepository)
             .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         EmployeeValidationRequest request = new EmployeeValidationRequest();
         request.setAssessmentMatrixId(ASSESSMENT_MATRIX_ID);
@@ -372,12 +372,12 @@ class EmployeeAssessmentServiceTest {
         assertThat(response.getEmployeeAssessmentId()).isEqualTo(assessmentId);
         assertThat(response.getName()).isEqualTo(EMPLOYEE_NAME);
         assertThat(response.getAssessmentStatus()).isEqualTo(AssessmentStatus.CONFIRMED.toString());
-        verify(employeeAssessmentRepositoryV2).save(assessment);
+        verify(employeeAssessmentRepository).save(assessment);
     }
 
     @Test
     void testValidateEmployee_NotFound() {
-        doReturn(Arrays.asList()).when(employeeAssessmentRepositoryV2)
+        doReturn(Arrays.asList()).when(employeeAssessmentRepository)
             .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
         EmployeeValidationRequest request = new EmployeeValidationRequest();
@@ -399,7 +399,7 @@ class EmployeeAssessmentServiceTest {
         assessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
 
         List<EmployeeAssessment> assessments = Arrays.asList(assessment);
-        doReturn(assessments).when(employeeAssessmentRepositoryV2)
+        doReturn(assessments).when(employeeAssessmentRepository)
             .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
         EmployeeValidationRequest request = new EmployeeValidationRequest();
@@ -421,13 +421,13 @@ class EmployeeAssessmentServiceTest {
         assessment.setId(assessmentId);
         assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         service.updateLastActivityDate(assessmentId);
 
         assertThat(assessment.getLastActivityDate()).isNotNull();
-        verify(employeeAssessmentRepositoryV2).save(assessment);
+        verify(employeeAssessmentRepository).save(assessment);
     }
 
     @Test
@@ -439,23 +439,23 @@ class EmployeeAssessmentServiceTest {
         Date originalDate = new Date();
         assessment.setLastActivityDate(originalDate);
 
-        doReturn(Optional.of(assessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
+        doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
 
         service.updateLastActivityDate(assessmentId);
 
         assertThat(assessment.getLastActivityDate()).isEqualTo(originalDate);
-        verify(employeeAssessmentRepositoryV2, never()).save(assessment);
+        verify(employeeAssessmentRepository, never()).save(assessment);
     }
 
     @Test
     void testScanAllEmployeeAssessments() {
         List<EmployeeAssessment> expectedAssessments = Arrays.asList(createMockEmployeeAssessment());
-        doReturn(expectedAssessments).when(employeeAssessmentRepositoryV2).findAll();
+        doReturn(expectedAssessments).when(employeeAssessmentRepository).findAll();
 
         List<EmployeeAssessment> result = service.scanAllEmployeeAssessments();
 
         assertThat(result).isEqualTo(expectedAssessments);
-        verify(employeeAssessmentRepositoryV2).findAll();
+        verify(employeeAssessmentRepository).findAll();
     }
 
     private EmployeeAssessment createMockEmployeeAssessment() {
@@ -544,8 +544,8 @@ class EmployeeAssessmentServiceTest {
                 .build();
         mockMatrix.setTenantId(TENANT_ID);
 
-        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixServiceV2).findById(assessmentMatrixId);
-        doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+        doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         // When
         Optional<EmployeeAssessment> result = service.create(assessmentMatrixId, null, name, email, documentNumber, documentType, gender, genderPronoun);
@@ -554,7 +554,7 @@ class EmployeeAssessmentServiceTest {
         assertThat(result).isPresent();
         
         ArgumentCaptor<EmployeeAssessment> captor = ArgumentCaptor.forClass(EmployeeAssessment.class);
-        verify(employeeAssessmentRepositoryV2).save(captor.capture());
+        verify(employeeAssessmentRepository).save(captor.capture());
         
         EmployeeAssessment createdAssessment = captor.getValue();
         assertThat(createdAssessment.getTeamId()).isNull();
@@ -587,9 +587,9 @@ class EmployeeAssessmentServiceTest {
                 .build();
         mockMatrix.setTenantId(TENANT_ID);
 
-        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepositoryV2).findById(assessmentId);
-        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixServiceV2).findById(assessmentMatrixId);
-        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).findById(assessmentId);
+        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+        doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
         // When
         Optional<EmployeeAssessment> result = service.update(assessmentId, assessmentMatrixId, null, name, email, documentNumber, documentType, gender, genderPronoun);
@@ -598,7 +598,7 @@ class EmployeeAssessmentServiceTest {
         assertThat(result).isPresent();
         
         ArgumentCaptor<EmployeeAssessment> captor = ArgumentCaptor.forClass(EmployeeAssessment.class);
-        verify(employeeAssessmentRepositoryV2).save(captor.capture());
+        verify(employeeAssessmentRepository).save(captor.capture());
         
         EmployeeAssessment updatedAssessment = captor.getValue();
         assertThat(updatedAssessment.getTeamId()).isNull();
@@ -634,10 +634,10 @@ class EmployeeAssessmentServiceTest {
             .performanceCycleId("cycle-123")
             .pillarMap(new HashMap<>())
             .build();
-        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixServiceV2).findById(assessmentMatrixId);
+        doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
         
-        doReturn(false).when(employeeAssessmentRepositoryV2).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, email);
-        doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepositoryV2).save(any(EmployeeAssessment.class));
+        doReturn(false).when(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, email);
+        doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
         
         // When
         Optional<EmployeeAssessment> result = service.create(
@@ -649,7 +649,7 @@ class EmployeeAssessmentServiceTest {
         assertThat(result).isPresent();
         
         ArgumentCaptor<EmployeeAssessment> captor = ArgumentCaptor.forClass(EmployeeAssessment.class);
-        verify(employeeAssessmentRepositoryV2).save(captor.capture());
+        verify(employeeAssessmentRepository).save(captor.capture());
         
         EmployeeAssessment createdAssessment = captor.getValue();
         

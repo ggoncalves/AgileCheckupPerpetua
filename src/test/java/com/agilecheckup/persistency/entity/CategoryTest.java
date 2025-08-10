@@ -20,7 +20,7 @@ class CategoryTest {
             .setDateFormat(new StdDateFormat());
 
     @Test
-    void shouldCreateCategoryV2WithAllFields() {
+    void shouldCreateCategoryWithAllFields() {
         Instant now = Instant.now();
         Category category = Category.builder()
                 .name("Agile Practices")
@@ -36,8 +36,8 @@ class CategoryTest {
     }
 
     @Test
-    void shouldCreateCategoryV2UsingTestFactory() {
-        Category category = TestObjectFactory.createMockedCategoryV2();
+    void shouldCreateCategoryUsingTestFactory() {
+        Category category = TestObjectFactory.createMockedCategory();
 
         assertThat(category.getName()).isEqualTo("Test Category");
         assertThat(category.getDescription()).isEqualTo("Test category description");
@@ -46,8 +46,8 @@ class CategoryTest {
     }
 
     @Test
-    void shouldCreateCategoryV2WithCustomNameAndDescription() {
-        Category category = TestObjectFactory.createMockedCategoryV2("Custom Category", "Custom description");
+    void shouldCreateCategoryWithCustomNameAndDescription() {
+        Category category = TestObjectFactory.createMockedCategory("Custom Category", "Custom description");
 
         assertThat(category.getName()).isEqualTo("Custom Category");
         assertThat(category.getDescription()).isEqualTo("Custom description");
@@ -56,7 +56,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldSerializeAndDeserializeCategoryV2ToJson() throws Exception {
+    void shouldSerializeAndDeserializeCategoryToJson() throws Exception {
         Category originalCategory = Category.builder()
                 .name("JSON Test")
                 .description("JSON serialization test")
@@ -70,7 +70,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleNullFieldsInCategoryV2() {
+    void shouldHandleNullFieldsInCategory() {
         Category category = new Category();
 
         assertThat(category.getName()).isNull();
@@ -80,7 +80,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleEqualsAndHashCodeForCategoryV2() {
+    void shouldHandleEqualsAndHashCodeForCategory() {
         Instant now = Instant.now();
         String sameId = "test-id-123";
         Category category1 = Category.builder()
@@ -113,8 +113,8 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleToStringForCategoryV2() {
-        Category category = TestObjectFactory.createMockedCategoryV2("ToString Test", "Test toString method");
+    void shouldHandleToStringForCategory() {
+        Category category = TestObjectFactory.createMockedCategory("ToString Test", "Test toString method");
         String toStringResult = category.toString();
 
         assertThat(toStringResult).contains("ToString Test");
@@ -123,7 +123,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleEmptyStringsInCategoryV2() {
+    void shouldHandleEmptyStringsInCategory() {
         Category category = Category.builder()
                 .name("")
                 .description("")
@@ -136,7 +136,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleLongStringsInCategoryV2() {
+    void shouldHandleLongStringsInCategory() {
         String longName = "A".repeat(1000);
         String longDescription = "B".repeat(2000);
 
@@ -152,7 +152,7 @@ class CategoryTest {
     }
 
     @Test
-    void shouldHandleSpecialCharactersInCategoryV2() {
+    void shouldHandleSpecialCharactersInCategory() {
         Category category = Category.builder()
                 .name("Category with special chars: !@#$%^&*()_+-={}[]|\\:;\"'<>?,./")
                 .description("Description with unicode: áéíóú ç ñ 中文 🚀 💻")

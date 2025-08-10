@@ -31,12 +31,12 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     @InjectMocks
     @Spy
-    private CompanyService companyServiceV2;
+    private CompanyService companyService;
 
     @Mock
     private CompanyRepository companyRepository;
 
-    private final Company originalCompany = createMockedCompanyV2(DEFAULT_ID);
+    private final Company originalCompany = createMockedCompany(DEFAULT_ID);
 
     @Test
     void createLegacy_shouldSucceedWithBasicFields() {
@@ -48,13 +48,13 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
             .tenantId(GENERIC_TENANT_ID)
             .documentNumber(DEFAULT_COMPANY_DOCUMENT)
             .build();
-        Company savedCompany = copyCompanyV2AndAddId(expectedCompany, DEFAULT_ID);
+        Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
         // Mock
         doReturn(Optional.of(savedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.create(
+        Optional<Company> result = companyService.create(
             DEFAULT_COMPANY_DOCUMENT,
             DEFAULT_COMPANY_NAME,
             DEFAULT_COMPANY_EMAIL,
@@ -71,7 +71,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     @Test
     void createLegacy_nullName_shouldThrowException() {
         // When & Then
-        assertThrows(NullPointerException.class, () -> companyServiceV2.create(
+        assertThrows(NullPointerException.class, () -> companyService.create(
             DEFAULT_COMPANY_DOCUMENT,
             null,
             DEFAULT_COMPANY_EMAIL,
@@ -83,7 +83,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     @Test
     void createWithRequiredFields_shouldSucceed() {
         // Prepare
-        Company expectedCompany = createMockedCompanyV2(
+        Company expectedCompany = createMockedCompany(
             "Tech Company",
             "contact@tech.com",
             "A technology company",
@@ -92,13 +92,13 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
         );
         expectedCompany.setSize(CompanySize.STARTUP);
         expectedCompany.setIndustry(Industry.TECHNOLOGY);
-        Company savedCompany = copyCompanyV2AndAddId(expectedCompany, DEFAULT_ID);
+        Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
         // Mock
         doReturn(Optional.of(savedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.create(
+        Optional<Company> result = companyService.create(
             "12345678000123",
             "Tech Company",
             "contact@tech.com",
@@ -118,8 +118,8 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     @Test
     void createWithAllFields_shouldSucceed() {
         // Prepare
-        NaturalPerson contactPerson = createMockedNaturalPersonV2("John Doe");
-        Address address = createMockedAddressV2();
+        NaturalPerson contactPerson = createMockedNaturalPerson("John Doe");
+        Address address = createMockedAddress();
 
         Company expectedCompany = Company.builder()
             .name("Full Company")
@@ -134,13 +134,13 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
             .contactPerson(contactPerson)
             .address(address)
             .build();
-        Company savedCompany = copyCompanyV2AndAddId(expectedCompany, DEFAULT_ID);
+        Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
         // Mock
         doReturn(Optional.of(savedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.create(
+        Optional<Company> result = companyService.create(
             "98765432000198",
             "Full Company",
             "contact@full.com",
@@ -171,8 +171,8 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     @Test
     void updateLegacy_existingCompany_shouldSucceed() {
         // Prepare
-        Company existingCompany = createMockedCompanyV2(DEFAULT_ID);
-        Company updatedCompany = createMockedCompanyV2(DEFAULT_ID);
+        Company existingCompany = createMockedCompany(DEFAULT_ID);
+        Company updatedCompany = createMockedCompany(DEFAULT_ID);
         updatedCompany.setName("Updated Company Name");
         updatedCompany.setEmail("updated.email@example.com");
         updatedCompany.setDescription("Updated Description");
@@ -184,7 +184,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
         doReturn(Optional.of(updatedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.update(
+        Optional<Company> result = companyService.update(
             DEFAULT_ID,
             "0002",
             "Updated Company Name",
@@ -209,7 +209,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
         when(companyRepository.findById(nonExistingId)).thenReturn(Optional.empty());
 
         // When
-        Optional<Company> result = companyServiceV2.update(
+        Optional<Company> result = companyService.update(
             nonExistingId,
             "doc",
             "name",
@@ -227,8 +227,8 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     @Test
     void updateWithAllFields_existingCompany_shouldSucceed() {
         // Prepare
-        Company existingCompany = createMockedCompanyV2(DEFAULT_ID);
-        NaturalPerson newContactPerson = createMockedNaturalPersonV2("Jane Smith");
+        Company existingCompany = createMockedCompany(DEFAULT_ID);
+        NaturalPerson newContactPerson = createMockedNaturalPerson("Jane Smith");
         Address newAddress = Address.builder()
             .street("456 New Street")
             .city("Rio de Janeiro")
@@ -257,7 +257,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
         doReturn(Optional.of(updatedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.update(
+        Optional<Company> result = companyService.update(
             DEFAULT_ID,
             "22222222000222",
             "Updated Full Company",
@@ -296,13 +296,13 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
             .contactPerson(null)
             .address(null)
             .build();
-        Company savedCompany = copyCompanyV2AndAddId(expectedCompany, DEFAULT_ID);
+        Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
         // Mock
         doReturn(Optional.of(savedCompany)).when(companyRepository).save(any(Company.class));
 
         // When
-        Optional<Company> result = companyServiceV2.create(
+        Optional<Company> result = companyService.create(
             "33333333000333",
             "Minimal Company",
             "minimal@company.com",

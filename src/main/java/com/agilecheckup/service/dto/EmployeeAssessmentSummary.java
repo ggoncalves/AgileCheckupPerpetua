@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * V2 Employee assessment summary DTO for dashboard data.
+ *  Employee assessment summary DTO for dashboard data.
  * 
  * @author Claude (claude-sonnet-4-20250514)
  */

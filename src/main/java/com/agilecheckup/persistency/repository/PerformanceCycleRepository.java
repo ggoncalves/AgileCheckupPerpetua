@@ -19,17 +19,17 @@ public class PerformanceCycleRepository extends AbstractCrudRepository<Performan
     }
 
     public List<PerformanceCycle> findAllByTenantId(String tenantId) {
-        log.info("PerformanceCycleRepositoryV2.findAllByTenantId called with tenantId: {}", tenantId);
+        log.info("PerformanceCycleRepository.findAllByTenantId called with tenantId: {}", tenantId);
         return queryBySecondaryIndex("tenantId-index", "tenantId", tenantId);
     }
 
     public List<PerformanceCycle> findByCompanyId(String companyId) {
-        log.info("PerformanceCycleRepositoryV2.findByCompanyId called with companyId: {}", companyId);
+        log.info("PerformanceCycleRepository.findByCompanyId called with companyId: {}", companyId);
         return queryBySecondaryIndex("companyId-index", "companyId", companyId);
     }
 
     public List<PerformanceCycle> findActiveByTenantId(String tenantId) {
-        log.info("PerformanceCycleRepositoryV2.findActiveByTenantId called with tenantId: {}", tenantId);
+        log.info("PerformanceCycleRepository.findActiveByTenantId called with tenantId: {}", tenantId);
         List<PerformanceCycle> allCycles = findAllByTenantId(tenantId);
         return allCycles.stream()
                 .filter(cycle -> Boolean.TRUE.equals(cycle.getIsActive()))

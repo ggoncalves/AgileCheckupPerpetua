@@ -26,7 +26,7 @@ public class OptionGroupAttributeConverter implements AttributeConverter<OptionG
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize OptionGroupV2", e);
+            throw new RuntimeException("Failed to serialize OptionGroup", e);
         }
     }
 
@@ -44,7 +44,7 @@ public class OptionGroupAttributeConverter implements AttributeConverter<OptionG
         try {
             return OBJECT_MAPPER.readValue(content, OptionGroup.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize OptionGroupV2", e);
+            throw new RuntimeException("Failed to deserialize OptionGroup", e);
         }
     }
 

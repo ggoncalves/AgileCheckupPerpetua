@@ -83,7 +83,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     Optional<Question> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
-      validateQuestionOptionV2s(options);
+      validateQuestionOptions(options);
       AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
       Pillar pillar = getPillar(assessmentMatrix, pillarId);
       Category category = getCategory(pillar, categoryId);
@@ -151,7 +151,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
                                                 boolean isMultipleChoice, boolean showFlushed,
                                                 @NonNull List<QuestionOption> options, String assessmentMatrixId,
                                                 String pillarId, String categoryId, String extraDescription) {
-    validateQuestionOptionV2s(options);
+    validateQuestionOptions(options);
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
@@ -169,7 +169,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
         .build();
   }
 
-  private void validateQuestionOptionV2s(List<QuestionOption> options) {
+  private void validateQuestionOptions(List<QuestionOption> options) {
     validateOptionListSize(options);
     options = sortOptionsById(options);
     validateOptions(options);

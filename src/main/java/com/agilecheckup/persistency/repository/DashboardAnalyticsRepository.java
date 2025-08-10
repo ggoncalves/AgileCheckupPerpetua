@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * V2 Repository for managing dashboard analytics data.
+ *  Repository for managing dashboard analytics data.
  */
 @Slf4j
 public class DashboardAnalyticsRepository {
@@ -44,7 +44,7 @@ public class DashboardAnalyticsRepository {
      * Find analytics by company and performance cycle using GSI
      */
     public List<DashboardAnalytics> findByCompanyAndPerformanceCycle(String companyId, String performanceCycleId) {
-        log.info("DashboardAnalyticsRepositoryV2.findByCompanyAndPerformanceCycle called with companyId: {}, performanceCycleId: {}", 
+        log.info("DashboardAnalyticsRepository.findByCompanyAndPerformanceCycle called with companyId: {}, performanceCycleId: {}",
                  companyId, performanceCycleId);
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(
@@ -69,7 +69,7 @@ public class DashboardAnalyticsRepository {
      * Find analytics overview (assessment matrix scope) by composite key
      */
     public Optional<DashboardAnalytics> findAssessmentMatrixOverview(String companyId, String performanceCycleId, String assessmentMatrixId) {
-        log.info("DashboardAnalyticsRepositoryV2.findAssessmentMatrixOverview called with companyId: {}, performanceCycleId: {}, assessmentMatrixId: {}", 
+        log.info("DashboardAnalyticsRepository.findAssessmentMatrixOverview called with companyId: {}, performanceCycleId: {}, assessmentMatrixId: {}",
                  companyId, performanceCycleId, assessmentMatrixId);
 
         String companyPerformanceCycleId = companyId + "#" + performanceCycleId;
@@ -82,7 +82,7 @@ public class DashboardAnalyticsRepository {
      * Find team-specific analytics by composite key
      */
     public Optional<DashboardAnalytics> findTeamAnalytics(String companyId, String performanceCycleId, String assessmentMatrixId, String teamId) {
-        log.info("DashboardAnalyticsRepositoryV2.findTeamAnalytics called with companyId: {}, performanceCycleId: {}, assessmentMatrixId: {}, teamId: {}", 
+        log.info("DashboardAnalyticsRepository.findTeamAnalytics called with companyId: {}, performanceCycleId: {}, assessmentMatrixId: {}, teamId: {}",
                  companyId, performanceCycleId, assessmentMatrixId, teamId);
 
         String companyPerformanceCycleId = companyId + "#" + performanceCycleId;
@@ -95,7 +95,7 @@ public class DashboardAnalyticsRepository {
      * Find all analytics for a company using GSI
      */
     public List<DashboardAnalytics> findByCompany(String companyId) {
-        log.info("DashboardAnalyticsRepositoryV2.findByCompany called with companyId: {}", companyId);
+        log.info("DashboardAnalyticsRepository.findByCompany called with companyId: {}", companyId);
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(
                 Key.builder()

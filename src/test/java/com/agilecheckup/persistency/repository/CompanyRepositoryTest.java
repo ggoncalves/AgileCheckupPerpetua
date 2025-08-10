@@ -10,7 +10,7 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 import java.util.Optional;
 
-import static com.agilecheckup.util.TestObjectFactory.createMockedCompanyV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedCompany;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -39,7 +39,7 @@ class CompanyRepositoryTest extends AbstractRepositoryTest<Company> {
   @Test
   @DisplayName("Should save company successfully")
   void shouldSaveCompanySuccessfully() {
-    Company company = createMockedCompanyV2();
+    Company company = createMockedCompany();
     mockTablePutItem(company);
     
     Optional<Company> result = companyRepository.save(company);
@@ -53,7 +53,7 @@ class CompanyRepositoryTest extends AbstractRepositoryTest<Company> {
   @Test
   @DisplayName("Should find company by id successfully")
   void shouldFindCompanyByIdSuccessfully() {
-    Company company = createMockedCompanyV2("test-id");
+    Company company = createMockedCompany("test-id");
     mockTableGetItem(company);
     
     Optional<Company> result = companyRepository.findById("test-id");
@@ -86,7 +86,7 @@ class CompanyRepositoryTest extends AbstractRepositoryTest<Company> {
   @Test
   @DisplayName("Should check if company exists by id")
   void shouldCheckIfCompanyExistsById() {
-    Company company = createMockedCompanyV2("test-id");
+    Company company = createMockedCompany("test-id");
     mockTableGetItem(company);
     
     boolean result = companyRepository.existsById("test-id");

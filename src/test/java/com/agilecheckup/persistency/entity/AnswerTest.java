@@ -9,17 +9,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
-import static com.agilecheckup.util.TestObjectFactory.createMockedQuestionV2;
+import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class AnswerTest {
 
     @Test
-    void shouldCreateAnswerV2WithAllFields() {
+    void shouldCreateAnswerWithAllFields() {
         // Given
         LocalDateTime answeredAt = LocalDateTime.now();
-        Question question = createMockedQuestionV2();
+        Question question = createMockedQuestion();
         NaturalPerson reviewer = NaturalPerson.builder()
                 .name("John Reviewer")
                 .email("john@reviewer.com")
@@ -61,7 +61,7 @@ class AnswerTest {
     }
 
     @Test
-    void shouldCreateAnswerV2WithRequiredFieldsOnly() {
+    void shouldCreateAnswerWithRequiredFieldsOnly() {
         // Given
         LocalDateTime answeredAt = LocalDateTime.now();
 
@@ -147,7 +147,7 @@ class AnswerTest {
     }
 
     @Test
-    void shouldCreateAnswerV2WithDifferentQuestionTypes() {
+    void shouldCreateAnswerWithDifferentQuestionTypes() {
         // Test different question types
         QuestionType[] questionTypes = {
             QuestionType.YES_NO,

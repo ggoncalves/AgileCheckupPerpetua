@@ -20,7 +20,7 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules = {ServiceModule.class, AwsConfigModule.class, RepositoryModule.class})
 public interface ServiceComponent {
-  QuestionService buildQuestionServiceV2();
+  QuestionService buildQuestionService();
 
   CompanyService buildCompanyService();
 
@@ -30,13 +30,13 @@ public interface ServiceComponent {
 
   PerformanceCycleService buildPerformanceCycleService();
 
-  AssessmentMatrixService buildAssessmentMatrixServiceV2();
+  AssessmentMatrixService buildAssessmentMatrixService();
 
-  EmployeeAssessmentService buildEmployeeAssessmentServiceV2();
+  EmployeeAssessmentService buildEmployeeAssessmentService();
 
-  AnswerService buildAnswerServiceV2();
+  AnswerService buildAnswerService();
   
-  AssessmentNavigationService buildAssessmentNavigationServiceV2();
+  AssessmentNavigationService buildAssessmentNavigationService();
 
-  DashboardAnalyticsService buildDashboardAnalyticsServiceV2();
+  DashboardAnalyticsService buildDashboardAnalyticsService();
 }

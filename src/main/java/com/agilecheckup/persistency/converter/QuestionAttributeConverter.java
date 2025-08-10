@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 /**
  * Converter for Question object to/from DynamoDB String attribute.
- * Handles V2 entities with Instant-based timestamps.
+ * Handles  entities with Instant-based timestamps.
  */
 public class QuestionAttributeConverter implements AttributeConverter<Question> {
 
@@ -35,7 +35,7 @@ public class QuestionAttributeConverter implements AttributeConverter<Question> 
             String json = OBJECT_MAPPER.writeValueAsString(input);
             return AttributeValue.builder().s(json).build();
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize QuestionV2", e);
+            throw new RuntimeException("Failed to serialize Question", e);
         }
     }
 
@@ -53,7 +53,7 @@ public class QuestionAttributeConverter implements AttributeConverter<Question> 
         try {
             return OBJECT_MAPPER.readValue(content, Question.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize QuestionV2", e);
+            throw new RuntimeException("Failed to deserialize Question", e);
         }
     }
 
