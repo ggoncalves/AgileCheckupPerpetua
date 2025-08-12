@@ -1,5 +1,15 @@
 package com.agilecheckup.service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
@@ -9,16 +19,8 @@ import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.service.dto.AnswerWithProgressResponse;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import lombok.NonNull;
 
-import javax.inject.Inject;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.NonNull;
 
 public class AssessmentNavigationService {
 
@@ -28,9 +30,7 @@ public class AssessmentNavigationService {
   private final AssessmentMatrixService assessmentMatrixService;
 
   @Inject
-  public AssessmentNavigationService(QuestionService questionService, AnswerService answerService,
-                                     EmployeeAssessmentService employeeAssessmentService,
-                                     AssessmentMatrixService assessmentMatrixService) {
+  public AssessmentNavigationService(QuestionService questionService, AnswerService answerService, EmployeeAssessmentService employeeAssessmentService, AssessmentMatrixService assessmentMatrixService) {
     this.questionService = questionService;
     this.answerService = answerService;
     this.employeeAssessmentService = employeeAssessmentService;
@@ -46,18 +46,18 @@ public class AssessmentNavigationService {
    * - Uses the configured navigation mode (typically RANDOM) to select questions
    * 
    * @param employeeAssessmentId The employee assessment ID
-   * @param tenantId The tenant ID for data isolation
+   * @param tenantId             The tenant ID for data isolation
    * @return AnswerWithProgressResponse containing the next question and progress info
    */
   public AnswerWithProgressResponse getNextUnansweredQuestion(@NonNull String employeeAssessmentId, @NonNull String tenantId) {
     EmployeeAssessment assessment = validateAndUpdateAssessment(employeeAssessmentId);
     AssessmentMatrix matrix = getAssessmentMatrixById(assessment.getAssessmentMatrixId());
-    
+
     Question nextQuestion = selectNextUnansweredQuestion(assessment, matrix, tenantId);
-    
+
     return buildProgressResponse(nextQuestion, assessment, matrix);
   }
-  
+
   /**
    * Validates the assessment exists and updates status to IN_PROGRESS if needed.
    * Clean Code: Single responsibility - validation and status management.
@@ -67,7 +67,7 @@ public class AssessmentNavigationService {
     updateStatusToInProgressIfNeeded(assessment);
     return assessment;
   }
-  
+
   /**
    * Selects the next unanswered question using efficient database queries.
    * Clean Code: Single responsibility - question selection logic.
@@ -75,16 +75,16 @@ public class AssessmentNavigationService {
   private Question selectNextUnansweredQuestion(EmployeeAssessment assessment, AssessmentMatrix matrix, String tenantId) {
     Set<String> answeredQuestionIds = getAnsweredQuestionIds(assessment.getId(), tenantId);
     List<Question> unansweredQuestions = getUnansweredQuestions(matrix.getId(), tenantId, answeredQuestionIds);
-    
+
     if (unansweredQuestions.isEmpty()) {
       updateStatusToCompletedIfNeeded(assessment);
       return null;
     }
-    
+
     AssessmentConfiguration config = assessmentMatrixService.getEffectiveConfiguration(matrix);
     return selectQuestionByNavigationMode(unansweredQuestions, config.getNavigationMode(), assessment.getId());
   }
-  
+
   /**
    * Efficiently retrieves answered question IDs without loading full Answer objects.
    * Performance: Reduces memory usage and network transfer.
@@ -92,18 +92,16 @@ public class AssessmentNavigationService {
   private Set<String> getAnsweredQuestionIds(String employeeAssessmentId, String tenantId) {
     return answerService.findAnsweredQuestionIds(employeeAssessmentId, tenantId);
   }
-  
+
   /**
    * Retrieves unanswered questions by filtering at the database level.
    * Performance: Reduces in-memory processing.
    */
   private List<Question> getUnansweredQuestions(String matrixId, String tenantId, Set<String> answeredQuestionIds) {
     List<Question> allQuestions = questionService.findByAssessmentMatrixId(matrixId, tenantId);
-    return allQuestions.stream()
-        .filter(question -> !answeredQuestionIds.contains(question.getId()))
-        .collect(Collectors.toList());
+    return allQuestions.stream().filter(question -> !answeredQuestionIds.contains(question.getId())).collect(Collectors.toList());
   }
-  
+
   /**
    * Selects a question based on the navigation mode configuration.
    * Clean Code: Single responsibility - navigation logic.
@@ -111,18 +109,14 @@ public class AssessmentNavigationService {
   private Question selectQuestionByNavigationMode(List<Question> questions, QuestionNavigationType navigationType, String seedId) {
     return selectNextQuestion(questions, navigationType, seedId).orElse(null);
   }
-  
+
   /**
    * Builds the response object with progress information.
    * Clean Code: Single responsibility - response construction.
    */
   private AnswerWithProgressResponse buildProgressResponse(Question question, EmployeeAssessment assessment, AssessmentMatrix matrix) {
-    return AnswerWithProgressResponse.builder()
-        .question(question)
-        .existingAnswer(null) // Always null - reserved for future partial answers feature
-        .currentProgress(assessment.getAnsweredQuestionCount())
-        .totalQuestions(matrix.getQuestionCount())
-        .build();
+    return AnswerWithProgressResponse.builder().question(question).existingAnswer(null) // Always null - reserved for future partial answers feature
+        .currentProgress(assessment.getAnsweredQuestionCount()).totalQuestions(matrix.getQuestionCount()).build();
   }
 
   /**
@@ -133,7 +127,7 @@ public class AssessmentNavigationService {
     if (questions.isEmpty()) {
       return Optional.empty();
     }
-    
+
     switch (navigationType) {
       case RANDOM:
         return getRandomQuestion(questions, seedId);
@@ -191,12 +185,7 @@ public class AssessmentNavigationService {
    * @param notes                Optional notes for the answer
    * @return AnswerWithProgressResponse containing the saved answer and next question with progress
    */
-  public AnswerWithProgressResponse saveAnswerAndGetNext(@NonNull String employeeAssessmentId,
-                                                         @NonNull String questionId,
-                                                         LocalDateTime answeredAt,
-                                                         @NonNull String value,
-                                                         @NonNull String tenantId,
-                                                         String notes) {
+  public AnswerWithProgressResponse saveAnswerAndGetNext(@NonNull String employeeAssessmentId, @NonNull String questionId, LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId, String notes) {
     // Save the answer first
     Optional<Answer> savedAnswer = answerService.create(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes);
 

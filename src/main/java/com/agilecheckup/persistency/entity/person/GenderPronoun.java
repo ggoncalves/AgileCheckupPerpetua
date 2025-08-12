@@ -6,8 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum GenderPronoun {
-  HE("He"),
-  SHE("She");
+  HE("He"), SHE("She");
 
   private final String label;
 }

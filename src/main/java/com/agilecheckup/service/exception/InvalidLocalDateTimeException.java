@@ -7,6 +7,7 @@ public class InvalidLocalDateTimeException extends ValidationException {
   public InvalidLocalDateTimeException(String reason) {
     super(reason);
   }
+
   public InvalidLocalDateTimeException(InvalidReasonEnum invalidReasonEnum) {
     this(invalidReasonEnum.reason);
   }

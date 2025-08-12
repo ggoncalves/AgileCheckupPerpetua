@@ -1,10 +1,10 @@
 package com.agilecheckup.main;
 
+import java.util.Set;
+
 import com.agilecheckup.main.runner.CrudRunner;
 import com.agilecheckup.main.runner.DashboardAnalyticsTableRunner;
 import com.google.common.collect.ImmutableSet;
-
-import java.util.Set;
 
 public class E2EAllTablesInvoker {
 
@@ -20,7 +20,7 @@ public class E2EAllTablesInvoker {
 
   void initTableRunnerSet() {
     tableRunnerSet = ImmutableSet.of(
-//        new PerformanceCycleTableRunner(true),
+      //        new PerformanceCycleTableRunner(true),
 //        new AssessmentMatrixTableRunner(true),
 //        new EmployeeAssessmentTableRunner(true)
 //        new QuestionTableRunner(true)

@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.converter;
 
 import com.agilecheckup.persistency.entity.person.Address;
+
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
@@ -14,13 +15,7 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
     }
     // Convert Address to JSON string for storage
     return AttributeValue.builder().s(String.format(
-        "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}",
-        escapeJsonValue(input.getId()),
-        escapeJsonValue(input.getStreet()),
-        escapeJsonValue(input.getCity()),
-        escapeJsonValue(input.getState()),
-        escapeJsonValue(input.getZipcode()),
-        escapeJsonValue(input.getCountry())
+        "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}", escapeJsonValue(input.getId()), escapeJsonValue(input.getStreet()), escapeJsonValue(input.getCity()), escapeJsonValue(input.getState()), escapeJsonValue(input.getZipcode()), escapeJsonValue(input.getCountry())
     )).build();
   }
 
@@ -64,27 +59,28 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
       return "";
     }
     return value.replace("\\", "\\\\")    // Escape backslashes first
-                .replace("\"", "\\\"")    // Escape quotes
-                .replace("\n", "\\n")     // Escape newlines
-                .replace("\r", "\\r")     // Escape carriage returns
-                .replace("\t", "\\t");    // Escape tabs
+        .replace("\"", "\\\"")    // Escape quotes
+        .replace("\n", "\\n")     // Escape newlines
+        .replace("\r", "\\r")     // Escape carriage returns
+        .replace("\t", "\\t");    // Escape tabs
   }
 
   private String extractJsonValue(String json, String key) {
     String pattern = "\"" + key + "\":\"";
     int startIndex = json.indexOf(pattern);
     if (startIndex == -1) return "";
-    
+
     startIndex += pattern.length();
     StringBuilder result = new StringBuilder();
-    
+
     for (int i = startIndex; i < json.length(); i++) {
       char ch = json.charAt(i);
-      
+
       if (ch == '"') {
         // Found closing quote, we're done
         break;
-      } else if (ch == '\\' && i + 1 < json.length()) {
+      }
+      else if (ch == '\\' && i + 1 < json.length()) {
         // Handle escaped characters
         char nextChar = json.charAt(i + 1);
         switch (nextChar) {
@@ -113,11 +109,12 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
             result.append(ch);
             break;
         }
-      } else {
+      }
+      else {
         result.append(ch);
       }
     }
-    
+
     return result.toString();
   }
 

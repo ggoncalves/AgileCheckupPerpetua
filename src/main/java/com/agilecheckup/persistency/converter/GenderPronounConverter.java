@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.converter;
 
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
+
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;

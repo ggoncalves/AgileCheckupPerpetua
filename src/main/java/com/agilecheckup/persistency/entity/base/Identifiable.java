@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.entity.base;
 
 public interface Identifiable {
-    String getId();
-    void setId(String id);
+  String getId();
+
+  void setId(String id);
 }

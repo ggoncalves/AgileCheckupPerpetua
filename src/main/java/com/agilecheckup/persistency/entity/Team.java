@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.TenantDescribableEntity;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
@@ -16,7 +17,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @DynamoDbBean
 public class Team extends TenantDescribableEntity {
 
-    @NonNull
-    @Getter(onMethod_ = @__({@DynamoDbAttribute("departmentId"), @DynamoDbSecondaryPartitionKey(indexNames = "departmentId-index")}))
-    private String departmentId;
+  @NonNull
+  @Getter(onMethod_ = @__({@DynamoDbAttribute("departmentId"), @DynamoDbSecondaryPartitionKey(indexNames = "departmentId-index")}))
+  private String departmentId;
 }

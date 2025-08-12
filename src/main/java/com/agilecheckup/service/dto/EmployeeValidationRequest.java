@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployeeValidationRequest {
-    private String email;
-    private String assessmentMatrixId;
-    private String tenantId;
+  private String email;
+  private String assessmentMatrixId;
+  private String tenantId;
 }

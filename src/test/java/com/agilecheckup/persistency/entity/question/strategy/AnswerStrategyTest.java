@@ -1,14 +1,15 @@
 package com.agilecheckup.persistency.entity.question.strategy;
 
-import lombok.experimental.SuperBuilder;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import lombok.experimental.SuperBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class AnswerStrategyTest {
@@ -23,12 +24,10 @@ class AnswerStrategyTest {
   private static String VALID_STRING_VALUE = "Valid";
 
   @Spy
-  private IntegerMockAnswerStrategy integerMockAnswerStrategy =
-      IntegerMockAnswerStrategy.builder().build();
+  private IntegerMockAnswerStrategy integerMockAnswerStrategy = IntegerMockAnswerStrategy.builder().build();
 
   @Spy
-  private IntegerMockAnswerStrategy integerMockAllowNullValueAnswerStrategy =
-      IntegerMockAnswerStrategy.builder().allowNullValue(true).build();
+  private IntegerMockAnswerStrategy integerMockAllowNullValueAnswerStrategy = IntegerMockAnswerStrategy.builder().allowNullValue(true).build();
 
   @Spy
   private StringMockAnswerStrategy stringMockAnswerStrategy = StringMockAnswerStrategy.builder().build();
@@ -38,8 +37,7 @@ class AnswerStrategyTest {
     doReturn(false).when(integerMockAnswerStrategy).isValidValue(any());
 
     // When
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-        () -> integerMockAnswerStrategy.assignValue(INVALID_INTEGER_VALUE_STRING));
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> integerMockAnswerStrategy.assignValue(INVALID_INTEGER_VALUE_STRING));
 
     // Then
     assertEquals("Invalid Answer value: 6", exception.getMessage());
@@ -52,8 +50,7 @@ class AnswerStrategyTest {
   @Test
   void shouldThrowExceptionWhenAssigningUnparseableIntegerValue() {
     // When
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-        () -> integerMockAnswerStrategy.assignValue("Unparseable"));
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> integerMockAnswerStrategy.assignValue("Unparseable"));
 
     // Then
     assertEquals("Invalid Answer value. Not parseable: Unparseable", exception.getMessage());

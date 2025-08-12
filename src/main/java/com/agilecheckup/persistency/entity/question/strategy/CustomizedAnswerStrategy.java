@@ -1,13 +1,13 @@
 package com.agilecheckup.persistency.entity.question.strategy;
 
+import static com.agilecheckup.persistency.entity.question.CustomizedValuesSplitter.getSplitValues;
+
+import java.util.regex.Pattern;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-
-import java.util.regex.Pattern;
-
-import static com.agilecheckup.persistency.entity.question.CustomizedValuesSplitter.getSplitValues;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

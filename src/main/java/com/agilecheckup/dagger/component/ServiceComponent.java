@@ -1,5 +1,7 @@
 package com.agilecheckup.dagger.component;
 
+import javax.inject.Singleton;
+
 import com.agilecheckup.dagger.module.AwsConfigModule;
 import com.agilecheckup.dagger.module.RepositoryModule;
 import com.agilecheckup.dagger.module.ServiceModule;
@@ -13,9 +15,8 @@ import com.agilecheckup.service.EmployeeAssessmentService;
 import com.agilecheckup.service.PerformanceCycleService;
 import com.agilecheckup.service.QuestionService;
 import com.agilecheckup.service.TeamService;
-import dagger.Component;
 
-import javax.inject.Singleton;
+import dagger.Component;
 
 @Singleton
 @Component(modules = {ServiceModule.class, AwsConfigModule.class, RepositoryModule.class})
@@ -35,7 +36,7 @@ public interface ServiceComponent {
   EmployeeAssessmentService buildEmployeeAssessmentService();
 
   AnswerService buildAnswerService();
-  
+
   AssessmentNavigationService buildAssessmentNavigationService();
 
   DashboardAnalyticsService buildDashboardAnalyticsService();

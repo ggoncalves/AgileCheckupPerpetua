@@ -1,12 +1,25 @@
 package com.agilecheckup.persistency.repository;
 
-import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.Question;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.question.Question;
+
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -14,17 +27,6 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class QuestionRepositoryTest {
@@ -82,8 +84,7 @@ class QuestionRepositoryTest {
     String matrixId = "matrix-123";
     String tenantId = "tenant-123";
     List<Question> expectedQuestions = Arrays.asList(
-        createTestQuestion("question-1", tenantId, matrixId),
-        createTestQuestion("question-2", tenantId, matrixId)
+        createTestQuestion("question-1", tenantId, matrixId), createTestQuestion("question-2", tenantId, matrixId)
     );
 
     // Mock the scan operation - use raw SdkIterable type
@@ -166,32 +167,10 @@ class QuestionRepositoryTest {
   }
 
   private Question createTestQuestion(String id, String tenantId, String matrixId) {
-    return Question.builder()
-        .id(id)
-        .question("Test question " + id)
-        .questionType(QuestionType.YES_NO)
-        .tenantId(tenantId)
-        .assessmentMatrixId(matrixId)
-        .pillarId("pillar-123")
-        .pillarName("Test Pillar")
-        .categoryId("category-123")
-        .categoryName("Test Category")
-        .points(10.0)
-        .build();
+    return Question.builder().id(id).question("Test question " + id).questionType(QuestionType.YES_NO).tenantId(tenantId).assessmentMatrixId(matrixId).pillarId("pillar-123").pillarName("Test Pillar").categoryId("category-123").categoryName("Test Category").points(10.0).build();
   }
 
   private Question createTestQuestionWithCategory(String id, String tenantId, String matrixId, String categoryId) {
-    return Question.builder()
-        .id(id)
-        .question("Test question " + id)
-        .questionType(QuestionType.YES_NO)
-        .tenantId(tenantId)
-        .assessmentMatrixId(matrixId)
-        .pillarId("pillar-123")
-        .pillarName("Test Pillar")
-        .categoryId(categoryId)
-        .categoryName("Test Category")
-        .points(10.0)
-        .build();
+    return Question.builder().id(id).question("Test question " + id).questionType(QuestionType.YES_NO).tenantId(tenantId).assessmentMatrixId(matrixId).pillarId("pillar-123").pillarName("Test Pillar").categoryId(categoryId).categoryName("Test Category").points(10.0).build();
   }
 }

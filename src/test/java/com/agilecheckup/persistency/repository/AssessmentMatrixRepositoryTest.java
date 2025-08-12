@@ -1,11 +1,24 @@
 package com.agilecheckup.persistency.repository;
 
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -14,132 +27,113 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class AssessmentMatrixRepositoryTest {
 
-    @Mock
-    private DynamoDbEnhancedClient enhancedClient;
+  @Mock
+  private DynamoDbEnhancedClient enhancedClient;
 
-    @Mock
-    private DynamoDbTable<AssessmentMatrix> table;
+  @Mock
+  private DynamoDbTable<AssessmentMatrix> table;
 
-    @Mock
-    private DynamoDbIndex<AssessmentMatrix> tenantIndex;
+  @Mock
+  private DynamoDbIndex<AssessmentMatrix> tenantIndex;
 
-    @Mock
-    private PageIterable<AssessmentMatrix> pageIterable;
+  @Mock
+  private PageIterable<AssessmentMatrix> pageIterable;
 
-    @Mock
-    private Page<AssessmentMatrix> page;
+  @Mock
+  private Page<AssessmentMatrix> page;
 
-    private AssessmentMatrixRepository repository;
+  private AssessmentMatrixRepository repository;
 
-    @BeforeEach
+  @BeforeEach
     void setUp() {
         when(enhancedClient.table(eq("AssessmentMatrix"), any())).thenReturn((DynamoDbTable) table);
         repository = new AssessmentMatrixRepository(enhancedClient);
     }
 
-    @Test
-    void shouldSaveAssessmentMatrix() {
-        // Given
-        AssessmentMatrix matrix = createTestAssessmentMatrix("matrix-1", "tenant-123");
+  @Test
+  void shouldSaveAssessmentMatrix() {
+    // Given
+    AssessmentMatrix matrix = createTestAssessmentMatrix("matrix-1", "tenant-123");
 
-        // When
-        Optional<AssessmentMatrix> result = repository.save(matrix);
+    // When
+    Optional<AssessmentMatrix> result = repository.save(matrix);
 
-        // Then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isSameAs(matrix);
-        verify(table).putItem(matrix);
-    }
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get()).isSameAs(matrix);
+    verify(table).putItem(matrix);
+  }
 
-    @Test
-    void shouldFindAssessmentMatrixById() {
-        // Given
-        String id = "matrix-1";
-        AssessmentMatrix matrix = createTestAssessmentMatrix(id, "tenant-123");
-        
-        when(table.getItem(any(Key.class))).thenReturn(matrix);
+  @Test
+  void shouldFindAssessmentMatrixById() {
+    // Given
+    String id = "matrix-1";
+    AssessmentMatrix matrix = createTestAssessmentMatrix(id, "tenant-123");
 
-        // When
-        Optional<AssessmentMatrix> result = repository.findById(id);
+    when(table.getItem(any(Key.class))).thenReturn(matrix);
 
-        // Then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isSameAs(matrix);
-        verify(table).getItem(any(Key.class));
-    }
+    // When
+    Optional<AssessmentMatrix> result = repository.findById(id);
 
-    @Test
-    void shouldFindAllAssessmentMatricesByTenantId() {
-        // Given
-        String tenantId = "tenant-123";
-        List<AssessmentMatrix> expectedMatrices = Arrays.asList(
-                createTestAssessmentMatrix("matrix-1", tenantId),
-                createTestAssessmentMatrix("matrix-2", tenantId)
-        );
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get()).isSameAs(matrix);
+    verify(table).getItem(any(Key.class));
+  }
 
-        when(table.index("tenantId-index")).thenReturn(tenantIndex);
-        when(tenantIndex.query(any(QueryEnhancedRequest.class))).thenReturn(pageIterable);
-        when(pageIterable.stream()).thenReturn(Stream.of(page));
-        when(page.items()).thenReturn(expectedMatrices);
+  @Test
+  void shouldFindAllAssessmentMatricesByTenantId() {
+    // Given
+    String tenantId = "tenant-123";
+    List<AssessmentMatrix> expectedMatrices = Arrays.asList(
+        createTestAssessmentMatrix("matrix-1", tenantId), createTestAssessmentMatrix("matrix-2", tenantId)
+    );
 
-        // When
-        List<AssessmentMatrix> results = repository.findAllByTenantId(tenantId);
+    when(table.index("tenantId-index")).thenReturn(tenantIndex);
+    when(tenantIndex.query(any(QueryEnhancedRequest.class))).thenReturn(pageIterable);
+    when(pageIterable.stream()).thenReturn(Stream.of(page));
+    when(page.items()).thenReturn(expectedMatrices);
 
-        // Then
-        assertThat(results).hasSize(2);
-        assertThat(results).extracting(AssessmentMatrix::getId).containsExactly("matrix-1", "matrix-2");
-        verify(table).index("tenantId-index");
-        verify(tenantIndex).query(any(QueryEnhancedRequest.class));
-    }
+    // When
+    List<AssessmentMatrix> results = repository.findAllByTenantId(tenantId);
 
-    @Test
-    void shouldReturnEmptyOptionalWhenAssessmentMatrixNotFound() {
-        // Given
-        String id = "non-existent-id";
-        when(table.getItem(any(Key.class))).thenReturn(null);
+    // Then
+    assertThat(results).hasSize(2);
+    assertThat(results).extracting(AssessmentMatrix::getId).containsExactly("matrix-1", "matrix-2");
+    verify(table).index("tenantId-index");
+    verify(tenantIndex).query(any(QueryEnhancedRequest.class));
+  }
 
-        // When
-        Optional<AssessmentMatrix> result = repository.findById(id);
+  @Test
+  void shouldReturnEmptyOptionalWhenAssessmentMatrixNotFound() {
+    // Given
+    String id = "non-existent-id";
+    when(table.getItem(any(Key.class))).thenReturn(null);
 
-        // Then
-        assertThat(result).isEmpty();
-    }
+    // When
+    Optional<AssessmentMatrix> result = repository.findById(id);
 
-    @Test
-    void shouldDeleteAssessmentMatrixById() {
-        // Given
-        String id = "matrix-1";
+    // Then
+    assertThat(result).isEmpty();
+  }
 
-        // When
-        boolean result = repository.deleteById(id);
+  @Test
+  void shouldDeleteAssessmentMatrixById() {
+    // Given
+    String id = "matrix-1";
 
-        // Then
-        assertThat(result).isTrue();
-        verify(table).deleteItem(any(Key.class));
-    }
+    // When
+    boolean result = repository.deleteById(id);
 
-    private AssessmentMatrix createTestAssessmentMatrix(String id, String tenantId) {
-        return AssessmentMatrix.builder()
-                .id(id)
-                .name("Test Matrix " + id)
-                .description("Test Description for " + id)
-                .tenantId(tenantId)
-                .performanceCycleId("cycle-123")
-                .questionCount(5)
-                .build();
-    }
+    // Then
+    assertThat(result).isTrue();
+    verify(table).deleteItem(any(Key.class));
+  }
+
+  private AssessmentMatrix createTestAssessmentMatrix(String id, String tenantId) {
+    return AssessmentMatrix.builder().id(id).name("Test Matrix " + id).description("Test Description for " + id).tenantId(tenantId).performanceCycleId("cycle-123").questionCount(5).build();
+  }
 }

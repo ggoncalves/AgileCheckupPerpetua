@@ -1,10 +1,10 @@
 package com.agilecheckup.service.dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeValidationResponseTest {
@@ -55,13 +55,7 @@ class EmployeeValidationResponseTest {
     String assessmentStatus = "IN_PROGRESS";
 
     // When
-    EmployeeValidationResponse response = EmployeeValidationResponse.builder()
-        .status(status)
-        .message(message)
-        .employeeAssessmentId(employeeAssessmentId)
-        .name(name)
-        .assessmentStatus(assessmentStatus)
-        .build();
+    EmployeeValidationResponse response = EmployeeValidationResponse.builder().status(status).message(message).employeeAssessmentId(employeeAssessmentId).name(name).assessmentStatus(assessmentStatus).build();
 
     // Then
     assertThat(response).isNotNull();

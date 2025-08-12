@@ -18,7 +18,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @DynamoDbBean
 public abstract class LegalPerson extends Person {
 
-    @NonNull
-    @Getter(onMethod_=@__(@DynamoDbAttribute("description")))
-    private String description;
+  @NonNull
+  @Getter(onMethod_ = @__(@DynamoDbAttribute("description")))
+  private String description;
 }

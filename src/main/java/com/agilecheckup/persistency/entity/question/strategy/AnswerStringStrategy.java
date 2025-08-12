@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@EqualsAndHashCode(callSuper=true)
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 public abstract class AnswerStringStrategy extends AnswerStrategy<String> {
 

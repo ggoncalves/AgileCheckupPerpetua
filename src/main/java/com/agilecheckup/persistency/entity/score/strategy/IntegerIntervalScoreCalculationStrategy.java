@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.entity.score.strategy;
 
 import com.agilecheckup.persistency.entity.score.AbstractScoreCalculator;
+
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder

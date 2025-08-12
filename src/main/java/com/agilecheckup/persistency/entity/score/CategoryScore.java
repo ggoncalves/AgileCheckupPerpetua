@@ -1,11 +1,11 @@
 package com.agilecheckup.persistency.entity.score;
 
+import java.util.List;
+
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-
-import java.util.List;
 
 @Data
 @EqualsAndHashCode

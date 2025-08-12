@@ -1,5 +1,8 @@
 package com.agilecheckup.main.runner;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.agilecheckup.dagger.component.DaggerServiceComponent;
 import com.agilecheckup.dagger.component.ServiceComponent;
 import com.agilecheckup.persistency.entity.Category;
@@ -11,9 +14,6 @@ import com.agilecheckup.service.QuestionService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import java.util.Map;
-import java.util.Set;
-
 public class TableRunnerHelper {
 
   private AssessmentMatrixService assessmentMatrixService;
@@ -22,41 +22,21 @@ public class TableRunnerHelper {
   private EmployeeAssessmentService employeeAssessmentService;
 
   Map<String, Pillar> createPillarsWithCategoriesMap() {
-    Category c1 = Category.builder()
-        .name("Categoria de Nome 1")
-        .description("Categoria de Descrição 1")
-        .build();
+    Category c1 = Category.builder().name("Categoria de Nome 1").description("Categoria de Descrição 1").build();
 
-    Category c2 = Category.builder()
-        .name("Categoria de Nome 2")
-        .description("Categoria de Descrição 2")
-        .build();
+    Category c2 = Category.builder().name("Categoria de Nome 2").description("Categoria de Descrição 2").build();
 
     Map<String, Category> categoryMap = ImmutableMap.of(c1.getId(), c1, c2.getId(), c2);
 
-    Pillar p1 = Pillar.builder()
-        .name("Pillar name 1")
-        .description("Pillar description 1 ")
-        .categoryMap(categoryMap)
-        .build();
+    Pillar p1 = Pillar.builder().name("Pillar name 1").description("Pillar description 1 ").categoryMap(categoryMap).build();
 
-    Category c3 = Category.builder()
-        .name("Categoria de Nome 3")
-        .description("Categoria de Descrição 3")
-        .build();
+    Category c3 = Category.builder().name("Categoria de Nome 3").description("Categoria de Descrição 3").build();
 
-    Category c4 = Category.builder()
-        .name("Categoria de Nome 4")
-        .description("Categoria de Descrição 4")
-        .build();
+    Category c4 = Category.builder().name("Categoria de Nome 4").description("Categoria de Descrição 4").build();
 
     Map<String, Category> categoryMap2 = ImmutableMap.of(c3.getId(), c3, c4.getId(), c4);
 
-    Pillar p2 = Pillar.builder()
-        .name("Pillar name 2")
-        .description("Pillar description 2 ")
-        .categoryMap(categoryMap2)
-        .build();
+    Pillar p2 = Pillar.builder().name("Pillar name 2").description("Pillar description 2 ").categoryMap(categoryMap2).build();
 
     Set<Pillar> pillars = ImmutableSet.of(p1, p2);
     return createPillarsMap(pillars);

@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.entity;
 
 import com.agilecheckup.persistency.entity.base.DescribableEntity;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

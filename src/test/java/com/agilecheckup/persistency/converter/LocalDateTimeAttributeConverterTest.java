@@ -1,17 +1,18 @@
 package com.agilecheckup.persistency.converter;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import software.amazon.awssdk.enhanced.dynamodb.AttributeValueType;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LocalDateTimeAttributeConverter Tests")
@@ -212,9 +213,7 @@ class LocalDateTimeAttributeConverterTest {
   void shouldThrowRuntimeExceptionForInvalidDateString() {
     AttributeValue invalidInput = createStringAttributeValue("not-a-valid-date");
 
-    assertThatThrownBy(() -> converter.transformTo(invalidInput))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining("Failed to parse LocalDateTime: not-a-valid-date");
+    assertThatThrownBy(() -> converter.transformTo(invalidInput)).isInstanceOf(RuntimeException.class).hasMessageContaining("Failed to parse LocalDateTime: not-a-valid-date");
   }
 
   @Test
@@ -222,9 +221,7 @@ class LocalDateTimeAttributeConverterTest {
   void shouldThrowRuntimeExceptionForMalformedIsoString() {
     AttributeValue malformedInput = createStringAttributeValue("2023-13-45T25:70:90");
 
-    assertThatThrownBy(() -> converter.transformTo(malformedInput))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining("Failed to parse LocalDateTime");
+    assertThatThrownBy(() -> converter.transformTo(malformedInput)).isInstanceOf(RuntimeException.class).hasMessageContaining("Failed to parse LocalDateTime");
   }
 
   // RIGHT-BICEP - Performance characteristics

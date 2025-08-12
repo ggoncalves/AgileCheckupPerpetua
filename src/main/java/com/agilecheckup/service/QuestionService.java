@@ -1,19 +1,11 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.Category;
-import com.agilecheckup.persistency.entity.Pillar;
-import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.OptionGroup;
-import com.agilecheckup.persistency.entity.question.QuestionOption;
-import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.persistency.repository.QuestionRepository;
-import com.agilecheckup.service.exception.InvalidCustomOptionListException;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import com.google.common.annotations.VisibleForTesting;
-import lombok.NonNull;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.INVALID_OPTIONS_IDS;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_EMPTY;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TEXT_EMPTY;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_BIG;
+import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_SHORT;
 
-import javax.inject.Inject;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +13,21 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.INVALID_OPTIONS_IDS;
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_EMPTY;
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TEXT_EMPTY;
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_BIG;
-import static com.agilecheckup.service.exception.InvalidCustomOptionListException.InvalidReasonEnum.OPTION_LIST_TOO_SHORT;
+import javax.inject.Inject;
+
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.Category;
+import com.agilecheckup.persistency.entity.Pillar;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.question.OptionGroup;
+import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.entity.question.QuestionOption;
+import com.agilecheckup.persistency.repository.QuestionRepository;
+import com.agilecheckup.service.exception.InvalidCustomOptionListException;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.google.common.annotations.VisibleForTesting;
+
+import lombok.NonNull;
 
 public class QuestionService extends AbstractCrudService<Question, QuestionRepository> {
 
@@ -41,8 +43,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     this.assessmentMatrixService = assessmentMatrixService;
   }
 
-  public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                   String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+  public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId, extraDescription);
     return createQuestion(question);
   }
@@ -52,15 +53,14 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     return createQuestion(question);
   }
 
-  public Optional<Question> update(String id, String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                   String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+  public Optional<Question> update(String id, String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Optional<Question> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
       AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
       Pillar pillar = getPillar(assessmentMatrix, pillarId);
       Category category = getCategory(pillar, categoryId);
-      
+
       question.setAssessmentMatrixId(assessmentMatrix.getId());
       question.setPillarId(pillar.getId());
       question.setPillarName(pillar.getName());
@@ -72,14 +72,13 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
       question.setPoints(points);
       question.setExtraDescription(extraDescription);
       return super.update(question);
-    } else {
+    }
+    else {
       return Optional.empty();
     }
   }
 
-  public Optional<Question> updateCustomQuestion(String id, String questionTxt, QuestionType questionType, String tenantId,
-                                                 boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options,
-                                                 String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+  public Optional<Question> updateCustomQuestion(String id, String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     Optional<Question> optionalQuestion = findById(id);
     if (optionalQuestion.isPresent()) {
       Question question = optionalQuestion.get();
@@ -87,7 +86,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
       AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
       Pillar pillar = getPillar(assessmentMatrix, pillarId);
       Category category = getCategory(pillar, categoryId);
-      
+
       question.setAssessmentMatrixId(assessmentMatrix.getId());
       question.setPillarId(pillar.getId());
       question.setPillarName(pillar.getName());
@@ -99,7 +98,8 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
       question.setTenantId(tenantId);
       question.setExtraDescription(extraDescription);
       return super.update(question);
-    } else {
+    }
+    else {
       return Optional.empty();
     }
   }
@@ -109,9 +109,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   }
 
   public List<Question> findAllByTenantId(String tenantId) {
-    return findAll().stream()
-        .filter(question -> tenantId.equals(question.getTenantId()))
-        .collect(Collectors.toList());
+    return findAll().stream().filter(question -> tenantId.equals(question.getTenantId())).collect(Collectors.toList());
   }
 
   public boolean hasCategoryQuestions(String matrixId, String categoryId, String tenantId) {
@@ -128,45 +126,19 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     question.ifPresent(q -> assessmentMatrixService.incrementQuestionCount(q.getAssessmentMatrixId()));
   }
 
-  private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points,
-                                          String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
+  private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    return Question.builder()
-        .assessmentMatrixId(assessmentMatrix.getId())
-        .pillarId(pillar.getId())
-        .pillarName(pillar.getName())
-        .categoryId(category.getId())
-        .categoryName(category.getName())
-        .question(questionTxt)
-        .questionType(questionType)
-        .tenantId(tenantId)
-        .points(points)
-        .extraDescription(extraDescription)
-        .build();
+    return Question.builder().assessmentMatrixId(assessmentMatrix.getId()).pillarId(pillar.getId()).pillarName(pillar.getName()).categoryId(category.getId()).categoryName(category.getName()).question(questionTxt).questionType(questionType).tenantId(tenantId).points(points).extraDescription(extraDescription).build();
   }
 
-  private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId,
-                                                boolean isMultipleChoice, boolean showFlushed,
-                                                @NonNull List<QuestionOption> options, String assessmentMatrixId,
-                                                String pillarId, String categoryId, String extraDescription) {
+  private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
     validateQuestionOptions(options);
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    return Question.builder()
-        .assessmentMatrixId(assessmentMatrix.getId())
-        .pillarId(pillar.getId())
-        .pillarName(pillar.getName())
-        .categoryId(category.getId())
-        .categoryName(category.getName())
-        .question(questionTxt)
-        .questionType(questionType)
-        .optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options))
-        .tenantId(tenantId)
-        .extraDescription(extraDescription)
-        .build();
+    return Question.builder().assessmentMatrixId(assessmentMatrix.getId()).pillarId(pillar.getId()).pillarName(pillar.getName()).categoryId(category.getId()).categoryName(category.getName()).question(questionTxt).questionType(questionType).optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options)).tenantId(tenantId).extraDescription(extraDescription).build();
   }
 
   private void validateQuestionOptions(List<QuestionOption> options) {
@@ -176,9 +148,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   }
 
   private List<QuestionOption> sortOptionsById(List<QuestionOption> options) {
-    return options.stream()
-        .sorted(Comparator.comparing(QuestionOption::getId))
-        .collect(Collectors.toList());
+    return options.stream().sorted(Comparator.comparing(QuestionOption::getId)).collect(Collectors.toList());
   }
 
   private void validateOptions(List<QuestionOption> options) {
@@ -198,9 +168,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
 
   private void validateOptionId(QuestionOption option, Integer expectedId, List<QuestionOption> options) {
     if (!option.getId().equals(expectedId)) {
-      Integer[] optionIds = options.stream()
-          .map(QuestionOption::getId)
-          .toArray(Integer[]::new);
+      Integer[] optionIds = options.stream().map(QuestionOption::getId).toArray(Integer[]::new);
       throw new InvalidCustomOptionListException(INVALID_OPTIONS_IDS, optionIds);
     }
   }
@@ -230,11 +198,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   }
 
   private OptionGroup createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
-    return OptionGroup.builder()
-        .isMultipleChoice(isMultipleChoice)
-        .showFlushed(showFlushed)
-        .optionMap(toOptionMap(options))
-        .build();
+    return OptionGroup.builder().isMultipleChoice(isMultipleChoice).showFlushed(showFlushed).optionMap(toOptionMap(options)).build();
   }
 
   @VisibleForTesting

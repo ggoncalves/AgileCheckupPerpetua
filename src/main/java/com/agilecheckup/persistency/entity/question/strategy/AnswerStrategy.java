@@ -1,6 +1,7 @@
 package com.agilecheckup.persistency.entity.question.strategy;
 
 import com.agilecheckup.persistency.entity.question.Question;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -15,7 +16,7 @@ public abstract class AnswerStrategy<T> {
   private static final String UNPARSEABLE_VALUE_MESSAGE_FORMAT = "Invalid Answer value. Not parseable: %s";
 
   private T value;
-  
+
   private Question question;
 
   // TODO: Must refactor to be inside QuestionValidationRules

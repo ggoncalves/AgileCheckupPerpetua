@@ -1,9 +1,10 @@
 package com.agilecheckup.persistency.entity.question.strategy;
 
-import lombok.experimental.SuperBuilder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import lombok.experimental.SuperBuilder;
 
 class AnswerBooleanStrategyTest {
 
