@@ -35,3 +35,4 @@ build/
 ### Claude Code AI
 .claude
 CLAUDE.local.md
+.playwright-mcp/
