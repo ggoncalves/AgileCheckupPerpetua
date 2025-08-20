@@ -1,5 +1,15 @@
 package com.agilecheckup.service;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
@@ -9,16 +19,8 @@ import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.service.dto.AnswerWithProgressResponse;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import lombok.NonNull;
 
-import javax.inject.Inject;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.NonNull;
 
 public class AssessmentNavigationService {
 
@@ -99,7 +101,9 @@ public class AssessmentNavigationService {
    */
   private List<Question> getUnansweredQuestions(String matrixId, String tenantId, Set<String> answeredQuestionIds) {
     List<Question> allQuestions = questionService.findByAssessmentMatrixId(matrixId, tenantId);
-    return allQuestions.stream().filter(question -> !answeredQuestionIds.contains(question.getId())).collect(Collectors.toList());
+    return allQuestions.stream()
+                       .filter(question -> !answeredQuestionIds.contains(question.getId()))
+                       .collect(Collectors.toList());
   }
 
   /**
@@ -115,8 +119,12 @@ public class AssessmentNavigationService {
    * Clean Code: Single responsibility - response construction.
    */
   private AnswerWithProgressResponse buildProgressResponse(Question question, EmployeeAssessment assessment, AssessmentMatrix matrix) {
-    return AnswerWithProgressResponse.builder().question(question).existingAnswer(null) // Always null - reserved for future partial answers feature
-        .currentProgress(assessment.getAnsweredQuestionCount()).totalQuestions(matrix.getQuestionCount()).build();
+    return AnswerWithProgressResponse.builder()
+                                     .question(question)
+                                     .existingAnswer(null) // Always null - reserved for future partial answers feature
+                                     .currentProgress(assessment.getAnsweredQuestionCount())
+                                     .totalQuestions(matrix.getQuestionCount())
+                                     .build();
   }
 
   /**

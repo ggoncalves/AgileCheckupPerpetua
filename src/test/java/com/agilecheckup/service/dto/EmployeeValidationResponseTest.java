@@ -34,7 +34,7 @@ class EmployeeValidationResponseTest {
 
     // When
     EmployeeValidationResponse response = new EmployeeValidationResponse(
-        status, message, employeeAssessmentId, name, assessmentStatus);
+                                                                         status, message, employeeAssessmentId, name, assessmentStatus);
 
     // Then
     assertThat(response).isNotNull();
@@ -55,7 +55,13 @@ class EmployeeValidationResponseTest {
     String assessmentStatus = "IN_PROGRESS";
 
     // When
-    EmployeeValidationResponse response = EmployeeValidationResponse.builder().status(status).message(message).employeeAssessmentId(employeeAssessmentId).name(name).assessmentStatus(assessmentStatus).build();
+    EmployeeValidationResponse response = EmployeeValidationResponse.builder()
+                                                                    .status(status)
+                                                                    .message(message)
+                                                                    .employeeAssessmentId(employeeAssessmentId)
+                                                                    .name(name)
+                                                                    .assessmentStatus(assessmentStatus)
+                                                                    .build();
 
     // Then
     assertThat(response).isNotNull();
@@ -93,7 +99,7 @@ class EmployeeValidationResponseTest {
 
     // When
     EmployeeValidationResponse response = EmployeeValidationResponse.success(
-        message, employeeAssessmentId, name, assessmentStatus);
+                                                                             message, employeeAssessmentId, name, assessmentStatus);
 
     // Then
     assertThat(response).isNotNull();
@@ -114,7 +120,7 @@ class EmployeeValidationResponseTest {
 
     // When
     EmployeeValidationResponse response = EmployeeValidationResponse.info(
-        message, employeeAssessmentId, name, assessmentStatus);
+                                                                          message, employeeAssessmentId, name, assessmentStatus);
 
     // Then
     assertThat(response).isNotNull();
@@ -154,10 +160,10 @@ class EmployeeValidationResponseTest {
   void shouldImplementEqualsAndHashCode() {
     // Given
     EmployeeValidationResponse response1 = EmployeeValidationResponse.success(
-        "Welcome!", "ea-123", "John Doe", "CONFIRMED");
+                                                                              "Welcome!", "ea-123", "John Doe", "CONFIRMED");
 
     EmployeeValidationResponse response2 = EmployeeValidationResponse.success(
-        "Welcome!", "ea-123", "John Doe", "CONFIRMED");
+                                                                              "Welcome!", "ea-123", "John Doe", "CONFIRMED");
 
     EmployeeValidationResponse response3 = EmployeeValidationResponse.error("Not found");
 
@@ -172,7 +178,7 @@ class EmployeeValidationResponseTest {
   void shouldImplementToString() {
     // Given
     EmployeeValidationResponse response = EmployeeValidationResponse.success(
-        "Welcome!", "ea-123", "John Doe", "CONFIRMED");
+                                                                             "Welcome!", "ea-123", "John Doe", "CONFIRMED");
 
     // When
     String toString = response.toString();

@@ -27,7 +27,9 @@ class AnswerStrategyTest {
   private IntegerMockAnswerStrategy integerMockAnswerStrategy = IntegerMockAnswerStrategy.builder().build();
 
   @Spy
-  private IntegerMockAnswerStrategy integerMockAllowNullValueAnswerStrategy = IntegerMockAnswerStrategy.builder().allowNullValue(true).build();
+  private IntegerMockAnswerStrategy integerMockAllowNullValueAnswerStrategy = IntegerMockAnswerStrategy.builder()
+                                                                                                       .allowNullValue(true)
+                                                                                                       .build();
 
   @Spy
   private StringMockAnswerStrategy stringMockAnswerStrategy = StringMockAnswerStrategy.builder().build();

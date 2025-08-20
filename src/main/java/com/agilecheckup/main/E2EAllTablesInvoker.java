@@ -25,7 +25,7 @@ public class E2EAllTablesInvoker {
 //        new EmployeeAssessmentTableRunner(true)
 //        new QuestionTableRunner(true)
 //        new AnswerTableRunner(true),
-        new DashboardAnalyticsTableRunner(true)
+                                     new DashboardAnalyticsTableRunner(true)
     );
   }
 

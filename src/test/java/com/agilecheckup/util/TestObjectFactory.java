@@ -131,7 +131,22 @@ public class TestObjectFactory {
   // === Company  Factory Methods ===
 
   public static Company createMockedCompany() {
-    return Company.builder().name(DEFAULT_COMPANY_NAME).email(DEFAULT_COMPANY_EMAIL).description("Company description").tenantId(GENERIC_TENANT_ID).personDocumentType(PersonDocumentType.CNPJ).documentNumber(DEFAULT_COMPANY_DOCUMENT).size(CompanySize.MEDIUM).industry(Industry.TECHNOLOGY).website("https://www.company.com").legalName("Company Legal Name Inc.").contactPerson(createMockedNaturalPerson()).address(createMockedAddress()).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Company.builder()
+                  .name(DEFAULT_COMPANY_NAME)
+                  .email(DEFAULT_COMPANY_EMAIL)
+                  .description("Company description")
+                  .tenantId(GENERIC_TENANT_ID)
+                  .personDocumentType(PersonDocumentType.CNPJ)
+                  .documentNumber(DEFAULT_COMPANY_DOCUMENT)
+                  .size(CompanySize.MEDIUM)
+                  .industry(Industry.TECHNOLOGY)
+                  .website("https://www.company.com")
+                  .legalName("Company Legal Name Inc.")
+                  .contactPerson(createMockedNaturalPerson())
+                  .address(createMockedAddress())
+                  .createdDate(Instant.now().minusSeconds(86400))
+                  .lastUpdatedDate(Instant.now())
+                  .build();
   }
 
   public static Company createMockedCompany(String id) {
@@ -141,17 +156,51 @@ public class TestObjectFactory {
   }
 
   public static Company createMockedCompany(@NonNull String name, @NonNull String email, @NonNull String description, @NonNull String tenantId, @NonNull String documentNumber) {
-    return Company.builder().name(name).email(email).description(description).tenantId(tenantId).personDocumentType(PersonDocumentType.CNPJ).documentNumber(documentNumber).size(CompanySize.STARTUP).industry(Industry.OTHER).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Company.builder()
+                  .name(name)
+                  .email(email)
+                  .description(description)
+                  .tenantId(tenantId)
+                  .personDocumentType(PersonDocumentType.CNPJ)
+                  .documentNumber(documentNumber)
+                  .size(CompanySize.STARTUP)
+                  .industry(Industry.OTHER)
+                  .createdDate(Instant.now().minusSeconds(86400))
+                  .lastUpdatedDate(Instant.now())
+                  .build();
   }
 
   public static Company copyCompanyAndAddId(Company company, String id) {
-    return Company.builder().id(id).name(company.getName()).email(company.getEmail()).description(company.getDescription()).tenantId(company.getTenantId()).personDocumentType(company.getPersonDocumentType()).documentNumber(company.getDocumentNumber()).size(company.getSize()).industry(company.getIndustry()).website(company.getWebsite()).legalName(company.getLegalName()).contactPerson(company.getContactPerson()).address(company.getAddress()).phone(company.getPhone()).createdDate(company.getCreatedDate()).lastUpdatedDate(company.getLastUpdatedDate()).build();
+    return Company.builder()
+                  .id(id)
+                  .name(company.getName())
+                  .email(company.getEmail())
+                  .description(company.getDescription())
+                  .tenantId(company.getTenantId())
+                  .personDocumentType(company.getPersonDocumentType())
+                  .documentNumber(company.getDocumentNumber())
+                  .size(company.getSize())
+                  .industry(company.getIndustry())
+                  .website(company.getWebsite())
+                  .legalName(company.getLegalName())
+                  .contactPerson(company.getContactPerson())
+                  .address(company.getAddress())
+                  .phone(company.getPhone())
+                  .createdDate(company.getCreatedDate())
+                  .lastUpdatedDate(company.getLastUpdatedDate())
+                  .build();
   }
 
   // === Address  Factory Methods ===
 
   public static Address createMockedAddress() {
-    return Address.builder().street("123 Main Street").city("São Paulo").state("SP").zipcode("01234-567").country("Brazil").build();
+    return Address.builder()
+                  .street("123 Main Street")
+                  .city("São Paulo")
+                  .state("SP")
+                  .zipcode("01234-567")
+                  .country("Brazil")
+                  .build();
   }
 
   // === NaturalPerson  Factory Methods ===
@@ -161,15 +210,37 @@ public class TestObjectFactory {
   }
 
   public static NaturalPerson createMockedNaturalPerson(String name) {
-    return NaturalPerson.builder().name(name).email("john.doe@company.com").phone("+55 11 99999-9999").personDocumentType(PersonDocumentType.CPF).documentNumber("1234").aliasName("Johnny").gender(Gender.MALE).genderPronoun(GenderPronoun.HE).address(createMockedAddress()).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return NaturalPerson.builder()
+                        .name(name)
+                        .email("john.doe@company.com")
+                        .phone("+55 11 99999-9999")
+                        .personDocumentType(PersonDocumentType.CPF)
+                        .documentNumber("1234")
+                        .aliasName("Johnny")
+                        .gender(Gender.MALE)
+                        .genderPronoun(GenderPronoun.HE)
+                        .address(createMockedAddress())
+                        .createdDate(Instant.now().minusSeconds(86400))
+                        .lastUpdatedDate(Instant.now())
+                        .build();
   }
 
   public static Category createMockedCategory() {
-    return Category.builder().name("Test Category").description("Test category description").createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Category.builder()
+                   .name("Test Category")
+                   .description("Test category description")
+                   .createdDate(Instant.now().minusSeconds(86400))
+                   .lastUpdatedDate(Instant.now())
+                   .build();
   }
 
   public static Category createMockedCategory(String name, String description) {
-    return Category.builder().name(name).description(description).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Category.builder()
+                   .name(name)
+                   .description(description)
+                   .createdDate(Instant.now().minusSeconds(86400))
+                   .lastUpdatedDate(Instant.now())
+                   .build();
   }
 
   public static Pillar createMockedPillar() {
@@ -178,18 +249,36 @@ public class TestObjectFactory {
     categoryMap.put("cat2", createMockedCategory("Category 2", "Second category"));
     categoryMap.put("cat3", createMockedCategory("Category 3", "Third category"));
 
-    return Pillar.builder().name("Test Pillar").description("Test pillar description").categoryMap(categoryMap).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Pillar.builder()
+                 .name("Test Pillar")
+                 .description("Test pillar description")
+                 .categoryMap(categoryMap)
+                 .createdDate(Instant.now().minusSeconds(86400))
+                 .lastUpdatedDate(Instant.now())
+                 .build();
   }
 
   public static Pillar createMockedPillar(String name, String description) {
     Map<String, Category> categoryMap = new HashMap<>();
     categoryMap.put("default", createMockedCategory("Default Category", "Default category for " + name));
 
-    return Pillar.builder().name(name).description(description).categoryMap(categoryMap).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Pillar.builder()
+                 .name(name)
+                 .description(description)
+                 .categoryMap(categoryMap)
+                 .createdDate(Instant.now().minusSeconds(86400))
+                 .lastUpdatedDate(Instant.now())
+                 .build();
   }
 
   public static Pillar createMockedPillarWithCategories(String name, String description, Map<String, Category> categories) {
-    return Pillar.builder().name(name).description(description).categoryMap(categories).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Pillar.builder()
+                 .name(name)
+                 .description(description)
+                 .categoryMap(categories)
+                 .createdDate(Instant.now().minusSeconds(86400))
+                 .lastUpdatedDate(Instant.now())
+                 .build();
   }
 
   public static Map<String, Category> createMockedCategoryMap(int categoryCount) {
@@ -233,7 +322,20 @@ public class TestObjectFactory {
   }
 
   public static Question createMockedQuestion(String id, QuestionType questionType, @NonNull String pillarId, @NonNull String pillarName, @NonNull String categoryId, @NonNull String categoryName, Double points) {
-    return Question.builder().id(id).assessmentMatrixId(GENERIC_ID_1234).pillarId(pillarId).pillarName(pillarName).categoryId(categoryId).categoryName(categoryName).question("question").questionType(questionType).points(points).tenantId(GENERIC_TENANT_ID).createdDate(Instant.now().minusSeconds(86400)).lastUpdatedDate(Instant.now()).build();
+    return Question.builder()
+                   .id(id)
+                   .assessmentMatrixId(GENERIC_ID_1234)
+                   .pillarId(pillarId)
+                   .pillarName(pillarName)
+                   .categoryId(categoryId)
+                   .categoryName(categoryName)
+                   .question("question")
+                   .questionType(questionType)
+                   .points(points)
+                   .tenantId(GENERIC_TENANT_ID)
+                   .createdDate(Instant.now().minusSeconds(86400))
+                   .lastUpdatedDate(Instant.now())
+                   .build();
   }
 
   public static Question createMockedQuestion(String id, QuestionType questionType) {

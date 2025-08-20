@@ -18,7 +18,7 @@ class QuestionNavigationTypeTest {
     // Then
     assertThat(values).hasSize(3);
     assertThat(values).containsExactlyInAnyOrder(
-        QuestionNavigationType.RANDOM, QuestionNavigationType.SEQUENTIAL, QuestionNavigationType.FREE_FORM
+                                                 QuestionNavigationType.RANDOM, QuestionNavigationType.SEQUENTIAL, QuestionNavigationType.FREE_FORM
     );
   }
 

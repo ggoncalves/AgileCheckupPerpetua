@@ -10,7 +10,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 public class CompanySizeConverter implements AttributeConverter<CompanySize> {
   @Override
   public AttributeValue transformFrom(CompanySize input) {
-    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder().nul(true).build();
+    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder()
+                                                                                            .nul(true)
+                                                                                            .build();
   }
 
   @Override

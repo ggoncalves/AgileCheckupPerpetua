@@ -42,7 +42,13 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
   @Test
   void createLegacy_shouldSucceedWithBasicFields() {
     // Prepare
-    Company expectedCompany = Company.builder().name(DEFAULT_COMPANY_NAME).email(DEFAULT_COMPANY_EMAIL).description("Company description").tenantId(GENERIC_TENANT_ID).documentNumber(DEFAULT_COMPANY_DOCUMENT).build();
+    Company expectedCompany = Company.builder()
+                                     .name(DEFAULT_COMPANY_NAME)
+                                     .email(DEFAULT_COMPANY_EMAIL)
+                                     .description("Company description")
+                                     .tenantId(GENERIC_TENANT_ID)
+                                     .documentNumber(DEFAULT_COMPANY_DOCUMENT)
+                                     .build();
     Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
     // Mock
@@ -50,7 +56,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.create(
-        DEFAULT_COMPANY_DOCUMENT, DEFAULT_COMPANY_NAME, DEFAULT_COMPANY_EMAIL, "Company description", GENERIC_TENANT_ID
+                                                     DEFAULT_COMPANY_DOCUMENT, DEFAULT_COMPANY_NAME, DEFAULT_COMPANY_EMAIL, "Company description", GENERIC_TENANT_ID
     );
 
     // Then
@@ -63,7 +69,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
   void createLegacy_nullName_shouldThrowException() {
     // When & Then
     assertThrows(NullPointerException.class, () -> companyService.create(
-        DEFAULT_COMPANY_DOCUMENT, null, DEFAULT_COMPANY_EMAIL, "Company description", GENERIC_TENANT_ID
+                                                                         DEFAULT_COMPANY_DOCUMENT, null, DEFAULT_COMPANY_EMAIL, "Company description", GENERIC_TENANT_ID
     ));
   }
 
@@ -71,7 +77,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
   void createWithRequiredFields_shouldSucceed() {
     // Prepare
     Company expectedCompany = createMockedCompany(
-        "Tech Company", "contact@tech.com", "A technology company", "tenant123", "12345678000123"
+                                                  "Tech Company", "contact@tech.com", "A technology company", "tenant123", "12345678000123"
     );
     expectedCompany.setSize(CompanySize.STARTUP);
     expectedCompany.setIndustry(Industry.TECHNOLOGY);
@@ -82,7 +88,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.create(
-        "12345678000123", "Tech Company", "contact@tech.com", "A technology company", "tenant123", CompanySize.STARTUP, Industry.TECHNOLOGY
+                                                     "12345678000123", "Tech Company", "contact@tech.com", "A technology company", "tenant123", CompanySize.STARTUP, Industry.TECHNOLOGY
     );
 
     // Then
@@ -98,7 +104,19 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     NaturalPerson contactPerson = createMockedNaturalPerson("John Doe");
     Address address = createMockedAddress();
 
-    Company expectedCompany = Company.builder().name("Full Company").email("contact@full.com").description("Complete company").tenantId("tenant123").documentNumber("98765432000198").size(CompanySize.LARGE).industry(Industry.FINANCE).website("https://www.full.com").legalName("Full Company Legal Inc.").contactPerson(contactPerson).address(address).build();
+    Company expectedCompany = Company.builder()
+                                     .name("Full Company")
+                                     .email("contact@full.com")
+                                     .description("Complete company")
+                                     .tenantId("tenant123")
+                                     .documentNumber("98765432000198")
+                                     .size(CompanySize.LARGE)
+                                     .industry(Industry.FINANCE)
+                                     .website("https://www.full.com")
+                                     .legalName("Full Company Legal Inc.")
+                                     .contactPerson(contactPerson)
+                                     .address(address)
+                                     .build();
     Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
     // Mock
@@ -106,7 +124,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.create(
-        "98765432000198", "Full Company", "contact@full.com", "Complete company", "tenant123", CompanySize.LARGE, Industry.FINANCE, "https://www.full.com", "Full Company Legal Inc.", contactPerson, address
+                                                     "98765432000198", "Full Company", "contact@full.com", "Complete company", "tenant123", CompanySize.LARGE, Industry.FINANCE, "https://www.full.com", "Full Company Legal Inc.", contactPerson, address
     );
 
     // Then
@@ -139,7 +157,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.update(
-        DEFAULT_ID, "0002", "Updated Company Name", "updated.email@example.com", "Updated Description", "Updated Tenant Id"
+                                                     DEFAULT_ID, "0002", "Updated Company Name", "updated.email@example.com", "Updated Description", "Updated Tenant Id"
     );
 
     // Then
@@ -159,7 +177,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.update(
-        nonExistingId, "doc", "name", "email", "desc", "tenant"
+                                                     nonExistingId, "doc", "name", "email", "desc", "tenant"
     );
 
     // Then
@@ -173,9 +191,28 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
     // Prepare
     Company existingCompany = createMockedCompany(DEFAULT_ID);
     NaturalPerson newContactPerson = createMockedNaturalPerson("Jane Smith");
-    Address newAddress = Address.builder().street("456 New Street").city("Rio de Janeiro").state("RJ").zipcode("98765-432").country("Brazil").build();
+    Address newAddress = Address.builder()
+                                .street("456 New Street")
+                                .city("Rio de Janeiro")
+                                .state("RJ")
+                                .zipcode("98765-432")
+                                .country("Brazil")
+                                .build();
 
-    Company updatedCompany = Company.builder().id(DEFAULT_ID).name("Updated Full Company").email("updated@full.com").description("Updated complete company").tenantId("tenant789").documentNumber("22222222000222").size(CompanySize.ENTERPRISE).industry(Industry.MANUFACTURING).website("https://www.updated-full.com").legalName("Updated Full Company Legal Inc.").contactPerson(newContactPerson).address(newAddress).build();
+    Company updatedCompany = Company.builder()
+                                    .id(DEFAULT_ID)
+                                    .name("Updated Full Company")
+                                    .email("updated@full.com")
+                                    .description("Updated complete company")
+                                    .tenantId("tenant789")
+                                    .documentNumber("22222222000222")
+                                    .size(CompanySize.ENTERPRISE)
+                                    .industry(Industry.MANUFACTURING)
+                                    .website("https://www.updated-full.com")
+                                    .legalName("Updated Full Company Legal Inc.")
+                                    .contactPerson(newContactPerson)
+                                    .address(newAddress)
+                                    .build();
 
     // Mock
     when(companyRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(existingCompany));
@@ -183,7 +220,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.update(
-        DEFAULT_ID, "22222222000222", "Updated Full Company", "updated@full.com", "Updated complete company", "tenant789", CompanySize.ENTERPRISE, Industry.MANUFACTURING, "https://www.updated-full.com", "Updated Full Company Legal Inc.", newContactPerson, newAddress
+                                                     DEFAULT_ID, "22222222000222", "Updated Full Company", "updated@full.com", "Updated complete company", "tenant789", CompanySize.ENTERPRISE, Industry.MANUFACTURING, "https://www.updated-full.com", "Updated Full Company Legal Inc.", newContactPerson, newAddress
     );
 
     // Then
@@ -197,7 +234,19 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
   @Test
   void createWithOptionalNullFields_shouldSucceed() {
     // Prepare
-    Company expectedCompany = Company.builder().name("Minimal Company").email("minimal@company.com").description("Minimal company description").tenantId("tenant123").documentNumber("33333333000333").size(CompanySize.SMALL).industry(Industry.OTHER).website(null).legalName(null).contactPerson(null).address(null).build();
+    Company expectedCompany = Company.builder()
+                                     .name("Minimal Company")
+                                     .email("minimal@company.com")
+                                     .description("Minimal company description")
+                                     .tenantId("tenant123")
+                                     .documentNumber("33333333000333")
+                                     .size(CompanySize.SMALL)
+                                     .industry(Industry.OTHER)
+                                     .website(null)
+                                     .legalName(null)
+                                     .contactPerson(null)
+                                     .address(null)
+                                     .build();
     Company savedCompany = copyCompanyAndAddId(expectedCompany, DEFAULT_ID);
 
     // Mock
@@ -205,7 +254,7 @@ class CompanyServiceTest extends AbstractCrudServiceTest<Company, CompanyReposit
 
     // When
     Optional<Company> result = companyService.create(
-        "33333333000333", "Minimal Company", "minimal@company.com", "Minimal company description", "tenant123", CompanySize.SMALL, Industry.OTHER, null, null, null, null
+                                                     "33333333000333", "Minimal Company", "minimal@company.com", "Minimal company description", "tenant123", CompanySize.SMALL, Industry.OTHER, null, null, null, null
     );
 
     // Then

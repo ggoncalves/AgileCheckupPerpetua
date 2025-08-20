@@ -105,7 +105,7 @@ class PerformanceCycleRepositoryTest {
     // Given
     String tenantId = "tenant-123";
     List<PerformanceCycle> expectedCycles = Arrays.asList(
-        createTestPerformanceCycle("cycle-1", tenantId, "Q1 2024", "company-123"), createTestPerformanceCycle("cycle-2", tenantId, "Q2 2024", "company-123")
+                                                          createTestPerformanceCycle("cycle-1", tenantId, "Q1 2024", "company-123"), createTestPerformanceCycle("cycle-2", tenantId, "Q2 2024", "company-123")
     );
 
     when(table.index("tenantId-index")).thenReturn(tenantIndex);
@@ -128,7 +128,7 @@ class PerformanceCycleRepositoryTest {
     // Given
     String companyId = "company-123";
     List<PerformanceCycle> expectedCycles = Arrays.asList(
-        createTestPerformanceCycle("cycle-1", "tenant-123", "Q1 2024", companyId), createTestPerformanceCycle("cycle-2", "tenant-456", "Q2 2024", companyId)
+                                                          createTestPerformanceCycle("cycle-1", "tenant-123", "Q1 2024", companyId), createTestPerformanceCycle("cycle-2", "tenant-456", "Q2 2024", companyId)
     );
 
     when(table.index("companyId-index")).thenReturn(companyIndex);
@@ -151,7 +151,7 @@ class PerformanceCycleRepositoryTest {
     // Given
     String tenantId = "tenant-123";
     List<PerformanceCycle> allCycles = Arrays.asList(
-        createActiveTestPerformanceCycle("cycle-1", tenantId, "Active Q1", "company-123", true), createActiveTestPerformanceCycle("cycle-2", tenantId, "Active Q2", "company-123", true), createActiveTestPerformanceCycle("cycle-3", tenantId, "Inactive Q3", "company-123", false)
+                                                     createActiveTestPerformanceCycle("cycle-1", tenantId, "Active Q1", "company-123", true), createActiveTestPerformanceCycle("cycle-2", tenantId, "Active Q2", "company-123", true), createActiveTestPerformanceCycle("cycle-3", tenantId, "Inactive Q3", "company-123", false)
     );
 
     when(table.index("tenantId-index")).thenReturn(tenantIndex);
@@ -198,10 +198,30 @@ class PerformanceCycleRepositoryTest {
   }
 
   private PerformanceCycle createTestPerformanceCycle(String id, String tenantId, String name, String companyId) {
-    return PerformanceCycle.builder().id(id).tenantId(tenantId).name(name).description(name + " Description").companyId(companyId).isActive(true).isTimeSensitive(true).startDate(LocalDate.of(2024, 1, 1)).endDate(LocalDate.of(2024, 3, 31)).build();
+    return PerformanceCycle.builder()
+                           .id(id)
+                           .tenantId(tenantId)
+                           .name(name)
+                           .description(name + " Description")
+                           .companyId(companyId)
+                           .isActive(true)
+                           .isTimeSensitive(true)
+                           .startDate(LocalDate.of(2024, 1, 1))
+                           .endDate(LocalDate.of(2024, 3, 31))
+                           .build();
   }
 
   private PerformanceCycle createActiveTestPerformanceCycle(String id, String tenantId, String name, String companyId, boolean isActive) {
-    return PerformanceCycle.builder().id(id).tenantId(tenantId).name(name).description(name + " Description").companyId(companyId).isActive(isActive).isTimeSensitive(true).startDate(LocalDate.of(2024, 1, 1)).endDate(LocalDate.of(2024, 3, 31)).build();
+    return PerformanceCycle.builder()
+                           .id(id)
+                           .tenantId(tenantId)
+                           .name(name)
+                           .description(name + " Description")
+                           .companyId(companyId)
+                           .isActive(isActive)
+                           .isTimeSensitive(true)
+                           .startDate(LocalDate.of(2024, 1, 1))
+                           .endDate(LocalDate.of(2024, 3, 31))
+                           .build();
   }
 }

@@ -89,7 +89,9 @@ class TokenFieldTest {
     TokenField tokenField = TokenField.valueOf("ASSESSMENT_MATRIX_ID");
 
     // Then
-    assertThat(tokenField).isEqualTo(TokenField.ASSESSMENT_MATRIX_ID).extracting(TokenField::getFieldName).isEqualTo("assessmentMatrixId");
+    assertThat(tokenField).isEqualTo(TokenField.ASSESSMENT_MATRIX_ID)
+                          .extracting(TokenField::getFieldName)
+                          .isEqualTo("assessmentMatrixId");
   }
 
   @ParameterizedTest

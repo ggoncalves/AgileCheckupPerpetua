@@ -39,7 +39,11 @@ public class JwtTokenProvider {
     claims.put(TENANT_ID.getFieldName(), tenantId);
     claims.put(ASSESSMENT_MATRIX_ID.getFieldName(), assessmentMatrixId);
 
-    return Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis())).signWith(key, SignatureAlgorithm.HS256).compact();
+    return Jwts.builder()
+               .setClaims(claims)
+               .setIssuedAt(new Date(System.currentTimeMillis()))
+               .signWith(key, SignatureAlgorithm.HS256)
+               .compact();
   }
 
   public Claims validateAndParseToken(String token) throws Exception {

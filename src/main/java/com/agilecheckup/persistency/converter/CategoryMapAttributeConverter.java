@@ -16,7 +16,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class CategoryMapAttributeConverter implements AttributeConverter<Map<String, Category>> {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                                                      .setDateFormat(new StdDateFormat());
   private static final TypeReference<Map<String, Category>> TYPE_REFERENCE = new TypeReference<Map<String, Category>>() {
   };
 

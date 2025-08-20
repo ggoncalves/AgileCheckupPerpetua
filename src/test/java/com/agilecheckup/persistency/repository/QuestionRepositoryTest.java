@@ -84,7 +84,7 @@ class QuestionRepositoryTest {
     String matrixId = "matrix-123";
     String tenantId = "tenant-123";
     List<Question> expectedQuestions = Arrays.asList(
-        createTestQuestion("question-1", tenantId, matrixId), createTestQuestion("question-2", tenantId, matrixId)
+                                                     createTestQuestion("question-1", tenantId, matrixId), createTestQuestion("question-2", tenantId, matrixId)
     );
 
     // Mock the scan operation - use raw SdkIterable type
@@ -109,7 +109,7 @@ class QuestionRepositoryTest {
     String categoryId = "category-456";
     String tenantId = "tenant-123";
     List<Question> existingQuestions = Arrays.asList(
-        createTestQuestionWithCategory("question-1", tenantId, matrixId, categoryId)
+                                                     createTestQuestionWithCategory("question-1", tenantId, matrixId, categoryId)
     );
 
     // Mock the scan operation - use raw SdkIterable type
@@ -167,10 +167,32 @@ class QuestionRepositoryTest {
   }
 
   private Question createTestQuestion(String id, String tenantId, String matrixId) {
-    return Question.builder().id(id).question("Test question " + id).questionType(QuestionType.YES_NO).tenantId(tenantId).assessmentMatrixId(matrixId).pillarId("pillar-123").pillarName("Test Pillar").categoryId("category-123").categoryName("Test Category").points(10.0).build();
+    return Question.builder()
+                   .id(id)
+                   .question("Test question " + id)
+                   .questionType(QuestionType.YES_NO)
+                   .tenantId(tenantId)
+                   .assessmentMatrixId(matrixId)
+                   .pillarId("pillar-123")
+                   .pillarName("Test Pillar")
+                   .categoryId("category-123")
+                   .categoryName("Test Category")
+                   .points(10.0)
+                   .build();
   }
 
   private Question createTestQuestionWithCategory(String id, String tenantId, String matrixId, String categoryId) {
-    return Question.builder().id(id).question("Test question " + id).questionType(QuestionType.YES_NO).tenantId(tenantId).assessmentMatrixId(matrixId).pillarId("pillar-123").pillarName("Test Pillar").categoryId(categoryId).categoryName("Test Category").points(10.0).build();
+    return Question.builder()
+                   .id(id)
+                   .question("Test question " + id)
+                   .questionType(QuestionType.YES_NO)
+                   .tenantId(tenantId)
+                   .assessmentMatrixId(matrixId)
+                   .pillarId("pillar-123")
+                   .pillarName("Test Pillar")
+                   .categoryId(categoryId)
+                   .categoryName("Test Category")
+                   .points(10.0)
+                   .build();
   }
 }

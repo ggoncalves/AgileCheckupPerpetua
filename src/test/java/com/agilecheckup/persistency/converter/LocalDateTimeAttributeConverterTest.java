@@ -213,7 +213,8 @@ class LocalDateTimeAttributeConverterTest {
   void shouldThrowRuntimeExceptionForInvalidDateString() {
     AttributeValue invalidInput = createStringAttributeValue("not-a-valid-date");
 
-    assertThatThrownBy(() -> converter.transformTo(invalidInput)).isInstanceOf(RuntimeException.class).hasMessageContaining("Failed to parse LocalDateTime: not-a-valid-date");
+    assertThatThrownBy(() -> converter.transformTo(invalidInput)).isInstanceOf(RuntimeException.class)
+                                                                 .hasMessageContaining("Failed to parse LocalDateTime: not-a-valid-date");
   }
 
   @Test
@@ -221,7 +222,8 @@ class LocalDateTimeAttributeConverterTest {
   void shouldThrowRuntimeExceptionForMalformedIsoString() {
     AttributeValue malformedInput = createStringAttributeValue("2023-13-45T25:70:90");
 
-    assertThatThrownBy(() -> converter.transformTo(malformedInput)).isInstanceOf(RuntimeException.class).hasMessageContaining("Failed to parse LocalDateTime");
+    assertThatThrownBy(() -> converter.transformTo(malformedInput)).isInstanceOf(RuntimeException.class)
+                                                                   .hasMessageContaining("Failed to parse LocalDateTime");
   }
 
   // RIGHT-BICEP - Performance characteristics

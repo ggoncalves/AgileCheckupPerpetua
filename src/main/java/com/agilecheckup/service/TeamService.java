@@ -29,13 +29,19 @@ public class TeamService extends AbstractCrudService<Team, TeamRepository> {
   }
 
   public Optional<Team> create(String tenantId, String name, String description, String departmentId) {
-    Team team = Team.builder().tenantId(tenantId).name(name).description(description).departmentId(departmentId).build();
+    Team team = Team.builder()
+                    .tenantId(tenantId)
+                    .name(name)
+                    .description(description)
+                    .departmentId(departmentId)
+                    .build();
 
     return create(team);
   }
 
   public Optional<Team> update(String id, String tenantId, String name, String description, String departmentId) {
-    Team existing = teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
+    Team existing = teamRepository.findById(id)
+                                  .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
 
     existing.setTenantId(tenantId);
     existing.setName(name);

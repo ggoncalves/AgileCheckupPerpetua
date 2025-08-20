@@ -40,7 +40,10 @@ public class QuestionRepository extends AbstractCrudRepository<Question> {
     expressionValues.put(":val1", AttributeValue.builder().s(matrixId).build());
     expressionValues.put(":val2", AttributeValue.builder().s(tenantId).build());
 
-    Expression filterExpression = Expression.builder().expression("assessmentMatrixId = :val1 AND tenantId = :val2").expressionValues(expressionValues).build();
+    Expression filterExpression = Expression.builder()
+                                            .expression("assessmentMatrixId = :val1 AND tenantId = :val2")
+                                            .expressionValues(expressionValues)
+                                            .build();
 
     ScanEnhancedRequest scanRequest = ScanEnhancedRequest.builder().filterExpression(filterExpression).build();
 
@@ -62,12 +65,19 @@ public class QuestionRepository extends AbstractCrudRepository<Question> {
     expressionValues.put(":val2", AttributeValue.builder().s(categoryId).build());
     expressionValues.put(":val3", AttributeValue.builder().s(tenantId).build());
 
-    Expression filterExpression = Expression.builder().expression("assessmentMatrixId = :val1 AND categoryId = :val2 AND tenantId = :val3").expressionValues(expressionValues).build();
+    Expression filterExpression = Expression.builder()
+                                            .expression("assessmentMatrixId = :val1 AND categoryId = :val2 AND tenantId = :val3")
+                                            .expressionValues(expressionValues)
+                                            .build();
 
     // Scan with limit 1 - we only need to know if at least one exists
     ScanEnhancedRequest scanRequest = ScanEnhancedRequest.builder().filterExpression(filterExpression).limit(1).build();
 
-    List<Question> results = getTable().scan(scanRequest).stream().flatMap(page -> page.items().stream()).limit(1).collect(Collectors.toList());
+    List<Question> results = getTable().scan(scanRequest)
+                                       .stream()
+                                       .flatMap(page -> page.items().stream())
+                                       .limit(1)
+                                       .collect(Collectors.toList());
 
     return !results.isEmpty();
   }

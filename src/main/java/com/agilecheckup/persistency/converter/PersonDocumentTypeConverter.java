@@ -10,7 +10,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 public class PersonDocumentTypeConverter implements AttributeConverter<PersonDocumentType> {
   @Override
   public AttributeValue transformFrom(PersonDocumentType input) {
-    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder().nul(true).build();
+    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder()
+                                                                                            .nul(true)
+                                                                                            .build();
   }
 
   @Override

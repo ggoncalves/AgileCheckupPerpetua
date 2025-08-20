@@ -24,7 +24,8 @@ class AssessmentStatusValidatorTest {
   @CsvSource({"INVITED, COMPLETED", "CONFIRMED, COMPLETED", "CONFIRMED, INVITED", "IN_PROGRESS, INVITED", "IN_PROGRESS, CONFIRMED", "COMPLETED, INVITED", "COMPLETED, CONFIRMED", "COMPLETED, IN_PROGRESS", "COMPLETED, COMPLETED"
   })
   void shouldRejectInvalidTransitions(AssessmentStatus from, AssessmentStatus to) {
-    assertThatThrownBy(() -> AssessmentStatusValidator.validateTransition(from, to)).isInstanceOf(ValidationException.class).hasMessageContaining("Invalid status transition from " + from + " to " + to);
+    assertThatThrownBy(() -> AssessmentStatusValidator.validateTransition(from, to)).isInstanceOf(ValidationException.class)
+                                                                                    .hasMessageContaining("Invalid status transition from " + from + " to " + to);
   }
 
   @ParameterizedTest
@@ -36,7 +37,8 @@ class AssessmentStatusValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"INVALID", "PENDING", "STARTED", "", "invited", "completed"})
   void shouldRejectInvalidStatusNames(String statusName) {
-    assertThatThrownBy(() -> AssessmentStatusValidator.validateStatus(statusName)).isInstanceOf(ValidationException.class).hasMessageContaining("Invalid assessment status: " + statusName);
+    assertThatThrownBy(() -> AssessmentStatusValidator.validateStatus(statusName)).isInstanceOf(ValidationException.class)
+                                                                                  .hasMessageContaining("Invalid assessment status: " + statusName);
   }
 
   @Test

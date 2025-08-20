@@ -15,7 +15,7 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
     }
     // Convert Address to JSON string for storage
     return AttributeValue.builder().s(String.format(
-        "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}", escapeJsonValue(input.getId()), escapeJsonValue(input.getStreet()), escapeJsonValue(input.getCity()), escapeJsonValue(input.getState()), escapeJsonValue(input.getZipcode()), escapeJsonValue(input.getCountry())
+                                                    "{\"id\":\"%s\",\"street\":\"%s\",\"city\":\"%s\",\"state\":\"%s\",\"zipcode\":\"%s\",\"country\":\"%s\"}", escapeJsonValue(input.getId()), escapeJsonValue(input.getStreet()), escapeJsonValue(input.getCity()), escapeJsonValue(input.getState()), escapeJsonValue(input.getZipcode()), escapeJsonValue(input.getCountry())
     )).build();
   }
 
@@ -59,10 +59,10 @@ public class AddressAttributeConverter implements AttributeConverter<Address> {
       return "";
     }
     return value.replace("\\", "\\\\")    // Escape backslashes first
-        .replace("\"", "\\\"")    // Escape quotes
-        .replace("\n", "\\n")     // Escape newlines
-        .replace("\r", "\\r")     // Escape carriage returns
-        .replace("\t", "\\t");    // Escape tabs
+                .replace("\"", "\\\"")    // Escape quotes
+                .replace("\n", "\\n")     // Escape newlines
+                .replace("\r", "\\r")     // Escape carriage returns
+                .replace("\t", "\\t");    // Escape tabs
   }
 
   private String extractJsonValue(String json, String key) {

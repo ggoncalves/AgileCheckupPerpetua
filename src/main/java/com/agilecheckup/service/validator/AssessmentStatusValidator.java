@@ -11,12 +11,14 @@ import lombok.NonNull;
 
 public class AssessmentStatusValidator {
 
-  private static final Set<String> VALID_STATUS_NAMES = Arrays.stream(AssessmentStatus.values()).map(Enum::name).collect(Collectors.toSet());
+  private static final Set<String> VALID_STATUS_NAMES = Arrays.stream(AssessmentStatus.values())
+                                                              .map(Enum::name)
+                                                              .collect(Collectors.toSet());
 
   public static void validateTransition(@NonNull AssessmentStatus currentStatus, @NonNull AssessmentStatus newStatus) {
     if (!isValidTransition(currentStatus, newStatus)) {
       throw new ValidationException(
-          String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
+                                    String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
       );
     }
   }
@@ -24,7 +26,7 @@ public class AssessmentStatusValidator {
   public static void validateStatus(@NonNull String statusName) {
     if (!VALID_STATUS_NAMES.contains(statusName)) {
       throw new ValidationException(
-          String.format("Invalid assessment status: %s. Valid values are: %s", statusName, String.join(", ", VALID_STATUS_NAMES))
+                                    String.format("Invalid assessment status: %s. Valid values are: %s", statusName, String.join(", ", VALID_STATUS_NAMES))
       );
     }
   }

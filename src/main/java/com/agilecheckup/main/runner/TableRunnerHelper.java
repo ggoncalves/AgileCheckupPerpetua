@@ -28,7 +28,11 @@ public class TableRunnerHelper {
 
     Map<String, Category> categoryMap = ImmutableMap.of(c1.getId(), c1, c2.getId(), c2);
 
-    Pillar p1 = Pillar.builder().name("Pillar name 1").description("Pillar description 1 ").categoryMap(categoryMap).build();
+    Pillar p1 = Pillar.builder()
+                      .name("Pillar name 1")
+                      .description("Pillar description 1 ")
+                      .categoryMap(categoryMap)
+                      .build();
 
     Category c3 = Category.builder().name("Categoria de Nome 3").description("Categoria de Descrição 3").build();
 
@@ -36,7 +40,11 @@ public class TableRunnerHelper {
 
     Map<String, Category> categoryMap2 = ImmutableMap.of(c3.getId(), c3, c4.getId(), c4);
 
-    Pillar p2 = Pillar.builder().name("Pillar name 2").description("Pillar description 2 ").categoryMap(categoryMap2).build();
+    Pillar p2 = Pillar.builder()
+                      .name("Pillar name 2")
+                      .description("Pillar description 2 ")
+                      .categoryMap(categoryMap2)
+                      .build();
 
     Set<Pillar> pillars = ImmutableSet.of(p1, p2);
     return createPillarsMap(pillars);

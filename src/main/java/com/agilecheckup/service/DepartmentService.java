@@ -40,7 +40,7 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
       department.setDescription(description);
       department.setTenantId(tenantId);
       department.setCompanyId(company.orElseThrow(
-          () -> new InvalidIdReferenceException(companyId, "Department", "Company")
+                                                  () -> new InvalidIdReferenceException(companyId, "Department", "Company")
       ).getId());
       return super.update(department);
     }
@@ -56,7 +56,7 @@ public class DepartmentService extends AbstractCrudService<Department, AbstractC
     department.setDescription(description);
     department.setTenantId(tenantId);
     department.setCompanyId(company.orElseThrow(
-        () -> new InvalidIdReferenceException(companyId, "Department", "Company")
+                                                () -> new InvalidIdReferenceException(companyId, "Department", "Company")
     ).getId());
     return department;
   }

@@ -1,29 +1,5 @@
 package com.agilecheckup.service;
 
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
-import com.agilecheckup.persistency.entity.QuestionNavigationType;
-import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.service.dto.AnswerWithProgressResponse;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,6 +10,31 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.QuestionNavigationType;
+import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.service.dto.AnswerWithProgressResponse;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 @ExtendWith(MockitoExtension.class)
 class AssessmentNavigationServiceTest {
@@ -61,7 +62,7 @@ class AssessmentNavigationServiceTest {
   @BeforeEach
   void setUp() {
     assessmentNavigationService = new AssessmentNavigationService(
-        questionService, answerService, employeeAssessmentService, assessmentMatrixService);
+                                                                  questionService, answerService, employeeAssessmentService, assessmentMatrixService);
   }
 
   @Test
@@ -207,7 +208,8 @@ class AssessmentNavigationServiceTest {
     when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.empty());
 
     // When/Then
-    assertThatThrownBy(() -> assessmentNavigationService.getNextUnansweredQuestion(EMPLOYEE_ASSESSMENT_ID, TENANT_ID)).isInstanceOf(InvalidIdReferenceException.class).hasMessageContaining(MATRIX_ID);
+    assertThatThrownBy(() -> assessmentNavigationService.getNextUnansweredQuestion(EMPLOYEE_ASSESSMENT_ID, TENANT_ID)).isInstanceOf(InvalidIdReferenceException.class)
+                                                                                                                      .hasMessageContaining(MATRIX_ID);
   }
 
   @Test
@@ -224,7 +226,7 @@ class AssessmentNavigationServiceTest {
     AssessmentConfiguration config = createMockConfiguration(QuestionNavigationType.SEQUENTIAL);
 
     doReturn(Optional.of(savedAnswer)).when(answerService).create(
-        eq(EMPLOYEE_ASSESSMENT_ID), eq(questionId), eq(ANSWERED_AT), eq(value), eq(TENANT_ID), eq(notes));
+                                                                  eq(EMPLOYEE_ASSESSMENT_ID), eq(questionId), eq(ANSWERED_AT), eq(value), eq(TENANT_ID), eq(notes));
     when(employeeAssessmentService.findById(EMPLOYEE_ASSESSMENT_ID)).thenReturn(Optional.of(assessment));
     when(assessmentMatrixService.findById(MATRIX_ID)).thenReturn(Optional.of(matrix));
     when(answerService.findAnsweredQuestionIds(EMPLOYEE_ASSESSMENT_ID, TENANT_ID)).thenReturn(Collections.emptySet());
@@ -233,7 +235,7 @@ class AssessmentNavigationServiceTest {
 
     // When
     AnswerWithProgressResponse response = assessmentNavigationService.saveAnswerAndGetNext(
-        EMPLOYEE_ASSESSMENT_ID, questionId, ANSWERED_AT, value, TENANT_ID, notes);
+                                                                                           EMPLOYEE_ASSESSMENT_ID, questionId, ANSWERED_AT, value, TENANT_ID, notes);
 
     // Then
     assertThat(response).isNotNull();
@@ -248,11 +250,12 @@ class AssessmentNavigationServiceTest {
   void shouldThrowException_WhenAnswerSaveFails() {
     // Given
     doReturn(Optional.empty()).when(answerService).create(
-        anyString(), anyString(), any(LocalDateTime.class), anyString(), anyString(), anyString());
+                                                          anyString(), anyString(), any(LocalDateTime.class), anyString(), anyString(), anyString());
 
     // When/Then
     assertThatThrownBy(() -> assessmentNavigationService.saveAnswerAndGetNext(
-        EMPLOYEE_ASSESSMENT_ID, QUESTION_ID, ANSWERED_AT, "Yes", TENANT_ID, "notes")).isInstanceOf(RuntimeException.class).hasMessage("Failed to save answer - answerService.create returned empty Optional");
+                                                                              EMPLOYEE_ASSESSMENT_ID, QUESTION_ID, ANSWERED_AT, "Yes", TENANT_ID, "notes")).isInstanceOf(RuntimeException.class)
+                                                                                                                                                           .hasMessage("Failed to save answer - answerService.create returned empty Optional");
   }
 
   @Test

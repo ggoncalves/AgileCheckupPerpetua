@@ -44,13 +44,22 @@ public class EmployeeAssessmentRepository extends AbstractCrudRepository<Employe
       DynamoDbIndex<EmployeeAssessment> gsi = getTable().index("assessmentMatrixId-employeeEmail-index");
 
       QueryConditional queryConditional = QueryConditional.keyEqualTo(
-          Key.builder().partitionValue(assessmentMatrixId).sortValue(normalizedEmail).build()
+                                                                      Key.builder()
+                                                                         .partitionValue(assessmentMatrixId)
+                                                                         .sortValue(normalizedEmail)
+                                                                         .build()
       );
 
-      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).limit(1) // We only need to know if any exists
-          .build();
+      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                              .queryConditional(queryConditional)
+                                                              .limit(1) // We only need to know if any exists
+                                                              .build();
 
-      List<EmployeeAssessment> results = gsi.query(queryRequest).stream().flatMap(page -> page.items().stream()).limit(1).collect(java.util.stream.Collectors.toList());
+      List<EmployeeAssessment> results = gsi.query(queryRequest)
+                                            .stream()
+                                            .flatMap(page -> page.items().stream())
+                                            .limit(1)
+                                            .collect(java.util.stream.Collectors.toList());
 
       return !results.isEmpty();
 
@@ -84,18 +93,29 @@ public class EmployeeAssessmentRepository extends AbstractCrudRepository<Employe
       DynamoDbIndex<EmployeeAssessment> gsi = getTable().index("assessmentMatrixId-employeeEmail-index");
 
       QueryConditional queryConditional = QueryConditional.keyEqualTo(
-          Key.builder().partitionValue(assessmentMatrixId).build()
+                                                                      Key.builder()
+                                                                         .partitionValue(assessmentMatrixId)
+                                                                         .build()
       );
 
       // Add tenant filter for security
       Map<String, AttributeValue> expressionValues = new HashMap<>();
       expressionValues.put(":tenantId", AttributeValue.builder().s(tenantId).build());
 
-      Expression filterExpression = Expression.builder().expression("tenantId = :tenantId").expressionValues(expressionValues).build();
+      Expression filterExpression = Expression.builder()
+                                              .expression("tenantId = :tenantId")
+                                              .expressionValues(expressionValues)
+                                              .build();
 
-      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).filterExpression(filterExpression).build();
+      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                              .queryConditional(queryConditional)
+                                                              .filterExpression(filterExpression)
+                                                              .build();
 
-      return gsi.query(queryRequest).stream().flatMap(page -> page.items().stream()).collect(java.util.stream.Collectors.toList());
+      return gsi.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .collect(java.util.stream.Collectors.toList());
     }
     catch (Exception e) {
       throw new RuntimeException("Failed to query employee assessments by matrix ID: " + assessmentMatrixId, e);

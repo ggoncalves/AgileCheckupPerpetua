@@ -135,7 +135,7 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Create test company
     Optional<Company> companyOpt = getCompanyService().create(
-        "12345678901", "Test Company  Answer - " + System.currentTimeMillis(), "testanswer@company.com", "Test company for Answer demo", testTenantId
+                                                              "12345678901", "Test Company  Answer - " + System.currentTimeMillis(), "testanswer@company.com", "Test company for Answer demo", testTenantId
     );
 
     if (companyOpt.isPresent()) {
@@ -149,7 +149,7 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Create test department
     Optional<Department> departmentOpt = getDepartmentService().create(
-        "Test Department  Answer", "Test department for Answer demo", testTenantId, testCompany.getId()
+                                                                       "Test Department  Answer", "Test department for Answer demo", testTenantId, testCompany.getId()
     );
 
     if (departmentOpt.isPresent()) {
@@ -163,7 +163,7 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Create test team
     Optional<Team> teamOpt = getTeamService().create(
-        "Test Team  Answer", "Test team for Answer demo", testTenantId, testDepartment.getId()
+                                                     "Test Team  Answer", "Test team for Answer demo", testTenantId, testDepartment.getId()
     );
 
     if (teamOpt.isPresent()) {
@@ -177,7 +177,7 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Create test performance cycle
     Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
-        testTenantId, "Test Cycle  Answer - " + System.currentTimeMillis(), "Test performance cycle for Answer demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
+                                                                              testTenantId, "Test Cycle  Answer - " + System.currentTimeMillis(), "Test performance cycle for Answer demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
     );
 
     if (cycleOpt.isPresent()) {
@@ -192,7 +192,7 @@ public class AnswerTableRunner implements CrudRunner {
     // Create test assessment matrix
     Map<String, Pillar> pillarMap = tableRunnerHelper.createPillarsWithCategoriesMap();
     Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
-        "Test Assessment Matrix  Answer", "Assessment matrix for Answer demo", testTenantId, testPerformanceCycle.getId(), pillarMap
+                                                                               "Test Assessment Matrix  Answer", "Assessment matrix for Answer demo", testTenantId, testPerformanceCycle.getId(), pillarMap
     );
 
     if (matrixOpt.isPresent()) {
@@ -210,7 +210,7 @@ public class AnswerTableRunner implements CrudRunner {
     // Create test employee assessment
     NaturalPerson testEmployee = createTestEmployee();
     Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentService().create(
-        testAssessmentMatrix.getId(), testTeam.getId(), testEmployee.getName(), testEmployee.getEmail(), testEmployee.getDocumentNumber(), testEmployee.getPersonDocumentType(), testEmployee.getGender(), testEmployee.getGenderPronoun()
+                                                                                       testAssessmentMatrix.getId(), testTeam.getId(), testEmployee.getName(), testEmployee.getEmail(), testEmployee.getDocumentNumber(), testEmployee.getPersonDocumentType(), testEmployee.getGender(), testEmployee.getGenderPronoun()
     );
 
     if (assessmentOpt.isPresent()) {
@@ -241,9 +241,9 @@ public class AnswerTableRunner implements CrudRunner {
         // Create custom question with options
         List<QuestionOption> options = createMockedQuestionOptionList("Option", 5.0, 10.0, 15.0);
         Optional<Question> questionOpt = getQuestionService().createCustomQuestion(
-            questionTexts[i], questionTypes[i], testTenantId, false, // single choice
-            false, // not flushed
-            options, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test custom question for answers"
+                                                                                   questionTexts[i], questionTypes[i], testTenantId, false, // single choice
+                                                                                   false, // not flushed
+                                                                                   options, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test custom question for answers"
         );
 
         if (questionOpt.isPresent()) {
@@ -254,8 +254,8 @@ public class AnswerTableRunner implements CrudRunner {
       else {
         // Create regular question
         Optional<Question> questionOpt = getQuestionService().create(
-            questionTexts[i], questionTypes[i], testTenantId, (i + 1) * 10.0, // 10, 20, 30, 40 points
-            testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for answers"
+                                                                     questionTexts[i], questionTypes[i], testTenantId, (i + 1) * 10.0, // 10, 20, 30, 40 points
+                                                                     testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for answers"
         );
 
         if (questionOpt.isPresent()) {
@@ -269,7 +269,14 @@ public class AnswerTableRunner implements CrudRunner {
   }
 
   private NaturalPerson createTestEmployee() {
-    return NaturalPerson.builder().name("John Test Employee").email("john.employee@test.com").documentNumber("12345678901").personDocumentType(PersonDocumentType.CPF).gender(Gender.MALE).genderPronoun(GenderPronoun.HE).build();
+    return NaturalPerson.builder()
+                        .name("John Test Employee")
+                        .email("john.employee@test.com")
+                        .documentNumber("12345678901")
+                        .personDocumentType(PersonDocumentType.CPF)
+                        .gender(Gender.MALE)
+                        .genderPronoun(GenderPronoun.HE)
+                        .build();
   }
 
   private void testCreateOperations() {
@@ -283,11 +290,14 @@ public class AnswerTableRunner implements CrudRunner {
     LocalDateTime answeredAt = LocalDateTime.now().minusMinutes(30);
 
     // Test YES_NO answer
-    Question yesNoQuestion = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.YES_NO).findFirst().orElse(null);
+    Question yesNoQuestion = createdQuestions.stream()
+                                             .filter(q -> q.getQuestionType() == QuestionType.YES_NO)
+                                             .findFirst()
+                                             .orElse(null);
 
     if (yesNoQuestion != null) {
       Optional<Answer> yesNoAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), yesNoQuestion.getId(), answeredAt, "Yes", testTenantId, "Test yes/no answer"
+                                                                  testEmployeeAssessment.getId(), yesNoQuestion.getId(), answeredAt, "Yes", testTenantId, "Test yes/no answer"
       );
 
       if (yesNoAnswerOpt.isPresent()) {
@@ -301,11 +311,14 @@ public class AnswerTableRunner implements CrudRunner {
     }
 
     // Test STAR_FIVE answer
-    Question starFiveQuestion = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.STAR_FIVE).findFirst().orElse(null);
+    Question starFiveQuestion = createdQuestions.stream()
+                                                .filter(q -> q.getQuestionType() == QuestionType.STAR_FIVE)
+                                                .findFirst()
+                                                .orElse(null);
 
     if (starFiveQuestion != null) {
       Optional<Answer> starFiveAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), starFiveQuestion.getId(), answeredAt.plusMinutes(5), "4", testTenantId, "Test star rating answer"
+                                                                     testEmployeeAssessment.getId(), starFiveQuestion.getId(), answeredAt.plusMinutes(5), "4", testTenantId, "Test star rating answer"
       );
 
       if (starFiveAnswerOpt.isPresent()) {
@@ -319,11 +332,14 @@ public class AnswerTableRunner implements CrudRunner {
     }
 
     // Test ONE_TO_TEN answer
-    Question oneToTenQuestion = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.ONE_TO_TEN).findFirst().orElse(null);
+    Question oneToTenQuestion = createdQuestions.stream()
+                                                .filter(q -> q.getQuestionType() == QuestionType.ONE_TO_TEN)
+                                                .findFirst()
+                                                .orElse(null);
 
     if (oneToTenQuestion != null) {
       Optional<Answer> oneToTenAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), oneToTenQuestion.getId(), answeredAt.plusMinutes(10), "8", testTenantId, "Test scale answer"
+                                                                     testEmployeeAssessment.getId(), oneToTenQuestion.getId(), answeredAt.plusMinutes(10), "8", testTenantId, "Test scale answer"
       );
 
       if (oneToTenAnswerOpt.isPresent()) {
@@ -337,17 +353,22 @@ public class AnswerTableRunner implements CrudRunner {
     }
 
     // Test OPEN_ANSWER
-    Question openQuestion = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.OPEN_ANSWER).findFirst().orElse(null);
+    Question openQuestion = createdQuestions.stream()
+                                            .filter(q -> q.getQuestionType() == QuestionType.OPEN_ANSWER)
+                                            .findFirst()
+                                            .orElse(null);
 
     if (openQuestion != null) {
       Optional<Answer> openAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), openQuestion.getId(), answeredAt.plusMinutes(15), "We should improve our daily standup meetings and implement better code review processes.", testTenantId, "Test open text answer"
+                                                                 testEmployeeAssessment.getId(), openQuestion.getId(), answeredAt.plusMinutes(15), "We should improve our daily standup meetings and implement better code review processes.", testTenantId, "Test open text answer"
       );
 
       if (openAnswerOpt.isPresent()) {
         Answer openAnswer = openAnswerOpt.get();
         createdAnswers.add(openAnswer);
-        log.info("✓ Created OPEN_ANSWER: {} -> [{}...] (Pending Review: {})", openQuestion.getQuestion(), openAnswer.getValue().substring(0, Math.min(30, openAnswer.getValue().length())), openAnswer.isPendingReview());
+        log.info("✓ Created OPEN_ANSWER: {} -> [{}...] (Pending Review: {})", openQuestion.getQuestion(), openAnswer.getValue()
+                                                                                                                    .substring(0, Math.min(30, openAnswer.getValue()
+                                                                                                                                                         .length())), openAnswer.isPendingReview());
       }
       else {
         log.error("✗ Failed to create OPEN_ANSWER");
@@ -355,12 +376,15 @@ public class AnswerTableRunner implements CrudRunner {
     }
 
     // Test CUSTOMIZED answer
-    Question customQuestion = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.CUSTOMIZED).findFirst().orElse(null);
+    Question customQuestion = createdQuestions.stream()
+                                              .filter(q -> q.getQuestionType() == QuestionType.CUSTOMIZED)
+                                              .findFirst()
+                                              .orElse(null);
 
     if (customQuestion != null) {
       Optional<Answer> customAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), customQuestion.getId(), answeredAt.plusMinutes(20), "2", // Select option 2
-          testTenantId, "Test custom option answer"
+                                                                   testEmployeeAssessment.getId(), customQuestion.getId(), answeredAt.plusMinutes(20), "2", // Select option 2
+                                                                   testTenantId, "Test custom option answer"
       );
 
       if (customAnswerOpt.isPresent()) {
@@ -392,7 +416,9 @@ public class AnswerTableRunner implements CrudRunner {
       log.info("✓ Found answer by ID: {} -> {} (Score: {})", testAnswer.getId(), foundAnswer.getValue(), foundAnswer.getScore());
 
       // Verify data integrity
-      if (testAnswer.getValue().equals(foundAnswer.getValue()) && testAnswer.getEmployeeAssessmentId().equals(foundAnswer.getEmployeeAssessmentId()) && testAnswer.getTenantId().equals(foundAnswer.getTenantId())) {
+      if (testAnswer.getValue().equals(foundAnswer.getValue()) && testAnswer.getEmployeeAssessmentId()
+                                                                            .equals(foundAnswer.getEmployeeAssessmentId()) && testAnswer.getTenantId()
+                                                                                                                                        .equals(foundAnswer.getTenantId())) {
         log.info("  Data integrity verified ✓");
       }
       else {
@@ -422,8 +448,10 @@ public class AnswerTableRunner implements CrudRunner {
     log.info("Testing update operations...");
 
     // Test update answer by ID
-    Answer answerToUpdate = createdAnswers.stream().filter(a -> a.getQuestionType() != QuestionType.OPEN_ANSWER) // Avoid open answers for simpler testing
-        .findFirst().orElse(null);
+    Answer answerToUpdate = createdAnswers.stream()
+                                          .filter(a -> a.getQuestionType() != QuestionType.OPEN_ANSWER) // Avoid open answers for simpler testing
+                                          .findFirst()
+                                          .orElse(null);
 
     if (answerToUpdate != null) {
       String originalValue = answerToUpdate.getValue();
@@ -439,7 +467,7 @@ public class AnswerTableRunner implements CrudRunner {
       }
 
       Optional<Answer> updatedAnswerOpt = getAnswerService().update(
-          answerToUpdate.getId(), LocalDateTime.now(), newValue, "Updated answer notes"
+                                                                    answerToUpdate.getId(), LocalDateTime.now(), newValue, "Updated answer notes"
       );
 
       if (updatedAnswerOpt.isPresent()) {
@@ -465,11 +493,14 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Test findByEmployeeAssessmentId
     List<Answer> assessmentAnswers = getAnswerService().findByEmployeeAssessmentId(
-        testEmployeeAssessment.getId(), testTenantId);
+                                                                                   testEmployeeAssessment.getId(), testTenantId);
     log.info("✓ Found {} answers for employee assessment: {}", assessmentAnswers.size(), testEmployeeAssessment.getId());
 
     // Verify all answers belong to correct assessment and tenant
-    boolean allCorrect = assessmentAnswers.stream().allMatch(a -> a.getEmployeeAssessmentId().equals(testEmployeeAssessment.getId()) && a.getTenantId().equals(testTenantId));
+    boolean allCorrect = assessmentAnswers.stream()
+                                          .allMatch(a -> a.getEmployeeAssessmentId()
+                                                          .equals(testEmployeeAssessment.getId()) && a.getTenantId()
+                                                                                                      .equals(testTenantId));
     if (allCorrect) {
       log.info("  All answers correctly filtered by assessment and tenant ✓");
     }
@@ -479,11 +510,15 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Test findAnsweredQuestionIds
     Set<String> answeredQuestionIds = getAnswerService().findAnsweredQuestionIds(
-        testEmployeeAssessment.getId(), testTenantId);
+                                                                                 testEmployeeAssessment.getId(), testTenantId);
     log.info("✓ Found {} answered question IDs for assessment", answeredQuestionIds.size());
 
     // Verify answered question IDs match our created answers
-    Set<String> expectedQuestionIds = createdAnswers.stream().filter(a -> a.getEmployeeAssessmentId().equals(testEmployeeAssessment.getId())).map(Answer::getQuestionId).collect(Collectors.toSet());
+    Set<String> expectedQuestionIds = createdAnswers.stream()
+                                                    .filter(a -> a.getEmployeeAssessmentId()
+                                                                  .equals(testEmployeeAssessment.getId()))
+                                                    .map(Answer::getQuestionId)
+                                                    .collect(Collectors.toSet());
 
     if (answeredQuestionIds.equals(expectedQuestionIds)) {
       log.info("  Answered question IDs match created answers ✓");
@@ -524,7 +559,10 @@ public class AnswerTableRunner implements CrudRunner {
       log.info("  Last activity date: {}", currentAssessment.getLastActivityDate());
 
       // Verify answered count matches created answers
-      long expectedCount = createdAnswers.stream().filter(a -> a.getEmployeeAssessmentId().equals(testEmployeeAssessment.getId())).count();
+      long expectedCount = createdAnswers.stream()
+                                         .filter(a -> a.getEmployeeAssessmentId()
+                                                       .equals(testEmployeeAssessment.getId()))
+                                         .count();
 
       if (currentAssessment.getAnsweredQuestionCount() >= expectedCount) {
         log.info("  Answered question count correctly updated ✓");
@@ -547,7 +585,10 @@ public class AnswerTableRunner implements CrudRunner {
 
     // Try to create duplicate answer
     Answer existingAnswer = createdAnswers.get(0);
-    Question question = createdQuestions.stream().filter(q -> q.getId().equals(existingAnswer.getQuestionId())).findFirst().orElse(null);
+    Question question = createdQuestions.stream()
+                                        .filter(q -> q.getId().equals(existingAnswer.getQuestionId()))
+                                        .findFirst()
+                                        .orElse(null);
 
     if (question != null) {
       String originalValue = existingAnswer.getValue();
@@ -555,7 +596,7 @@ public class AnswerTableRunner implements CrudRunner {
 
       // Attempt to create duplicate (should update existing)
       Optional<Answer> duplicateAnswerOpt = getAnswerService().create(
-          testEmployeeAssessment.getId(), question.getId(), LocalDateTime.now(), newValue, testTenantId, "Duplicate prevention test"
+                                                                      testEmployeeAssessment.getId(), question.getId(), LocalDateTime.now(), newValue, testTenantId, "Duplicate prevention test"
       );
 
       if (duplicateAnswerOpt.isPresent()) {
@@ -573,7 +614,7 @@ public class AnswerTableRunner implements CrudRunner {
 
         // Verify no duplicate answers exist
         List<Answer> assessmentAnswers = getAnswerService().findByEmployeeAssessmentId(
-            testEmployeeAssessment.getId(), testTenantId);
+                                                                                       testEmployeeAssessment.getId(), testTenantId);
 
         long answerCount = assessmentAnswers.stream().filter(a -> a.getQuestionId().equals(question.getId())).count();
 
@@ -694,7 +735,9 @@ public class AnswerTableRunner implements CrudRunner {
   }
 
   private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
-    return IntStream.range(0, points.length).mapToObj(index -> createQuestionOption(index + 1, prefix, points[index])).collect(Collectors.toList());
+    return IntStream.range(0, points.length)
+                    .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
+                    .collect(Collectors.toList());
   }
 
   private QuestionOption createQuestionOption(Integer id, String prefix, double points) {

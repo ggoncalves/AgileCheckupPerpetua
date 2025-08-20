@@ -15,9 +15,21 @@ class AssessmentMatrixTest {
   @Test
   void testEntityCreation() {
     Map<String, Pillar> pillarMap = new HashMap<>();
-    AssessmentConfiguration configuration = AssessmentConfiguration.builder().allowQuestionReview(true).requireAllQuestions(false).autoSave(true).build();
+    AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+                                                                   .allowQuestionReview(true)
+                                                                   .requireAllQuestions(false)
+                                                                   .autoSave(true)
+                                                                   .build();
 
-    AssessmentMatrix matrix = AssessmentMatrix.builder().name("Test Matrix").description("Test Description").tenantId("tenant-123").performanceCycleId("cycle-123").pillarMap(pillarMap).questionCount(5).configuration(configuration).build();
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+                                              .name("Test Matrix")
+                                              .description("Test Description")
+                                              .tenantId("tenant-123")
+                                              .performanceCycleId("cycle-123")
+                                              .pillarMap(pillarMap)
+                                              .questionCount(5)
+                                              .configuration(configuration)
+                                              .build();
 
     assertThat(matrix.getName()).isEqualTo("Test Matrix");
     assertThat(matrix.getDescription()).isEqualTo("Test Description");
@@ -30,7 +42,12 @@ class AssessmentMatrixTest {
 
   @Test
   void testDefaultValues() {
-    AssessmentMatrix matrix = AssessmentMatrix.builder().name("Test Matrix").description("Test Description").tenantId("tenant-123").performanceCycleId("cycle-123").build();
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+                                              .name("Test Matrix")
+                                              .description("Test Description")
+                                              .tenantId("tenant-123")
+                                              .performanceCycleId("cycle-123")
+                                              .build();
 
     assertThat(matrix.getQuestionCount()).isNull();
     assertThat(matrix.getPillarMap()).isNull();
@@ -40,7 +57,13 @@ class AssessmentMatrixTest {
 
   @Test
   void testBuilderPattern() {
-    AssessmentMatrix matrix = AssessmentMatrix.builder().name("Builder Test").description("Built with builder").tenantId("tenant-456").performanceCycleId("cycle-456").questionCount(10).build();
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+                                              .name("Builder Test")
+                                              .description("Built with builder")
+                                              .tenantId("tenant-456")
+                                              .performanceCycleId("cycle-456")
+                                              .questionCount(10)
+                                              .build();
 
     assertThat(matrix).isNotNull();
     assertThat(matrix.getName()).isEqualTo("Builder Test");

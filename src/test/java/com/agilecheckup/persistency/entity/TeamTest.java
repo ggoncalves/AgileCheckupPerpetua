@@ -11,7 +11,13 @@ class TeamTest {
 
   @BeforeEach
   void setUp() {
-    team = Team.builder().id("team-123").tenantId("tenant-456").name("Engineering Team").description("Core engineering team").departmentId("dept-789").build();
+    team = Team.builder()
+               .id("team-123")
+               .tenantId("tenant-456")
+               .name("Engineering Team")
+               .description("Core engineering team")
+               .departmentId("dept-789")
+               .build();
   }
 
   @Test
@@ -25,9 +31,21 @@ class TeamTest {
 
   @Test
   void testEqualsAndHashCode() {
-    Team sameTeam = Team.builder().id("team-123").tenantId("tenant-456").name("Engineering Team").description("Core engineering team").departmentId("dept-789").build();
+    Team sameTeam = Team.builder()
+                        .id("team-123")
+                        .tenantId("tenant-456")
+                        .name("Engineering Team")
+                        .description("Core engineering team")
+                        .departmentId("dept-789")
+                        .build();
 
-    Team differentTeam = Team.builder().id("team-999").tenantId("tenant-456").name("Marketing Team").description("Marketing team").departmentId("dept-999").build();
+    Team differentTeam = Team.builder()
+                             .id("team-999")
+                             .tenantId("tenant-456")
+                             .name("Marketing Team")
+                             .description("Marketing team")
+                             .departmentId("dept-999")
+                             .build();
 
     assertThat(team).isEqualTo(sameTeam);
     assertThat(team.hashCode()).isEqualTo(sameTeam.hashCode());
@@ -64,7 +82,12 @@ class TeamTest {
 
   @Test
   void testBuilderWithAllFields() {
-    Team fullTeam = Team.builder().tenantId("tenant-123").name("Team Name").description("Team Description").departmentId("dept-123").build();
+    Team fullTeam = Team.builder()
+                        .tenantId("tenant-123")
+                        .name("Team Name")
+                        .description("Team Description")
+                        .departmentId("dept-123")
+                        .build();
     assertThat(fullTeam.getTenantId()).isEqualTo("tenant-123");
     assertThat(fullTeam.getName()).isEqualTo("Team Name");
     assertThat(fullTeam.getDescription()).isEqualTo("Team Description");

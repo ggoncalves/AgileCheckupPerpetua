@@ -1,5 +1,12 @@
 package com.agilecheckup.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.QuestionType;
@@ -12,13 +19,8 @@ import com.agilecheckup.persistency.entity.score.strategy.ScoreCalculationStrate
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.InvalidLocalDateTimeException;
-import lombok.NonNull;
 
-import javax.inject.Inject;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import lombok.NonNull;
 
 public class AnswerService extends AbstractCrudService<Answer, AnswerRepository> {
 
@@ -38,7 +40,7 @@ public class AnswerService extends AbstractCrudService<Answer, AnswerRepository>
   public Optional<Answer> create(@NonNull String employeeAssessmentId, @NonNull String questionId, LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId, String notes) {
     // Check for existing answer to prevent duplicates
     Optional<Answer> existingAnswer = answerRepository.findByEmployeeAssessmentIdAndQuestionId(
-        employeeAssessmentId, questionId, tenantId);
+                                                                                               employeeAssessmentId, questionId, tenantId);
 
     if (existingAnswer.isPresent()) {
       // Update existing answer instead of creating duplicate
@@ -119,7 +121,20 @@ public class AnswerService extends AbstractCrudService<Answer, AnswerRepository>
     answerStrategy.assignValue(value);
     AbstractScoreCalculator scoreCalculator = ScoreCalculationStrategyFactory.createStrategy(question, value);
     EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
-    return Answer.builder().employeeAssessmentId(employeeAssessment.getId()).pillarId(question.getPillarId()).categoryId(question.getCategoryId()).questionId(question.getId()).questionType(question.getQuestionType()).question(question).pendingReview(QuestionType.OPEN_ANSWER.equals(question.getQuestionType())).answeredAt(answeredAt).value(answerStrategy.valueToString()).score(scoreCalculator.getCalculatedScore()).tenantId(tenantId).notes(notes).build();
+    return Answer.builder()
+                 .employeeAssessmentId(employeeAssessment.getId())
+                 .pillarId(question.getPillarId())
+                 .categoryId(question.getCategoryId())
+                 .questionId(question.getId())
+                 .questionType(question.getQuestionType())
+                 .question(question)
+                 .pendingReview(QuestionType.OPEN_ANSWER.equals(question.getQuestionType()))
+                 .answeredAt(answeredAt)
+                 .value(answerStrategy.valueToString())
+                 .score(scoreCalculator.getCalculatedScore())
+                 .tenantId(tenantId)
+                 .notes(notes)
+                 .build();
   }
 
   private void validateAnsweredAt(LocalDateTime answeredAt) {

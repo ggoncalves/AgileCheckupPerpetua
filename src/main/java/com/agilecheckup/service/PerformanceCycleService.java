@@ -44,7 +44,20 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
       // Business rule: isTimeSensitive is true only if endDate is present
       Boolean calculatedIsTimeSensitive = (endDate != null);
 
-      PerformanceCycle updatedCycle = PerformanceCycle.builder().id(performanceCycle.getId()).createdDate(performanceCycle.getCreatedDate()).lastUpdatedDate(performanceCycle.getLastUpdatedDate()).tenantId(tenantId).name(name).description(description).companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId()).isActive(isActive).isTimeSensitive(calculatedIsTimeSensitive).startDate(startDate).endDate(endDate).build();
+      PerformanceCycle updatedCycle = PerformanceCycle.builder()
+                                                      .id(performanceCycle.getId())
+                                                      .createdDate(performanceCycle.getCreatedDate())
+                                                      .lastUpdatedDate(performanceCycle.getLastUpdatedDate())
+                                                      .tenantId(tenantId)
+                                                      .name(name)
+                                                      .description(description)
+                                                      .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company"))
+                                                                        .getId())
+                                                      .isActive(isActive)
+                                                      .isTimeSensitive(calculatedIsTimeSensitive)
+                                                      .startDate(startDate)
+                                                      .endDate(endDate)
+                                                      .build();
       return super.update(updatedCycle);
     }
     else {
@@ -54,7 +67,17 @@ public class PerformanceCycleService extends AbstractCrudService<PerformanceCycl
 
   private PerformanceCycle createPerformanceCycle(String tenantId, String name, String description, String companyId, Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
     Optional<Company> company = companyService.findById(companyId);
-    return PerformanceCycle.builder().tenantId(tenantId).name(name).description(description).companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company")).getId()).isActive(isActive).isTimeSensitive(isTimeSensitive).startDate(startDate).endDate(endDate).build();
+    return PerformanceCycle.builder()
+                           .tenantId(tenantId)
+                           .name(name)
+                           .description(description)
+                           .companyId(company.orElseThrow(() -> new InvalidIdReferenceException(companyId, "PerformanceCycle", "Company"))
+                                             .getId())
+                           .isActive(isActive)
+                           .isTimeSensitive(isTimeSensitive)
+                           .startDate(startDate)
+                           .endDate(endDate)
+                           .build();
   }
 
   public List<PerformanceCycle> findAllByTenantId(String tenantId) {

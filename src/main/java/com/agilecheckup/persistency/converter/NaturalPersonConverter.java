@@ -109,7 +109,11 @@ public class NaturalPersonConverter implements AttributeConverter<NaturalPerson>
 
   private String escapeJson(String value) {
     if (value == null) return "";
-    return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+    return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
   }
 
   private String extractJsonValue(String json, String key) {

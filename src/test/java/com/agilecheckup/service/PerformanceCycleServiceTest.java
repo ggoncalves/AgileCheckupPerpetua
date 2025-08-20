@@ -118,7 +118,10 @@ class PerformanceCycleServiceTest {
     doReturn(Optional.empty()).when(companyService).findById(companyId);
 
     // When/Then
-    assertThatThrownBy(() -> performanceCycleService.create(tenantId, name, description, companyId, isActive, isTimeSensitive, startDate, endDate)).isInstanceOf(InvalidIdReferenceException.class).hasMessageContaining(companyId).hasMessageContaining("PerformanceCycle").hasMessageContaining("Company");
+    assertThatThrownBy(() -> performanceCycleService.create(tenantId, name, description, companyId, isActive, isTimeSensitive, startDate, endDate)).isInstanceOf(InvalidIdReferenceException.class)
+                                                                                                                                                   .hasMessageContaining(companyId)
+                                                                                                                                                   .hasMessageContaining("PerformanceCycle")
+                                                                                                                                                   .hasMessageContaining("Company");
 
     verify(companyService).findById(companyId);
   }
@@ -178,7 +181,7 @@ class PerformanceCycleServiceTest {
     // Given
     String tenantId = "tenant-123";
     List<PerformanceCycle> expectedCycles = Arrays.asList(
-        createMockPerformanceCycle(tenantId, "Q1 2024", "First quarter", "company-123", true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle(tenantId, "Q2 2024", "Second quarter", "company-123", true, true, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
+                                                          createMockPerformanceCycle(tenantId, "Q1 2024", "First quarter", "company-123", true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle(tenantId, "Q2 2024", "Second quarter", "company-123", true, true, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
     );
 
     when(performanceCycleRepository.findAllByTenantId(tenantId)).thenReturn(expectedCycles);
@@ -197,7 +200,7 @@ class PerformanceCycleServiceTest {
     // Given
     String companyId = "company-123";
     List<PerformanceCycle> expectedCycles = Arrays.asList(
-        createMockPerformanceCycle("tenant-123", "Q1 2024", "First quarter", companyId, true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle("tenant-456", "Q1 2024", "First quarter", companyId, true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31))
+                                                          createMockPerformanceCycle("tenant-123", "Q1 2024", "First quarter", companyId, true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle("tenant-456", "Q1 2024", "First quarter", companyId, true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31))
     );
 
     when(performanceCycleRepository.findByCompanyId(companyId)).thenReturn(expectedCycles);
@@ -216,7 +219,7 @@ class PerformanceCycleServiceTest {
     // Given
     String tenantId = "tenant-123";
     List<PerformanceCycle> expectedCycles = Arrays.asList(
-        createMockPerformanceCycle(tenantId, "Active Q1", "Active first quarter", "company-123", true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle(tenantId, "Active Q2", "Active second quarter", "company-123", true, true, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
+                                                          createMockPerformanceCycle(tenantId, "Active Q1", "Active first quarter", "company-123", true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)), createMockPerformanceCycle(tenantId, "Active Q2", "Active second quarter", "company-123", true, true, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 6, 30))
     );
 
     when(performanceCycleRepository.findActiveByTenantId(tenantId)).thenReturn(expectedCycles);
@@ -261,10 +264,26 @@ class PerformanceCycleServiceTest {
 
   // Helper methods
   private Company createMockCompany(String companyId) {
-    return Company.builder().id(companyId).name("Test Company").email("test@company.com").description("Test Company Description").tenantId("tenant-123").build();
+    return Company.builder()
+                  .id(companyId)
+                  .name("Test Company")
+                  .email("test@company.com")
+                  .description("Test Company Description")
+                  .tenantId("tenant-123")
+                  .build();
   }
 
   private PerformanceCycle createMockPerformanceCycle(String tenantId, String name, String description, String companyId, Boolean isActive, Boolean isTimeSensitive, LocalDate startDate, LocalDate endDate) {
-    return PerformanceCycle.builder().id("cycle-" + System.nanoTime()).tenantId(tenantId).name(name).description(description).companyId(companyId).isActive(isActive).isTimeSensitive(isTimeSensitive).startDate(startDate).endDate(endDate).build();
+    return PerformanceCycle.builder()
+                           .id("cycle-" + System.nanoTime())
+                           .tenantId(tenantId)
+                           .name(name)
+                           .description(description)
+                           .companyId(companyId)
+                           .isActive(isActive)
+                           .isTimeSensitive(isTimeSensitive)
+                           .startDate(startDate)
+                           .endDate(endDate)
+                           .build();
   }
 }

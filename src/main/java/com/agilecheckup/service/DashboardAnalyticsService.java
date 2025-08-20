@@ -1,5 +1,23 @@
 package com.agilecheckup.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.Company;
@@ -17,23 +35,8 @@ import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service for calculating and managing dashboard analytics.
@@ -45,7 +48,7 @@ public class DashboardAnalyticsService {
   private static final int MIN_WORD_FREQUENCY = 2;
   private static final int MAX_WORD_CLOUD_WORDS = 50;
   private static final Set<String> STOP_WORDS = Set.of(
-      "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "from", "as", "is", "was", "are", "were", "been", "be", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "must", "can", "this", "that", "these", "those", "i", "you", "he", "she", "it", "we", "they"
+                                                       "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "from", "as", "is", "was", "are", "were", "been", "be", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "must", "can", "this", "that", "these", "those", "i", "you", "he", "she", "it", "we", "they"
   );
 
   private final DashboardAnalyticsRepository dashboardAnalyticsRepository;
@@ -59,7 +62,7 @@ public class DashboardAnalyticsService {
 
   @Inject
   public DashboardAnalyticsService(
-      DashboardAnalyticsRepository dashboardAnalyticsRepository, AssessmentMatrixService assessmentMatrixService, EmployeeAssessmentService employeeAssessmentService, CompanyService companyService, PerformanceCycleService performanceCycleService, TeamRepository teamRepository, AnswerRepository answerRepository) {
+                                   DashboardAnalyticsRepository dashboardAnalyticsRepository, AssessmentMatrixService assessmentMatrixService, EmployeeAssessmentService employeeAssessmentService, CompanyService companyService, PerformanceCycleService performanceCycleService, TeamRepository teamRepository, AnswerRepository answerRepository) {
     this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
     this.assessmentMatrixService = assessmentMatrixService;
     this.employeeAssessmentService = employeeAssessmentService;
@@ -89,7 +92,7 @@ public class DashboardAnalyticsService {
 
     try {
       Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findAssessmentMatrixOverview(
-          companyId, performanceCycleId, assessmentMatrixId);
+                                                                                                      companyId, performanceCycleId, assessmentMatrixId);
 
       return result;
     }
@@ -117,7 +120,7 @@ public class DashboardAnalyticsService {
 
     try {
       Optional<DashboardAnalytics> result = dashboardAnalyticsRepository.findTeamAnalytics(
-          companyId, performanceCycleId, assessmentMatrixId, teamId);
+                                                                                           companyId, performanceCycleId, assessmentMatrixId, teamId);
 
       return result;
     }
@@ -194,27 +197,27 @@ public class DashboardAnalyticsService {
       List<EmployeeAssessment> teamAssessments = entry.getValue();
 
       DashboardAnalytics teamAnalytics = calculateAnalytics(
-          companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.TEAM, teamId, teamAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
+                                                            companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.TEAM, teamId, teamAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
 
       analyticsToSave.add(teamAnalytics);
     }
 
     DashboardAnalytics overviewAnalytics = calculateOverviewAnalytics(
-        companyId, performanceCycleId, assessmentMatrixId, allAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
+                                                                      companyId, performanceCycleId, assessmentMatrixId, allAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
     analyticsToSave.add(overviewAnalytics);
 
     analyticsToSave.forEach(dashboardAnalyticsRepository::save);
   }
 
   private DashboardAnalytics calculateOverviewAnalytics(
-      String companyId, String performanceCycleId, String assessmentMatrixId, List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
+                                                        String companyId, String performanceCycleId, String assessmentMatrixId, List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
 
     return calculateAnalytics(
-        companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.ASSESSMENT_MATRIX, null, allAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
+                              companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.ASSESSMENT_MATRIX, null, allAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
   }
 
   private DashboardAnalytics calculateAnalytics(
-      String companyId, String performanceCycleId, String assessmentMatrixId, AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
+                                                String companyId, String performanceCycleId, String assessmentMatrixId, AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
 
     String teamName = null;
     if (scope == AnalyticsScope.TEAM && teamId != null) {
@@ -274,7 +277,7 @@ public class DashboardAnalyticsService {
   }
 
   private Map<String, Object> calculatePillarAnalytics(
-      List<EmployeeAssessment> completedAssessments, AssessmentMatrix matrix) {
+                                                       List<EmployeeAssessment> completedAssessments, AssessmentMatrix matrix) {
 
     Map<String, Object> pillarAnalytics = new HashMap<>();
     PotentialScore potentialScore = matrix.getPotentialScore();
@@ -332,7 +335,7 @@ public class DashboardAnalyticsService {
   }
 
   private Map<String, Object> calculateCategoryAnalytics(
-      String pillarId, List<PillarScore> pillarScores, PillarScore potentialPillarScore) {
+                                                         String pillarId, List<PillarScore> pillarScores, PillarScore potentialPillarScore) {
 
     log.info("=== calculateCategoryAnalytics DEBUG START ===");
     log.info("Method called for pillarId: {}", pillarId);
@@ -425,7 +428,7 @@ public class DashboardAnalyticsService {
     List<String> allNotes = new ArrayList<>();
     for (EmployeeAssessment assessment : assessments) {
       List<Answer> answers = answerRepository.findByEmployeeAssessmentId(
-          assessment.getId(), assessment.getTenantId());
+                                                                         assessment.getId(), assessment.getTenantId());
 
       answers.stream().map(Answer::getNotes).filter(StringUtils::isNotBlank).forEach(allNotes::add);
     }
@@ -476,7 +479,7 @@ public class DashboardAnalyticsService {
                       .stream()
                       .filter(entry -> entry.getValue() >= MIN_WORD_FREQUENCY)
                       .collect(Collectors.toMap(
-                          Map.Entry::getKey, Map.Entry::getValue
+                                                Map.Entry::getKey, Map.Entry::getValue
                       ));
   }
 

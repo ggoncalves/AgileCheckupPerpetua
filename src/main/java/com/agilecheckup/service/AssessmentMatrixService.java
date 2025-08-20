@@ -1,5 +1,18 @@
 package com.agilecheckup.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
@@ -20,18 +33,8 @@ import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
 import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.google.common.annotations.VisibleForTesting;
-import dagger.Lazy;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.inject.Inject;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import dagger.Lazy;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AssessmentMatrixRepository> {
 
@@ -126,7 +129,12 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   }
 
   public AssessmentConfiguration createDefaultConfiguration() {
-    return AssessmentConfiguration.builder().allowQuestionReview(true).requireAllQuestions(true).autoSave(true).navigationMode(QuestionNavigationType.RANDOM).build();
+    return AssessmentConfiguration.builder()
+                                  .allowQuestionReview(true)
+                                  .requireAllQuestions(true)
+                                  .autoSave(true)
+                                  .navigationMode(QuestionNavigationType.RANDOM)
+                                  .build();
   }
 
   public AssessmentConfiguration getEffectiveConfiguration(AssessmentMatrix assessmentMatrix) {
@@ -150,7 +158,11 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     // 2. Calculate the maximum possible total score from the retrieved questions
     double totalPoints = questions.stream().mapToDouble(question -> {
       // Retrieve or create the PillarScore
-      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder().pillarId(id).pillarName(question.getPillarName()).categoryIdToCategoryScoreMap(new HashMap<>()).build()
+      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder()
+                                                                                                                  .pillarId(id)
+                                                                                                                  .pillarName(question.getPillarName())
+                                                                                                                  .categoryIdToCategoryScoreMap(new HashMap<>())
+                                                                                                                  .build()
       );
 
       // Run the logic to update PillarScore and if necessary CategoryScore based on the question
@@ -206,7 +218,15 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     // Calculate completion statistics
     int completedCount = calculateCompletedCount(employeeAssessments);
 
-    AssessmentDashboardData result = AssessmentDashboardData.builder().assessmentMatrixId(matrixId).matrixName(matrix.getName()).potentialScore(matrix.getPotentialScore()).teamSummaries(teamSummaries).employeeSummaries(employeeSummaries).totalEmployees(employeeAssessments.size()).completedAssessments(completedCount).build();
+    AssessmentDashboardData result = AssessmentDashboardData.builder()
+                                                            .assessmentMatrixId(matrixId)
+                                                            .matrixName(matrix.getName())
+                                                            .potentialScore(matrix.getPotentialScore())
+                                                            .teamSummaries(teamSummaries)
+                                                            .employeeSummaries(employeeSummaries)
+                                                            .totalEmployees(employeeAssessments.size())
+                                                            .completedAssessments(completedCount)
+                                                            .build();
 
     return Optional.of(result);
   }
@@ -217,13 +237,33 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private List<TeamAssessmentSummary> createTeamSummaries(List<EmployeeAssessment> employeeAssessments) {
     // Group assessments by team
-    Map<String, List<EmployeeAssessment>> assessmentsByTeam = employeeAssessments.stream().filter(assessment -> assessment.getTeamId() != null).collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
+    Map<String, List<EmployeeAssessment>> assessmentsByTeam = employeeAssessments.stream()
+                                                                                 .filter(assessment -> assessment.getTeamId() != null)
+                                                                                 .collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
 
-    return assessmentsByTeam.entrySet().stream().map(entry -> createTeamSummary(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+    return assessmentsByTeam.entrySet()
+                            .stream()
+                            .map(entry -> createTeamSummary(entry.getKey(), entry.getValue()))
+                            .collect(Collectors.toList());
   }
 
   private EmployeeAssessmentSummary convertToEmployeeSummary(EmployeeAssessment assessment) {
-    return EmployeeAssessmentSummary.builder().employeeAssessmentId(assessment.getId()).employeeId(assessment.getEmployee() != null ? assessment.getEmployee().getId() : null).employeeName(assessment.getEmployee() != null ? assessment.getEmployee().getName() : "Unknown").employeeEmail(assessment.getEmployee() != null ? assessment.getEmployee().getEmail() : "Unknown").teamId(assessment.getTeamId()).teamName(getTeamName(assessment.getTeamId())).assessmentStatus(assessment.getAssessmentStatus()).currentScore(assessment.getEmployeeAssessmentScore() != null ? assessment.getEmployeeAssessmentScore().getScore() : null).answeredQuestionCount(assessment.getAnsweredQuestionCount()).lastActivityDate(convertToLocalDateTime(assessment.getLastActivityDate())).build();
+    return EmployeeAssessmentSummary.builder()
+                                    .employeeAssessmentId(assessment.getId())
+                                    .employeeId(assessment.getEmployee() != null ? assessment.getEmployee()
+                                                                                             .getId() : null)
+                                    .employeeName(assessment.getEmployee() != null ? assessment.getEmployee()
+                                                                                               .getName() : "Unknown")
+                                    .employeeEmail(assessment.getEmployee() != null ? assessment.getEmployee()
+                                                                                                .getEmail() : "Unknown")
+                                    .teamId(assessment.getTeamId())
+                                    .teamName(getTeamName(assessment.getTeamId()))
+                                    .assessmentStatus(assessment.getAssessmentStatus())
+                                    .currentScore(assessment.getEmployeeAssessmentScore() != null ? assessment.getEmployeeAssessmentScore()
+                                                                                                              .getScore() : null)
+                                    .answeredQuestionCount(assessment.getAnsweredQuestionCount())
+                                    .lastActivityDate(convertToLocalDateTime(assessment.getLastActivityDate()))
+                                    .build();
   }
 
   private TeamAssessmentSummary createTeamSummary(String teamId, List<EmployeeAssessment> teamAssessments) {
@@ -232,9 +272,21 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
     double completionPercentage = totalEmployees > 0 ? (double) completedAssessments / totalEmployees * 100.0 : 0.0;
 
-    Double averageScore = teamAssessments.stream().filter(assessment -> assessment.getEmployeeAssessmentScore() != null && assessment.getEmployeeAssessmentScore().getScore() != null).mapToDouble(assessment -> assessment.getEmployeeAssessmentScore().getScore()).average().orElse(0.0);
+    Double averageScore = teamAssessments.stream()
+                                         .filter(assessment -> assessment.getEmployeeAssessmentScore() != null && assessment.getEmployeeAssessmentScore()
+                                                                                                                            .getScore() != null)
+                                         .mapToDouble(assessment -> assessment.getEmployeeAssessmentScore().getScore())
+                                         .average()
+                                         .orElse(0.0);
 
-    return TeamAssessmentSummary.builder().teamId(teamId).teamName(getTeamName(teamId)).totalEmployees(totalEmployees).completedAssessments(completedAssessments).completionPercentage(completionPercentage).averageScore(averageScore > 0 ? averageScore : null).build();
+    return TeamAssessmentSummary.builder()
+                                .teamId(teamId)
+                                .teamName(getTeamName(teamId))
+                                .totalEmployees(totalEmployees)
+                                .completedAssessments(completedAssessments)
+                                .completionPercentage(completionPercentage)
+                                .averageScore(averageScore > 0 ? averageScore : null)
+                                .build();
   }
 
   private String getTeamName(String teamId) {
@@ -256,7 +308,15 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   private AssessmentMatrix createAssessmentMatrix(String name, String description, String tenantId, String performanceCycleId, Map<String, Pillar> pillarMap, AssessmentConfiguration configuration) {
     validatePerformanceCycle(performanceCycleId, tenantId);
 
-    return AssessmentMatrix.builder().name(name).description(description).tenantId(tenantId).performanceCycleId(performanceCycleId).pillarMap(pillarMap).questionCount(0).configuration(configuration).build();
+    return AssessmentMatrix.builder()
+                           .name(name)
+                           .description(description)
+                           .tenantId(tenantId)
+                           .performanceCycleId(performanceCycleId)
+                           .pillarMap(pillarMap)
+                           .questionCount(0)
+                           .configuration(configuration)
+                           .build();
   }
 
   private void validatePerformanceCycle(String performanceCycleId, String tenantId) {
@@ -277,7 +337,11 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     // Calculate the maximum possible total score from the retrieved questions
     double totalPoints = questions.stream().mapToDouble(question -> {
       // Retrieve or create the PillarScore
-      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder().pillarId(id).pillarName(question.getPillarName()).categoryIdToCategoryScoreMap(new HashMap<>()).build()
+      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder()
+                                                                                                                  .pillarId(id)
+                                                                                                                  .pillarName(question.getPillarName())
+                                                                                                                  .categoryIdToCategoryScoreMap(new HashMap<>())
+                                                                                                                  .build()
       );
 
       // Run the logic to update PillarScore and if necessary CategoryScore based on the question
@@ -292,18 +356,30 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
   private void updatePillarScoreWithQuestion(PillarScore pillarScore, Question question) {
     // Assuming each CategoryScore can be identified by the category ID in the question
     String categoryId = question.getCategoryId();
-    CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap().computeIfAbsent(categoryId, id -> CategoryScore.builder().categoryId(id).categoryName(question.getCategoryName()).questionScores(new ArrayList<>()).build()
-    );
+    CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap()
+                                             .computeIfAbsent(categoryId, id -> CategoryScore.builder()
+                                                                                             .categoryId(id)
+                                                                                             .categoryName(question.getCategoryName())
+                                                                                             .questionScores(new ArrayList<>())
+                                                                                             .build()
+                                             );
 
     // Create and add QuestionScore to the questionScores list in CategoryScore
-    QuestionScore questionScore = QuestionScore.builder().questionId(question.getId()).score(computeQuestionMaxScore(question)).build();
+    QuestionScore questionScore = QuestionScore.builder()
+                                               .questionId(question.getId())
+                                               .score(computeQuestionMaxScore(question))
+                                               .build();
     categoryScore.getQuestionScores().add(questionScore);
 
     // Update the maxCategoryScore in CategoryScore
     categoryScore.setScore(categoryScore.getQuestionScores().stream().mapToDouble(QuestionScore::getScore).sum());
 
     // Update the maxPillarScore in PillarScore
-    pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap().values().stream().mapToDouble(CategoryScore::getScore).sum());
+    pillarScore.setScore(pillarScore.getCategoryIdToCategoryScoreMap()
+                                    .values()
+                                    .stream()
+                                    .mapToDouble(CategoryScore::getScore)
+                                    .sum());
   }
 
   @VisibleForTesting
@@ -313,7 +389,13 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
         return question.getOptionGroup().getOptionMap().values().stream().mapToDouble(QuestionOption::getPoints).sum();
       }
       else {
-        return question.getOptionGroup().getOptionMap().values().stream().mapToDouble(QuestionOption::getPoints).max().orElse(0);
+        return question.getOptionGroup()
+                       .getOptionMap()
+                       .values()
+                       .stream()
+                       .mapToDouble(QuestionOption::getPoints)
+                       .max()
+                       .orElse(0);
       }
     }
     else {

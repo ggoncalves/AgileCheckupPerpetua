@@ -89,7 +89,7 @@ class AssessmentMatrixRepositoryTest {
     // Given
     String tenantId = "tenant-123";
     List<AssessmentMatrix> expectedMatrices = Arrays.asList(
-        createTestAssessmentMatrix("matrix-1", tenantId), createTestAssessmentMatrix("matrix-2", tenantId)
+                                                            createTestAssessmentMatrix("matrix-1", tenantId), createTestAssessmentMatrix("matrix-2", tenantId)
     );
 
     when(table.index("tenantId-index")).thenReturn(tenantIndex);
@@ -134,6 +134,13 @@ class AssessmentMatrixRepositoryTest {
   }
 
   private AssessmentMatrix createTestAssessmentMatrix(String id, String tenantId) {
-    return AssessmentMatrix.builder().id(id).name("Test Matrix " + id).description("Test Description for " + id).tenantId(tenantId).performanceCycleId("cycle-123").questionCount(5).build();
+    return AssessmentMatrix.builder()
+                           .id(id)
+                           .name("Test Matrix " + id)
+                           .description("Test Description for " + id)
+                           .tenantId(tenantId)
+                           .performanceCycleId("cycle-123")
+                           .questionCount(5)
+                           .build();
   }
 }

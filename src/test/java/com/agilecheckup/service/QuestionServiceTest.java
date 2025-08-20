@@ -80,7 +80,15 @@ class QuestionServiceTest {
     boolean isMultipleChoice = true;
     boolean showFlushed = false;
     List<QuestionOption> options = Arrays.asList(
-        QuestionOption.builder().id(1).text("Option 1").points(10.0).build(), QuestionOption.builder().id(2).text("Option 2").points(20.0).build()
+                                                 QuestionOption.builder()
+                                                               .id(1)
+                                                               .text("Option 1")
+                                                               .points(10.0)
+                                                               .build(), QuestionOption.builder()
+                                                                                       .id(2)
+                                                                                       .text("Option 2")
+                                                                                       .points(20.0)
+                                                                                       .build()
     );
     String assessmentMatrixId = "matrix-123";
     String pillarId = "pillar-456";
@@ -140,7 +148,19 @@ class QuestionServiceTest {
     boolean isMultipleChoice = false;
     boolean showFlushed = true;
     List<QuestionOption> options = Arrays.asList(
-        QuestionOption.builder().id(1).text("New Option 1").points(15.0).build(), QuestionOption.builder().id(2).text("New Option 2").points(25.0).build(), QuestionOption.builder().id(3).text("New Option 3").points(35.0).build()
+                                                 QuestionOption.builder()
+                                                               .id(1)
+                                                               .text("New Option 1")
+                                                               .points(15.0)
+                                                               .build(), QuestionOption.builder()
+                                                                                       .id(2)
+                                                                                       .text("New Option 2")
+                                                                                       .points(25.0)
+                                                                                       .build(), QuestionOption.builder()
+                                                                                                               .id(3)
+                                                                                                               .text("New Option 3")
+                                                                                                               .points(35.0)
+                                                                                                               .build()
     );
     String assessmentMatrixId = "matrix-123";
     String pillarId = "pillar-456";
@@ -169,7 +189,7 @@ class QuestionServiceTest {
     String matrixId = "matrix-123";
     String tenantId = "tenant-123";
     List<Question> expectedQuestions = Arrays.asList(
-        createMockQuestion("question-1", "Question 1", tenantId, matrixId), createMockQuestion("question-2", "Question 2", tenantId, matrixId)
+                                                     createMockQuestion("question-1", "Question 1", tenantId, matrixId), createMockQuestion("question-2", "Question 2", tenantId, matrixId)
     );
 
     doReturn(expectedQuestions).when(questionRepository).findByAssessmentMatrixId(matrixId, tenantId);
@@ -220,7 +240,8 @@ class QuestionServiceTest {
 
     doReturn(Optional.empty()).when(assessmentMatrixService).findById(assessmentMatrixId);
 
-    assertThatThrownBy(() -> service.create("Question", QuestionType.YES_NO, "tenant-123", 10.0, assessmentMatrixId, "pillar-1", "category-1", "desc")).isInstanceOf(InvalidIdReferenceException.class).hasMessageContaining("AssessmentMatrix");
+    assertThatThrownBy(() -> service.create("Question", QuestionType.YES_NO, "tenant-123", 10.0, assessmentMatrixId, "pillar-1", "category-1", "desc")).isInstanceOf(InvalidIdReferenceException.class)
+                                                                                                                                                       .hasMessageContaining("AssessmentMatrix");
   }
 
   @Test
@@ -231,7 +252,8 @@ class QuestionServiceTest {
 
     doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
 
-    assertThatThrownBy(() -> service.create("Question", QuestionType.YES_NO, "tenant-123", 10.0, assessmentMatrixId, invalidPillarId, "category-1", "desc")).isInstanceOf(InvalidIdReferenceException.class).hasMessageContaining("Pillar");
+    assertThatThrownBy(() -> service.create("Question", QuestionType.YES_NO, "tenant-123", 10.0, assessmentMatrixId, invalidPillarId, "category-1", "desc")).isInstanceOf(InvalidIdReferenceException.class)
+                                                                                                                                                            .hasMessageContaining("Pillar");
   }
 
   @Test
@@ -244,7 +266,11 @@ class QuestionServiceTest {
   @Test
   void testValidateQuestionOptions_TooFewOptions() {
     List<QuestionOption> tooFewOptions = Arrays.asList(
-        QuestionOption.builder().id(1).text("Only option").points(10.0).build()
+                                                       QuestionOption.builder()
+                                                                     .id(1)
+                                                                     .text("Only option")
+                                                                     .points(10.0)
+                                                                     .build()
     );
 
     assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, tooFewOptions, "matrix-123", "pillar-1", "category-1", "desc")).isInstanceOf(InvalidCustomOptionListException.class);
@@ -253,7 +279,15 @@ class QuestionServiceTest {
   @Test
   void testValidateQuestionOptions_EmptyOptionText() {
     List<QuestionOption> optionsWithEmptyText = Arrays.asList(
-        QuestionOption.builder().id(1).text("Valid option").points(10.0).build(), QuestionOption.builder().id(2).text("").points(20.0).build()
+                                                              QuestionOption.builder()
+                                                                            .id(1)
+                                                                            .text("Valid option")
+                                                                            .points(10.0)
+                                                                            .build(), QuestionOption.builder()
+                                                                                                    .id(2)
+                                                                                                    .text("")
+                                                                                                    .points(20.0)
+                                                                                                    .build()
     );
 
     assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, optionsWithEmptyText, "matrix-123", "pillar-1", "category-1", "desc")).isInstanceOf(InvalidCustomOptionListException.class);
@@ -262,7 +296,15 @@ class QuestionServiceTest {
   @Test
   void testValidateQuestionOptions_InvalidOptionIds() {
     List<QuestionOption> invalidIdOptions = Arrays.asList(
-        QuestionOption.builder().id(1).text("Option 1").points(10.0).build(), QuestionOption.builder().id(3).text("Option 3").points(30.0).build() // Missing id 2
+                                                          QuestionOption.builder()
+                                                                        .id(1)
+                                                                        .text("Option 1")
+                                                                        .points(10.0)
+                                                                        .build(), QuestionOption.builder()
+                                                                                                .id(3)
+                                                                                                .text("Option 3")
+                                                                                                .points(30.0)
+                                                                                                .build() // Missing id 2
     );
 
     assertThatThrownBy(() -> service.createCustomQuestion("Question", QuestionType.CUSTOMIZED, "tenant-123", true, false, invalidIdOptions, "matrix-123", "pillar-1", "category-1", "desc")).isInstanceOf(InvalidCustomOptionListException.class);
@@ -271,7 +313,19 @@ class QuestionServiceTest {
   @Test
   void testToOptionMap() {
     List<QuestionOption> options = Arrays.asList(
-        QuestionOption.builder().id(1).text("Option 1").points(10.0).build(), QuestionOption.builder().id(2).text("Option 2").points(20.0).build(), QuestionOption.builder().id(3).text("Option 3").points(30.0).build()
+                                                 QuestionOption.builder()
+                                                               .id(1)
+                                                               .text("Option 1")
+                                                               .points(10.0)
+                                                               .build(), QuestionOption.builder()
+                                                                                       .id(2)
+                                                                                       .text("Option 2")
+                                                                                       .points(20.0)
+                                                                                       .build(), QuestionOption.builder()
+                                                                                                               .id(3)
+                                                                                                               .text("Option 3")
+                                                                                                               .points(30.0)
+                                                                                                               .build()
     );
 
     Map<Integer, QuestionOption> result = service.toOptionMap(options);
@@ -284,20 +338,54 @@ class QuestionServiceTest {
 
   private AssessmentMatrix createMockAssessmentMatrix(String id, String tenantId) {
     Map<String, Category> categoryMap = new HashMap<>();
-    categoryMap.put("category-789", Category.builder().id("category-789").name("Test Category").description("Test Category Description").build());
+    categoryMap.put("category-789", Category.builder()
+                                            .id("category-789")
+                                            .name("Test Category")
+                                            .description("Test Category Description")
+                                            .build());
 
     Map<String, Pillar> pillarMap = new HashMap<>();
-    pillarMap.put("pillar-456", Pillar.builder().id("pillar-456").name("Test Pillar").description("Test Pillar Description").categoryMap(categoryMap).build());
+    pillarMap.put("pillar-456", Pillar.builder()
+                                      .id("pillar-456")
+                                      .name("Test Pillar")
+                                      .description("Test Pillar Description")
+                                      .categoryMap(categoryMap)
+                                      .build());
 
-    return AssessmentMatrix.builder().id(id).name("Test Matrix").description("Test Description").tenantId(tenantId).performanceCycleId("cycle-123").pillarMap(pillarMap).build();
+    return AssessmentMatrix.builder()
+                           .id(id)
+                           .name("Test Matrix")
+                           .description("Test Description")
+                           .tenantId(tenantId)
+                           .performanceCycleId("cycle-123")
+                           .pillarMap(pillarMap)
+                           .build();
   }
 
   private AssessmentMatrix createMockAssessmentMatrixWithoutPillar(String id, String tenantId) {
-    return AssessmentMatrix.builder().id(id).name("Test Matrix").description("Test Description").tenantId(tenantId).performanceCycleId("cycle-123").pillarMap(new HashMap<>()).build();
+    return AssessmentMatrix.builder()
+                           .id(id)
+                           .name("Test Matrix")
+                           .description("Test Description")
+                           .tenantId(tenantId)
+                           .performanceCycleId("cycle-123")
+                           .pillarMap(new HashMap<>())
+                           .build();
   }
 
   private Question createMockQuestion(String id, String questionText, String tenantId, String assessmentMatrixId) {
-    return Question.builder().id(id).question(questionText).questionType(QuestionType.YES_NO).tenantId(tenantId).assessmentMatrixId(assessmentMatrixId).pillarId("pillar-456").pillarName("Test Pillar").categoryId("category-789").categoryName("Test Category").points(10.0).build();
+    return Question.builder()
+                   .id(id)
+                   .question(questionText)
+                   .questionType(QuestionType.YES_NO)
+                   .tenantId(tenantId)
+                   .assessmentMatrixId(assessmentMatrixId)
+                   .pillarId("pillar-456")
+                   .pillarName("Test Pillar")
+                   .categoryId("category-789")
+                   .categoryName("Test Category")
+                   .points(10.0)
+                   .build();
   }
 
   private Question createMockCustomQuestion(String id, String questionText, String tenantId, String assessmentMatrixId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
@@ -306,8 +394,23 @@ class QuestionServiceTest {
       optionMap.put(option.getId(), option);
     }
 
-    OptionGroup optionGroup = OptionGroup.builder().isMultipleChoice(isMultipleChoice).showFlushed(showFlushed).optionMap(optionMap).build();
+    OptionGroup optionGroup = OptionGroup.builder()
+                                         .isMultipleChoice(isMultipleChoice)
+                                         .showFlushed(showFlushed)
+                                         .optionMap(optionMap)
+                                         .build();
 
-    return Question.builder().id(id).question(questionText).questionType(QuestionType.CUSTOMIZED).tenantId(tenantId).assessmentMatrixId(assessmentMatrixId).pillarId("pillar-456").pillarName("Test Pillar").categoryId("category-789").categoryName("Test Category").optionGroup(optionGroup).build();
+    return Question.builder()
+                   .id(id)
+                   .question(questionText)
+                   .questionType(QuestionType.CUSTOMIZED)
+                   .tenantId(tenantId)
+                   .assessmentMatrixId(assessmentMatrixId)
+                   .pillarId("pillar-456")
+                   .pillarName("Test Pillar")
+                   .categoryId("category-789")
+                   .categoryName("Test Category")
+                   .optionGroup(optionGroup)
+                   .build();
   }
 }

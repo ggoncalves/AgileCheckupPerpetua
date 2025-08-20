@@ -61,7 +61,8 @@ public class AssessmentMatrixPillarV2Migration {
 
   public AssessmentMatrixPillarV2Migration() {
     this.dynamoDBClient = AmazonDynamoDBClientBuilder.standard().build();
-    this.objectMapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+    this.objectMapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                          .setDateFormat(new StdDateFormat());
   }
 
   public void migrate() {
@@ -159,7 +160,12 @@ public class AssessmentMatrixPillarV2Migration {
       Map<String, String> expressionAttributeNames = new HashMap<>();
       expressionAttributeNames.put("#pillarMap", "pillarMap");
 
-      UpdateItemRequest updateRequest = new UpdateItemRequest().withTableName(ASSESSMENT_MATRIX_TABLE_NAME).withKey(key).withUpdateExpression("SET #pillarMap = :pillarMapJson").withExpressionAttributeNames(expressionAttributeNames).withExpressionAttributeValues(expressionAttributeValues).withReturnValues(ReturnValue.ALL_NEW);
+      UpdateItemRequest updateRequest = new UpdateItemRequest().withTableName(ASSESSMENT_MATRIX_TABLE_NAME)
+                                                               .withKey(key)
+                                                               .withUpdateExpression("SET #pillarMap = :pillarMapJson")
+                                                               .withExpressionAttributeNames(expressionAttributeNames)
+                                                               .withExpressionAttributeValues(expressionAttributeValues)
+                                                               .withReturnValues(ReturnValue.ALL_NEW);
 
       dynamoDBClient.updateItem(updateRequest);
 
@@ -214,7 +220,8 @@ public class AssessmentMatrixPillarV2Migration {
           Map<String, Object> v2Category = new HashMap<>();
           v2Category.put("id", categoryId);
           v2Category.put("name", categoryData.containsKey("name") ? categoryData.get("name").getS() : "");
-          v2Category.put("description", categoryData.containsKey("description") ? categoryData.get("description").getS() : "");
+          v2Category.put("description", categoryData.containsKey("description") ? categoryData.get("description")
+                                                                                              .getS() : "");
           v2Category.put("createdDate", null);
           v2Category.put("lastUpdatedDate", null);
 

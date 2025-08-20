@@ -126,11 +126,11 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
     // Create test company
     Optional<Company> companyOpt = getCompanyService().create(
-        "12345678000199",  // documentNumber
-        "EmployeeAssessment Test Company",  // name
-        "ea-test@company.com",  // email
-        "Company for EmployeeAssessment  testing",  // description
-        "ea-test-tenant-" + System.currentTimeMillis()  // unique tenantId
+                                                              "12345678000199",  // documentNumber
+                                                              "EmployeeAssessment Test Company",  // name
+                                                              "ea-test@company.com",  // email
+                                                              "Company for EmployeeAssessment  testing",  // description
+                                                              "ea-test-tenant-" + System.currentTimeMillis()  // unique tenantId
     );
 
     if (companyOpt.isPresent()) {
@@ -140,7 +140,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
       // Create test department
       Optional<Department> departmentOpt = getDepartmentService().create(
-          "Test Department", "Department for EmployeeAssessment testing", testTenantId, testCompany.getId()
+                                                                         "Test Department", "Department for EmployeeAssessment testing", testTenantId, testCompany.getId()
       );
 
       if (departmentOpt.isPresent()) {
@@ -149,7 +149,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
         // Create test team
         Optional<Team> teamOpt = getTeamService().create(
-            "Test Team", "Team for EmployeeAssessment testing", testTenantId, testDepartment.getId()  // Use department ID, not company ID
+                                                         "Test Team", "Team for EmployeeAssessment testing", testTenantId, testDepartment.getId()  // Use department ID, not company ID
         );
 
         if (teamOpt.isPresent()) {
@@ -158,10 +158,10 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
           // Create test performance cycle
           Optional<PerformanceCycle> performanceCycleOpt = getPerformanceCycleService().create(
-              testTenantId, "Test Performance Cycle", "Performance cycle for EmployeeAssessment testing", testCompany.getId(), true,  // isActive
-              false,  // isTimeSensitive
-              LocalDate.now(),  // startDate
-              null  // endDate (null means not time sensitive)
+                                                                                               testTenantId, "Test Performance Cycle", "Performance cycle for EmployeeAssessment testing", testCompany.getId(), true,  // isActive
+                                                                                               false,  // isTimeSensitive
+                                                                                               LocalDate.now(),  // startDate
+                                                                                               null  // endDate (null means not time sensitive)
           );
 
           if (performanceCycleOpt.isPresent()) {
@@ -181,7 +181,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
             // Create test assessment matrix with pillarMap
             Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
-                "Test Assessment Matrix", "Assessment matrix for EmployeeAssessment testing", testTenantId, testPerformanceCycle.getId(), testPillarMap  // Use the created pillarMap
+                                                                                       "Test Assessment Matrix", "Assessment matrix for EmployeeAssessment testing", testTenantId, testPerformanceCycle.getId(), testPillarMap  // Use the created pillarMap
             );
 
             if (matrixOpt.isPresent()) {
@@ -228,7 +228,8 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     log.info("Created pillar map with {} pillars", testPillarMap.size());
     for (Map.Entry<String, Pillar> entry : testPillarMap.entrySet()) {
       Pillar pillar = entry.getValue();
-      log.info("✓ Pillar: {} (ID: {}) with {} categories", pillar.getName(), entry.getKey(), pillar.getCategoryMap().size());
+      log.info("✓ Pillar: {} (ID: {}) with {} categories", pillar.getName(), entry.getKey(), pillar.getCategoryMap()
+                                                                                                   .size());
 
       for (Map.Entry<String, Category> catEntry : pillar.getCategoryMap().entrySet()) {
         Category category = catEntry.getValue();
@@ -268,16 +269,16 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
     // Create different types of questions using actual pillar and category IDs
     Optional<Question> question1Opt = getQuestionService().create(
-        "How well do you communicate with your team?", QuestionType.ONE_TO_TEN, testTenantId, 10.0, // points
-        testAssessmentMatrix.getId(), pillarIds[0], categories1[0], null // extraDescription
+                                                                  "How well do you communicate with your team?", QuestionType.ONE_TO_TEN, testTenantId, 10.0, // points
+                                                                  testAssessmentMatrix.getId(), pillarIds[0], categories1[0], null // extraDescription
     );
 
     Optional<Question> question2Opt = getQuestionService().create(
-        "Do you make decisions effectively?", QuestionType.YES_NO, testTenantId, 5.0, testAssessmentMatrix.getId(), pillarIds[0], categories1[1], null
+                                                                  "Do you make decisions effectively?", QuestionType.YES_NO, testTenantId, 5.0, testAssessmentMatrix.getId(), pillarIds[0], categories1[1], null
     );
 
     Optional<Question> question3Opt = getQuestionService().create(
-        "Rate your problem-solving abilities", QuestionType.STAR_FIVE, testTenantId, 15.0, testAssessmentMatrix.getId(), pillarIds[1], categories2[0], null
+                                                                  "Rate your problem-solving abilities", QuestionType.STAR_FIVE, testTenantId, 15.0, testAssessmentMatrix.getId(), pillarIds[1], categories2[0], null
     );
 
     if (question1Opt.isPresent()) {
@@ -304,7 +305,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
     // Employee 1
     Optional<EmployeeAssessment> assessment1Opt = getEmployeeAssessmentService().create(
-        testAssessmentMatrix.getId(), testTeam.getId(), "John Doe", "john.doe@example.com", "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                                                                        testAssessmentMatrix.getId(), testTeam.getId(), "John Doe", "john.doe@example.com", "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     );
 
     if (assessment1Opt.isPresent()) {
@@ -318,8 +319,8 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
     // Employee 2
     Optional<EmployeeAssessment> assessment2Opt = getEmployeeAssessmentService().create(
-        testAssessmentMatrix.getId(), testTeam.getId(), "Jane Smith", "JANE.SMITH@EXAMPLE.COM",  // Test email normalization
-        "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
+                                                                                        testAssessmentMatrix.getId(), testTeam.getId(), "Jane Smith", "JANE.SMITH@EXAMPLE.COM",  // Test email normalization
+                                                                                        "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
     );
 
     if (assessment2Opt.isPresent()) {
@@ -333,8 +334,8 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     log.info("Testing uniqueness constraint (should fail)...");
     try {
       getEmployeeAssessmentService().create(
-          testAssessmentMatrix.getId(), testTeam.getId(), "John Duplicate", "john.doe@example.com",  // Same email as first employee
-          "111111111", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                            testAssessmentMatrix.getId(), testTeam.getId(), "John Duplicate", "john.doe@example.com",  // Same email as first employee
+                                            "111111111", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
       );
       log.error("❌ Uniqueness constraint failed - duplicate was allowed!");
     }
@@ -347,11 +348,13 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
       EmployeeAssessment toUpdate = assessments.get(0);
       log.info("Updating  EmployeeAssessment...");
       Optional<EmployeeAssessment> updatedOpt = getEmployeeAssessmentService().update(
-          toUpdate.getId(), testAssessmentMatrix.getId(), testTeam.getId(), "John Updated Doe", "john.updated@example.com", "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                                                                      toUpdate.getId(), testAssessmentMatrix.getId(), testTeam.getId(), "John Updated Doe", "john.updated@example.com", "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
       );
 
       if (updatedOpt.isPresent()) {
-        log.info("✓  EmployeeAssessment updated: {} -> {}", toUpdate.getEmployee().getName(), updatedOpt.get().getEmployee().getName());
+        log.info("✓  EmployeeAssessment updated: {} -> {}", toUpdate.getEmployee().getName(), updatedOpt.get()
+                                                                                                        .getEmployee()
+                                                                                                        .getName());
       }
     }
 
@@ -371,11 +374,13 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
     log.info("✓ Found {} assessments for matrix: {}", matrixAssessments.size(), testAssessmentMatrix.getId());
 
     // Test existence query
-    boolean exists = getEmployeeAssessmentService().getRepository().existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "john.updated@example.com");
+    boolean exists = getEmployeeAssessmentService().getRepository()
+                                                   .existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "john.updated@example.com");
     log.info("✓ Employee exists check: {}", exists);
 
     // Test case-insensitive existence
-    boolean existsCase = getEmployeeAssessmentService().getRepository().existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "JOHN.UPDATED@EXAMPLE.COM");
+    boolean existsCase = getEmployeeAssessmentService().getRepository()
+                                                       .existsByAssessmentMatrixAndEmployeeEmail(testAssessmentMatrix.getId(), "JOHN.UPDATED@EXAMPLE.COM");
     log.info("✓ Case-insensitive exists check: {}", existsCase);
   }
 
@@ -433,7 +438,7 @@ public class EmployeeAssessmentTableRunner implements CrudRunner {
 
       try {
         AnswerWithProgressResponse response = getAssessmentNavigationService().saveAnswerAndGetNext(
-            assessmentId, question.getId(), LocalDateTime.now(), value, testTenantId, "Test answer notes for question " + (i + 1)
+                                                                                                    assessmentId, question.getId(), LocalDateTime.now(), value, testTenantId, "Test answer notes for question " + (i + 1)
         );
 
         log.info("✓ Answer saved successfully");

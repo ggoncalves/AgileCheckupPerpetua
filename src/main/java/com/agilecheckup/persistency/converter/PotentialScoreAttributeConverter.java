@@ -13,7 +13,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class PotentialScoreAttributeConverter implements AttributeConverter<PotentialScore> {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                                                      .setDateFormat(new StdDateFormat());
 
   @Override
   public AttributeValue transformFrom(PotentialScore input) {

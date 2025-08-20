@@ -21,9 +21,15 @@ public class TeamRepository extends AbstractCrudRepository<Team> {
   }
 
   public List<Team> findByDepartmentId(String departmentId) {
-    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(departmentId))).build();
+    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                            .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(departmentId)))
+                                                            .build();
 
-    return getTable().index("departmentId-index").query(queryRequest).stream().flatMap(page -> page.items().stream()).collect(Collectors.toList());
+    return getTable().index("departmentId-index")
+                     .query(queryRequest)
+                     .stream()
+                     .flatMap(page -> page.items().stream())
+                     .collect(Collectors.toList());
   }
 
   public List<Team> findAllByTenantId(String tenantId) {

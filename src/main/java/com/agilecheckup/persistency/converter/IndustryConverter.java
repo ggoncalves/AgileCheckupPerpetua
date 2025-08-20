@@ -10,7 +10,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 public class IndustryConverter implements AttributeConverter<Industry> {
   @Override
   public AttributeValue transformFrom(Industry input) {
-    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder().nul(true).build();
+    return input != null ? AttributeValue.builder().s(input.name()).build() : AttributeValue.builder()
+                                                                                            .nul(true)
+                                                                                            .build();
   }
 
   @Override

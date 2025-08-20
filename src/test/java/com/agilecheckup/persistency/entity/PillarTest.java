@@ -22,7 +22,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 @ExtendWith(MockitoExtension.class)
 class PillarTest {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                                                      .setDateFormat(new StdDateFormat());
   private final CategoryMapAttributeConverter converter = new CategoryMapAttributeConverter();
 
   @Test
@@ -30,7 +31,13 @@ class PillarTest {
     Map<String, Category> categoryMap = TestObjectFactory.createMockedCategoryMap(3);
     Instant now = Instant.now();
 
-    Pillar pillar = Pillar.builder().name("Technical Excellence").description("Technical practices and excellence").categoryMap(categoryMap).createdDate(now.minusSeconds(3600)).lastUpdatedDate(now).build();
+    Pillar pillar = Pillar.builder()
+                          .name("Technical Excellence")
+                          .description("Technical practices and excellence")
+                          .categoryMap(categoryMap)
+                          .createdDate(now.minusSeconds(3600))
+                          .lastUpdatedDate(now)
+                          .build();
 
     assertThat(pillar.getName()).isEqualTo("Technical Excellence");
     assertThat(pillar.getDescription()).isEqualTo("Technical practices and excellence");
@@ -81,7 +88,11 @@ class PillarTest {
     Map<String, Category> categoryMap = new HashMap<>();
     categoryMap.put("test", Category.builder().name("Test Category").description("Test description").build());
 
-    Pillar originalPillar = Pillar.builder().name("JSON Test").description("JSON serialization test").categoryMap(categoryMap).build();
+    Pillar originalPillar = Pillar.builder()
+                                  .name("JSON Test")
+                                  .description("JSON serialization test")
+                                  .categoryMap(categoryMap)
+                                  .build();
 
     String json = OBJECT_MAPPER.writeValueAsString(originalPillar);
     Pillar deserializedPillar = OBJECT_MAPPER.readValue(json, Pillar.class);
@@ -156,7 +167,8 @@ class PillarTest {
   void shouldThrowExceptionForInvalidJsonInConverter() {
     AttributeValue invalidJsonAttribute = AttributeValue.builder().s("invalid json").build();
 
-    assertThatThrownBy(() -> converter.transformTo(invalidJsonAttribute)).isInstanceOf(RuntimeException.class).hasMessageContaining("Failed to deserialize Category map");
+    assertThatThrownBy(() -> converter.transformTo(invalidJsonAttribute)).isInstanceOf(RuntimeException.class)
+                                                                         .hasMessageContaining("Failed to deserialize Category map");
   }
 
   @Test
@@ -176,11 +188,31 @@ class PillarTest {
     Instant now = Instant.now();
 
     String sameId = "test-pillar-id-123";
-    Pillar pillar1 = Pillar.builder().id(sameId).name("Test Pillar").description("Test description").categoryMap(categoryMap).createdDate(now).lastUpdatedDate(now).build();
+    Pillar pillar1 = Pillar.builder()
+                           .id(sameId)
+                           .name("Test Pillar")
+                           .description("Test description")
+                           .categoryMap(categoryMap)
+                           .createdDate(now)
+                           .lastUpdatedDate(now)
+                           .build();
 
-    Pillar pillar2 = Pillar.builder().id(sameId).name("Test Pillar").description("Test description").categoryMap(categoryMap).createdDate(now).lastUpdatedDate(now).build();
+    Pillar pillar2 = Pillar.builder()
+                           .id(sameId)
+                           .name("Test Pillar")
+                           .description("Test description")
+                           .categoryMap(categoryMap)
+                           .createdDate(now)
+                           .lastUpdatedDate(now)
+                           .build();
 
-    Pillar pillar3 = Pillar.builder().name("Different Pillar").description("Different description").categoryMap(categoryMap).createdDate(now).lastUpdatedDate(now).build();
+    Pillar pillar3 = Pillar.builder()
+                           .name("Different Pillar")
+                           .description("Different description")
+                           .categoryMap(categoryMap)
+                           .createdDate(now)
+                           .lastUpdatedDate(now)
+                           .build();
 
     assertThat(pillar1).isEqualTo(pillar2);
     assertThat(pillar1).isNotEqualTo(pillar3);
@@ -204,7 +236,11 @@ class PillarTest {
     categoryMapWithNull.put("valid", Category.builder().name("Valid").description("Valid category").build());
     categoryMapWithNull.put("null", null);
 
-    Pillar pillar = Pillar.builder().name("Null Test").description("Testing null values in category map").categoryMap(categoryMapWithNull).build();
+    Pillar pillar = Pillar.builder()
+                          .name("Null Test")
+                          .description("Testing null values in category map")
+                          .categoryMap(categoryMapWithNull)
+                          .build();
 
     assertThat(pillar.getCategoryMap()).hasSize(2);
     assertThat(pillar.getCategoryMap().get("valid")).isNotNull();
@@ -229,7 +265,10 @@ class PillarTest {
   void shouldHandleCategoryMapWithSpecialCharacterKeys() {
     Map<String, Category> specialKeyMap = new HashMap<>();
     specialKeyMap.put("key-with-dashes", Category.builder().name("Dashes").description("Category with dashes").build());
-    specialKeyMap.put("key_with_underscores", Category.builder().name("Underscores").description("Category with underscores").build());
+    specialKeyMap.put("key_with_underscores", Category.builder()
+                                                      .name("Underscores")
+                                                      .description("Category with underscores")
+                                                      .build());
     specialKeyMap.put("key.with.dots", Category.builder().name("Dots").description("Category with dots").build());
 
     AttributeValue attributeValue = converter.transformFrom(specialKeyMap);

@@ -86,7 +86,8 @@ class JwtTokenProviderTest {
     String invalidToken = "invalid.jwt.token";
 
     // When & Then
-    assertThatThrownBy(() -> jwtTokenProvider.validateAndParseToken(invalidToken)).isInstanceOf(Exception.class).hasMessage("Invalid or expired invitation link");
+    assertThatThrownBy(() -> jwtTokenProvider.validateAndParseToken(invalidToken)).isInstanceOf(Exception.class)
+                                                                                  .hasMessage("Invalid or expired invitation link");
   }
 
   @Test
@@ -100,7 +101,8 @@ class JwtTokenProviderTest {
     String tamperedToken = token.substring(0, token.length() - 1) + "X";
 
     // When & Then
-    assertThatThrownBy(() -> jwtTokenProvider.validateAndParseToken(tamperedToken)).isInstanceOf(Exception.class).hasMessage("Invalid or expired invitation link");
+    assertThatThrownBy(() -> jwtTokenProvider.validateAndParseToken(tamperedToken)).isInstanceOf(Exception.class)
+                                                                                   .hasMessage("Invalid or expired invitation link");
   }
 
   @Test

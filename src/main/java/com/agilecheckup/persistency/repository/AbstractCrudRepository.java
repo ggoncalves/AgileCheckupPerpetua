@@ -97,11 +97,15 @@ public abstract class AbstractCrudRepository<T extends BaseEntity> {
     log.info("Querying index {} for tenantId: {}", indexName, partitionKeyValue);
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(
-        Key.builder().partitionValue(partitionKeyValue).build()
+                                                                    Key.builder()
+                                                                       .partitionValue(partitionKeyValue)
+                                                                       .build()
     );
 
-    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).consistentRead(false)  // GSI queries cannot use consistent reads
-        .build();
+    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                            .queryConditional(queryConditional)
+                                                            .consistentRead(false)  // GSI queries cannot use consistent reads
+                                                            .build();
 
     SdkIterable<Page<T>> pages = getTable().index(indexName).query(queryRequest);
     List<T> results = pages.stream().flatMap(page -> page.items().stream()).collect(Collectors.toList());

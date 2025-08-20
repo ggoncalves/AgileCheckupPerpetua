@@ -15,7 +15,10 @@ public class AwsConfigModule {
   @Provides
   @Singleton
   public DynamoDbClient provideDynamoDbClient() {
-    return DynamoDbClient.builder().region(Region.US_EAST_1).credentialsProvider(DefaultCredentialsProvider.create()).build();
+    return DynamoDbClient.builder()
+                         .region(Region.US_EAST_1)
+                         .credentialsProvider(DefaultCredentialsProvider.create())
+                         .build();
   }
 
   @Provides

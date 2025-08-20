@@ -24,7 +24,22 @@ class AnswerTest {
     NaturalPerson reviewer = NaturalPerson.builder().name("John Reviewer").email("john@reviewer.com").build();
 
     // When
-    Answer answer = Answer.builder().id("answer-123").employeeAssessmentId("assessment-123").answeredAt(answeredAt).pillarId("pillar-123").categoryId("category-123").questionId("question-123").reviewer(reviewer).questionType(QuestionType.YES_NO).question(question).pendingReview(false).value("Yes").score(10.0).notes("Test notes").tenantId("tenant-123").build();
+    Answer answer = Answer.builder()
+                          .id("answer-123")
+                          .employeeAssessmentId("assessment-123")
+                          .answeredAt(answeredAt)
+                          .pillarId("pillar-123")
+                          .categoryId("category-123")
+                          .questionId("question-123")
+                          .reviewer(reviewer)
+                          .questionType(QuestionType.YES_NO)
+                          .question(question)
+                          .pendingReview(false)
+                          .value("Yes")
+                          .score(10.0)
+                          .notes("Test notes")
+                          .tenantId("tenant-123")
+                          .build();
 
     // Then
     assertThat(answer.getId()).isEqualTo("answer-123");
@@ -49,7 +64,16 @@ class AnswerTest {
     LocalDateTime answeredAt = LocalDateTime.now();
 
     // When
-    Answer answer = Answer.builder().employeeAssessmentId("assessment-123").answeredAt(answeredAt).pillarId("pillar-123").categoryId("category-123").questionId("question-123").questionType(QuestionType.STAR_FIVE).value("4").tenantId("tenant-123").build();
+    Answer answer = Answer.builder()
+                          .employeeAssessmentId("assessment-123")
+                          .answeredAt(answeredAt)
+                          .pillarId("pillar-123")
+                          .categoryId("category-123")
+                          .questionId("question-123")
+                          .questionType(QuestionType.STAR_FIVE)
+                          .value("4")
+                          .tenantId("tenant-123")
+                          .build();
 
     // Then
     assertThat(answer.getEmployeeAssessmentId()).isEqualTo("assessment-123");
@@ -70,7 +94,17 @@ class AnswerTest {
   @Test
   void shouldSetPendingReviewToTrueByDefault() {
     // When
-    Answer answer = Answer.builder().employeeAssessmentId("assessment-123").answeredAt(LocalDateTime.now()).pillarId("pillar-123").categoryId("category-123").questionId("question-123").questionType(QuestionType.OPEN_ANSWER).value("Open answer text").tenantId("tenant-123").pendingReview(true).build();
+    Answer answer = Answer.builder()
+                          .employeeAssessmentId("assessment-123")
+                          .answeredAt(LocalDateTime.now())
+                          .pillarId("pillar-123")
+                          .categoryId("category-123")
+                          .questionId("question-123")
+                          .questionType(QuestionType.OPEN_ANSWER)
+                          .value("Open answer text")
+                          .tenantId("tenant-123")
+                          .pendingReview(true)
+                          .build();
 
     // Then
     assertThat(answer.isPendingReview()).isTrue();
@@ -81,9 +115,29 @@ class AnswerTest {
     // Given
     LocalDateTime answeredAt = LocalDateTime.now();
 
-    Answer answer1 = Answer.builder().id("answer-123").employeeAssessmentId("assessment-123").answeredAt(answeredAt).pillarId("pillar-123").categoryId("category-123").questionId("question-123").questionType(QuestionType.YES_NO).value("Yes").tenantId("tenant-123").build();
+    Answer answer1 = Answer.builder()
+                           .id("answer-123")
+                           .employeeAssessmentId("assessment-123")
+                           .answeredAt(answeredAt)
+                           .pillarId("pillar-123")
+                           .categoryId("category-123")
+                           .questionId("question-123")
+                           .questionType(QuestionType.YES_NO)
+                           .value("Yes")
+                           .tenantId("tenant-123")
+                           .build();
 
-    Answer answer2 = Answer.builder().id("answer-123").employeeAssessmentId("assessment-123").answeredAt(answeredAt).pillarId("pillar-123").categoryId("category-123").questionId("question-123").questionType(QuestionType.YES_NO).value("Yes").tenantId("tenant-123").build();
+    Answer answer2 = Answer.builder()
+                           .id("answer-123")
+                           .employeeAssessmentId("assessment-123")
+                           .answeredAt(answeredAt)
+                           .pillarId("pillar-123")
+                           .categoryId("category-123")
+                           .questionId("question-123")
+                           .questionType(QuestionType.YES_NO)
+                           .value("Yes")
+                           .tenantId("tenant-123")
+                           .build();
 
     // Then
     assertThat(answer1).isEqualTo(answer2);
@@ -97,7 +151,16 @@ class AnswerTest {
     };
 
     for (QuestionType questionType : questionTypes) {
-      Answer answer = Answer.builder().employeeAssessmentId("assessment-123").answeredAt(LocalDateTime.now()).pillarId("pillar-123").categoryId("category-123").questionId("question-123").questionType(questionType).value("test-value").tenantId("tenant-123").build();
+      Answer answer = Answer.builder()
+                            .employeeAssessmentId("assessment-123")
+                            .answeredAt(LocalDateTime.now())
+                            .pillarId("pillar-123")
+                            .categoryId("category-123")
+                            .questionId("question-123")
+                            .questionType(questionType)
+                            .value("test-value")
+                            .tenantId("tenant-123")
+                            .build();
 
       assertThat(answer.getQuestionType()).isEqualTo(questionType);
     }

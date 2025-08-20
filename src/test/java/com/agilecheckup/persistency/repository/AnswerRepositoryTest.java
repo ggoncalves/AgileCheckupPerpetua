@@ -193,6 +193,16 @@ class AnswerRepositoryTest {
   }
 
   private Answer createMockAnswer(String answerId, String employeeAssessmentId, String questionId, String tenantId) {
-    return Answer.builder().id(answerId).employeeAssessmentId(employeeAssessmentId).answeredAt(LocalDateTime.now()).pillarId("pillar-123").categoryId("category-123").questionId(questionId).questionType(QuestionType.YES_NO).value("Yes").tenantId(tenantId).build();
+    return Answer.builder()
+                 .id(answerId)
+                 .employeeAssessmentId(employeeAssessmentId)
+                 .answeredAt(LocalDateTime.now())
+                 .pillarId("pillar-123")
+                 .categoryId("category-123")
+                 .questionId(questionId)
+                 .questionType(QuestionType.YES_NO)
+                 .value("Yes")
+                 .tenantId(tenantId)
+                 .build();
   }
 }

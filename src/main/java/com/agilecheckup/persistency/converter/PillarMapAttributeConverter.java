@@ -16,7 +16,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class PillarMapAttributeConverter implements AttributeConverter<Map<String, Pillar>> {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                                                      .setDateFormat(new StdDateFormat());
   private static final TypeReference<Map<String, Pillar>> TYPE_REFERENCE = new TypeReference<Map<String, Pillar>>() {
   };
 

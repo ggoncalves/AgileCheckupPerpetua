@@ -105,7 +105,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
 
     // Create test company
     Optional<Company> companyOpt = getCompanyService().create(
-        "12345678901", "Test Company  - " + System.currentTimeMillis(), "test@company.com", "Test company for AssessmentMatrix demo", testTenantId
+                                                              "12345678901", "Test Company  - " + System.currentTimeMillis(), "test@company.com", "Test company for AssessmentMatrix demo", testTenantId
     );
 
     if (companyOpt.isPresent()) {
@@ -119,7 +119,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
 
     // Create test performance cycle
     Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
-        testTenantId, "Test Cycle  - " + System.currentTimeMillis(), "Test performance cycle for AssessmentMatrix demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
+                                                                              testTenantId, "Test Cycle  - " + System.currentTimeMillis(), "Test performance cycle for AssessmentMatrix demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
     );
 
     if (cycleOpt.isPresent()) {
@@ -137,7 +137,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     // Create matrix with basic configuration
     Map<String, Pillar> pillarMap1 = tableRunnerHelper.createPillarsWithCategoriesMap();
     Optional<AssessmentMatrix> matrix1Opt = getAssessmentMatrixService().create(
-        "Basic Assessment Matrix ", "Basic matrix created for  testing", testTenantId, testPerformanceCycle.getId(), pillarMap1
+                                                                                "Basic Assessment Matrix ", "Basic matrix created for  testing", testTenantId, testPerformanceCycle.getId(), pillarMap1
     );
 
     if (matrix1Opt.isPresent()) {
@@ -150,17 +150,23 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     }
 
     // Create matrix with custom configuration
-    AssessmentConfiguration customConfig = AssessmentConfiguration.builder().allowQuestionReview(false).requireAllQuestions(true).autoSave(false).navigationMode(QuestionNavigationType.SEQUENTIAL).build();
+    AssessmentConfiguration customConfig = AssessmentConfiguration.builder()
+                                                                  .allowQuestionReview(false)
+                                                                  .requireAllQuestions(true)
+                                                                  .autoSave(false)
+                                                                  .navigationMode(QuestionNavigationType.SEQUENTIAL)
+                                                                  .build();
 
     Map<String, Pillar> pillarMap2 = tableRunnerHelper.createPillarsWithCategoriesMap();
     Optional<AssessmentMatrix> matrix2Opt = getAssessmentMatrixService().create(
-        "Custom Config Matrix ", "Matrix with custom configuration for  testing", testTenantId, testPerformanceCycle.getId(), pillarMap2, customConfig
+                                                                                "Custom Config Matrix ", "Matrix with custom configuration for  testing", testTenantId, testPerformanceCycle.getId(), pillarMap2, customConfig
     );
 
     if (matrix2Opt.isPresent()) {
       AssessmentMatrix matrix2 = matrix2Opt.get();
       createdMatrices.add(matrix2);
-      log.info("✓ Created custom config matrix: {} with navigation mode: {}", matrix2.getName(), matrix2.getConfiguration().getNavigationMode());
+      log.info("✓ Created custom config matrix: {} with navigation mode: {}", matrix2.getName(), matrix2.getConfiguration()
+                                                                                                        .getNavigationMode());
     }
     else {
       log.error("✗ Failed to create custom config matrix");
@@ -183,7 +189,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     // Update with new pillar structure
     Map<String, Pillar> newPillarMap = createEnhancedPillarStructure();
     Optional<AssessmentMatrix> updatedMatrixOpt = getAssessmentMatrixService().update(
-        matrixToUpdate.getId(), originalName + " (Updated)", matrixToUpdate.getDescription() + " - Updated with enhanced structure", testTenantId, testPerformanceCycle.getId(), newPillarMap
+                                                                                      matrixToUpdate.getId(), originalName + " (Updated)", matrixToUpdate.getDescription() + " - Updated with enhanced structure", testTenantId, testPerformanceCycle.getId(), newPillarMap
     );
 
     if (updatedMatrixOpt.isPresent()) {
@@ -198,15 +204,21 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     // Update with custom configuration
     if (createdMatrices.size() > 1) {
       AssessmentMatrix matrix2 = createdMatrices.get(1);
-      AssessmentConfiguration newConfig = AssessmentConfiguration.builder().allowQuestionReview(true).requireAllQuestions(false).autoSave(true).navigationMode(QuestionNavigationType.RANDOM).build();
+      AssessmentConfiguration newConfig = AssessmentConfiguration.builder()
+                                                                 .allowQuestionReview(true)
+                                                                 .requireAllQuestions(false)
+                                                                 .autoSave(true)
+                                                                 .navigationMode(QuestionNavigationType.RANDOM)
+                                                                 .build();
 
       Optional<AssessmentMatrix> updatedMatrix2Opt = getAssessmentMatrixService().update(
-          matrix2.getId(), matrix2.getName() + " (Config Updated)", matrix2.getDescription() + " - Configuration updated", testTenantId, testPerformanceCycle.getId(), matrix2.getPillarMap(), newConfig
+                                                                                         matrix2.getId(), matrix2.getName() + " (Config Updated)", matrix2.getDescription() + " - Configuration updated", testTenantId, testPerformanceCycle.getId(), matrix2.getPillarMap(), newConfig
       );
 
       if (updatedMatrix2Opt.isPresent()) {
         AssessmentMatrix updatedMatrix2 = updatedMatrix2Opt.get();
-        log.info("✓ Updated matrix configuration: {} -> navigation mode: {}", matrix2.getName(), updatedMatrix2.getConfiguration().getNavigationMode());
+        log.info("✓ Updated matrix configuration: {} -> navigation mode: {}", matrix2.getName(), updatedMatrix2.getConfiguration()
+                                                                                                               .getNavigationMode());
       }
       else {
         log.error("✗ Failed to update matrix configuration");
@@ -341,7 +353,7 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     Category firstCategory = firstPillar.getCategoryMap().values().iterator().next();
 
     Optional<Question> questionOpt = getQuestionService().create(
-        "Test Question ", QuestionType.STAR_FIVE, testTenantId, 10.0, matrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for  demo"
+                                                                 "Test Question ", QuestionType.STAR_FIVE, testTenantId, 10.0, matrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for  demo"
     );
 
     if (questionOpt.isPresent()) {
@@ -357,13 +369,23 @@ public class AssessmentMatrixTableRunner implements CrudRunner {
     // Add an additional pillar
     Map<String, Category> additionalCategories = new HashMap<>();
 
-    Category enhancedCat1 = Category.builder().name("Enhanced Category 1").description("Additional category for update testing").build();
+    Category enhancedCat1 = Category.builder()
+                                    .name("Enhanced Category 1")
+                                    .description("Additional category for update testing")
+                                    .build();
     additionalCategories.put("enhanced-cat-1", enhancedCat1);
 
-    Category enhancedCat2 = Category.builder().name("Enhanced Category 2").description("Second additional category for update testing").build();
+    Category enhancedCat2 = Category.builder()
+                                    .name("Enhanced Category 2")
+                                    .description("Second additional category for update testing")
+                                    .build();
     additionalCategories.put("enhanced-cat-2", enhancedCat2);
 
-    Pillar additionalPillar = Pillar.builder().name("Enhanced Pillar").description("Additional pillar created during update testing").categoryMap(additionalCategories).build();
+    Pillar additionalPillar = Pillar.builder()
+                                    .name("Enhanced Pillar")
+                                    .description("Additional pillar created during update testing")
+                                    .categoryMap(additionalCategories)
+                                    .build();
 
     enhancedPillars.put(additionalPillar.getId(), additionalPillar);
 

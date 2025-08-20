@@ -49,12 +49,19 @@ public class DashboardAnalyticsRepository {
     log.info("DashboardAnalyticsRepository.findByCompanyAndPerformanceCycle called with companyId: {}, performanceCycleId: {}", companyId, performanceCycleId);
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(
-        Key.builder().partitionValue(companyId).sortValue(performanceCycleId).build()
+                                                                    Key.builder()
+                                                                       .partitionValue(companyId)
+                                                                       .sortValue(performanceCycleId)
+                                                                       .build()
     );
 
     QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).build();
 
-    return getTable().index("company-cycle-index").query(queryRequest).stream().flatMap(page -> page.items().stream()).collect(java.util.stream.Collectors.toList());
+    return getTable().index("company-cycle-index")
+                     .query(queryRequest)
+                     .stream()
+                     .flatMap(page -> page.items().stream())
+                     .collect(java.util.stream.Collectors.toList());
   }
 
   /**
@@ -88,12 +95,16 @@ public class DashboardAnalyticsRepository {
     log.info("DashboardAnalyticsRepository.findByCompany called with companyId: {}", companyId);
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(
-        Key.builder().partitionValue(companyId).build()
+                                                                    Key.builder().partitionValue(companyId).build()
     );
 
     QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).build();
 
-    return getTable().index("company-cycle-index").query(queryRequest).stream().flatMap(page -> page.items().stream()).collect(Collectors.toList());
+    return getTable().index("company-cycle-index")
+                     .query(queryRequest)
+                     .stream()
+                     .flatMap(page -> page.items().stream())
+                     .collect(Collectors.toList());
   }
 
   /**

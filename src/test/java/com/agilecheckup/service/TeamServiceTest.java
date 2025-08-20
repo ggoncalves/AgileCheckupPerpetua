@@ -96,7 +96,8 @@ class TeamServiceTest {
     when(teamRepository.findById(teamId)).thenReturn(Optional.empty());
 
     // When & Then
-    assertThatThrownBy(() -> teamService.update(teamId, "tenant", "name", "desc", "dept")).isInstanceOf(EntityNotFoundException.class).hasMessage("Team not found with id: nonexistent-team");
+    assertThatThrownBy(() -> teamService.update(teamId, "tenant", "name", "desc", "dept")).isInstanceOf(EntityNotFoundException.class)
+                                                                                          .hasMessage("Team not found with id: nonexistent-team");
 
     verify(teamRepository).findById(teamId);
     verify(teamRepository, never()).save(any(Team.class));

@@ -91,14 +91,34 @@ public class CompanyService extends AbstractCrudService<Company, CompanyReposito
    * Create company with basic fields (legacy support)
    */
   private Company createCompany(String documentNumber, String name, String email, String description, String tenantId) {
-    return Company.builder().personDocumentType(PersonDocumentType.CNPJ).documentNumber(documentNumber).name(name).email(email).description(description).tenantId(tenantId).build();
+    return Company.builder()
+                  .personDocumentType(PersonDocumentType.CNPJ)
+                  .documentNumber(documentNumber)
+                  .name(name)
+                  .email(email)
+                  .description(description)
+                  .tenantId(tenantId)
+                  .build();
   }
 
   /**
    * Create company with all fields using builder pattern
    */
   private Company createCompany(String documentNumber, String name, String email, String description, String tenantId, CompanySize size, Industry industry, String website, String legalName, NaturalPerson contactPerson, Address address) {
-    return Company.builder().personDocumentType(PersonDocumentType.CNPJ).documentNumber(documentNumber).name(name).email(email).description(description).tenantId(tenantId).size(size).industry(industry).website(website).legalName(legalName).contactPerson(contactPerson).address(address).build();
+    return Company.builder()
+                  .personDocumentType(PersonDocumentType.CNPJ)
+                  .documentNumber(documentNumber)
+                  .name(name)
+                  .email(email)
+                  .description(description)
+                  .tenantId(tenantId)
+                  .size(size)
+                  .industry(industry)
+                  .website(website)
+                  .legalName(legalName)
+                  .contactPerson(contactPerson)
+                  .address(address)
+                  .build();
   }
 
   /**

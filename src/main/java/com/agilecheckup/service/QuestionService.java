@@ -130,7 +130,18 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    return Question.builder().assessmentMatrixId(assessmentMatrix.getId()).pillarId(pillar.getId()).pillarName(pillar.getName()).categoryId(category.getId()).categoryName(category.getName()).question(questionTxt).questionType(questionType).tenantId(tenantId).points(points).extraDescription(extraDescription).build();
+    return Question.builder()
+                   .assessmentMatrixId(assessmentMatrix.getId())
+                   .pillarId(pillar.getId())
+                   .pillarName(pillar.getName())
+                   .categoryId(category.getId())
+                   .categoryName(category.getName())
+                   .question(questionTxt)
+                   .questionType(questionType)
+                   .tenantId(tenantId)
+                   .points(points)
+                   .extraDescription(extraDescription)
+                   .build();
   }
 
   private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
@@ -138,7 +149,18 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
     Pillar pillar = getPillar(assessmentMatrix, pillarId);
     Category category = getCategory(pillar, categoryId);
-    return Question.builder().assessmentMatrixId(assessmentMatrix.getId()).pillarId(pillar.getId()).pillarName(pillar.getName()).categoryId(category.getId()).categoryName(category.getName()).question(questionTxt).questionType(questionType).optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options)).tenantId(tenantId).extraDescription(extraDescription).build();
+    return Question.builder()
+                   .assessmentMatrixId(assessmentMatrix.getId())
+                   .pillarId(pillar.getId())
+                   .pillarName(pillar.getName())
+                   .categoryId(category.getId())
+                   .categoryName(category.getName())
+                   .question(questionTxt)
+                   .questionType(questionType)
+                   .optionGroup(createOptionGroup(isMultipleChoice, showFlushed, options))
+                   .tenantId(tenantId)
+                   .extraDescription(extraDescription)
+                   .build();
   }
 
   private void validateQuestionOptions(List<QuestionOption> options) {
@@ -198,7 +220,11 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   }
 
   private OptionGroup createOptionGroup(boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options) {
-    return OptionGroup.builder().isMultipleChoice(isMultipleChoice).showFlushed(showFlushed).optionMap(toOptionMap(options)).build();
+    return OptionGroup.builder()
+                      .isMultipleChoice(isMultipleChoice)
+                      .showFlushed(showFlushed)
+                      .optionMap(toOptionMap(options))
+                      .build();
   }
 
   @VisibleForTesting

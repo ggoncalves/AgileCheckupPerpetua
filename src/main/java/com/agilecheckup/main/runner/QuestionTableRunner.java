@@ -108,7 +108,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create test company
     Optional<Company> companyOpt = getCompanyService().create(
-        "12345678901", "Test Company  Question - " + System.currentTimeMillis(), "testquestion@company.com", "Test company for Question demo", testTenantId
+                                                              "12345678901", "Test Company  Question - " + System.currentTimeMillis(), "testquestion@company.com", "Test company for Question demo", testTenantId
     );
 
     if (companyOpt.isPresent()) {
@@ -122,7 +122,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create test performance cycle
     Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
-        testTenantId, "Test Cycle  Question - " + System.currentTimeMillis(), "Test performance cycle for Question demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
+                                                                              testTenantId, "Test Cycle  Question - " + System.currentTimeMillis(), "Test performance cycle for Question demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
     );
 
     if (cycleOpt.isPresent()) {
@@ -137,7 +137,7 @@ public class QuestionTableRunner implements CrudRunner {
     // Create test assessment matrix
     Map<String, Pillar> pillarMap = tableRunnerHelper.createPillarsWithCategoriesMap();
     Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
-        "Test Assessment Matrix  Question", "Assessment matrix for Question demo", testTenantId, testPerformanceCycle.getId(), pillarMap
+                                                                               "Test Assessment Matrix  Question", "Assessment matrix for Question demo", testTenantId, testPerformanceCycle.getId(), pillarMap
     );
 
     if (matrixOpt.isPresent()) {
@@ -158,7 +158,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create YES_NO question
     Optional<Question> yesNoQuestionOpt = getQuestionService().create(
-        "Is agile methodology effective in your team?", QuestionType.YES_NO, testTenantId, 10.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Basic yes/no question"
+                                                                      "Is agile methodology effective in your team?", QuestionType.YES_NO, testTenantId, 10.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Basic yes/no question"
     );
 
     if (yesNoQuestionOpt.isPresent()) {
@@ -172,7 +172,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create STAR_FIVE question
     Optional<Question> starFiveQuestionOpt = getQuestionService().create(
-        "Rate your team's communication skills", QuestionType.STAR_FIVE, testTenantId, 15.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Star rating question"
+                                                                         "Rate your team's communication skills", QuestionType.STAR_FIVE, testTenantId, 15.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Star rating question"
     );
 
     if (starFiveQuestionOpt.isPresent()) {
@@ -186,7 +186,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create ONE_TO_TEN question
     Optional<Question> oneToTenQuestionOpt = getQuestionService().create(
-        "How would you rate your overall satisfaction?", QuestionType.ONE_TO_TEN, testTenantId, 20.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Scale 1-10 question"
+                                                                         "How would you rate your overall satisfaction?", QuestionType.ONE_TO_TEN, testTenantId, 20.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Scale 1-10 question"
     );
 
     if (oneToTenQuestionOpt.isPresent()) {
@@ -201,9 +201,9 @@ public class QuestionTableRunner implements CrudRunner {
     // Create CUSTOMIZED question with options
     List<QuestionOption> customOptions = createMockedQuestionOptionList("Choice", 5.0, 10.0, 15.0, 20.0);
     Optional<Question> customQuestionOpt = getQuestionService().createCustomQuestion(
-        "Which agile practices does your team use most?", QuestionType.CUSTOMIZED, testTenantId, true,  // isMultipleChoice
-        false, // showFlushed
-        customOptions, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Custom multiple choice question"
+                                                                                     "Which agile practices does your team use most?", QuestionType.CUSTOMIZED, testTenantId, true,  // isMultipleChoice
+                                                                                     false, // showFlushed
+                                                                                     customOptions, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Custom multiple choice question"
     );
 
     if (customQuestionOpt.isPresent()) {
@@ -217,7 +217,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Create OPEN_ANSWER question
     Optional<Question> openQuestionOpt = getQuestionService().create(
-        "What improvements would you suggest for your team?", QuestionType.OPEN_ANSWER, testTenantId, 25.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Open text question"
+                                                                     "What improvements would you suggest for your team?", QuestionType.OPEN_ANSWER, testTenantId, 25.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Open text question"
     );
 
     if (openQuestionOpt.isPresent()) {
@@ -248,7 +248,9 @@ public class QuestionTableRunner implements CrudRunner {
       log.info("✓ Found question by ID: {} -> {}", testQuestion.getId(), foundQuestion.getQuestion());
 
       // Verify data integrity
-      if (testQuestion.getQuestion().equals(foundQuestion.getQuestion()) && testQuestion.getQuestionType().equals(foundQuestion.getQuestionType()) && testQuestion.getTenantId().equals(foundQuestion.getTenantId())) {
+      if (testQuestion.getQuestion().equals(foundQuestion.getQuestion()) && testQuestion.getQuestionType()
+                                                                                        .equals(foundQuestion.getQuestionType()) && testQuestion.getTenantId()
+                                                                                                                                                .equals(foundQuestion.getTenantId())) {
         log.info("  Data integrity verified ✓");
       }
       else {
@@ -283,12 +285,15 @@ public class QuestionTableRunner implements CrudRunner {
     Category firstCategory = firstPillar.getCategoryMap().values().iterator().next();
 
     // Test update regular question
-    Question questionToUpdate = createdQuestions.stream().filter(q -> q.getQuestionType() != QuestionType.CUSTOMIZED).findFirst().orElse(null);
+    Question questionToUpdate = createdQuestions.stream()
+                                                .filter(q -> q.getQuestionType() != QuestionType.CUSTOMIZED)
+                                                .findFirst()
+                                                .orElse(null);
 
     if (questionToUpdate != null) {
       String originalQuestion = questionToUpdate.getQuestion();
       Optional<Question> updatedQuestionOpt = getQuestionService().update(
-          questionToUpdate.getId(), originalQuestion + " (Updated)", questionToUpdate.getQuestionType(), testTenantId, questionToUpdate.getPoints() + 5.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Updated description"
+                                                                          questionToUpdate.getId(), originalQuestion + " (Updated)", questionToUpdate.getQuestionType(), testTenantId, questionToUpdate.getPoints() + 5.0, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Updated description"
       );
 
       if (updatedQuestionOpt.isPresent()) {
@@ -302,23 +307,32 @@ public class QuestionTableRunner implements CrudRunner {
     }
 
     // Test update custom question
-    Question customQuestionToUpdate = createdQuestions.stream().filter(q -> q.getQuestionType() == QuestionType.CUSTOMIZED).findFirst().orElse(null);
+    Question customQuestionToUpdate = createdQuestions.stream()
+                                                      .filter(q -> q.getQuestionType() == QuestionType.CUSTOMIZED)
+                                                      .findFirst()
+                                                      .orElse(null);
 
     if (customQuestionToUpdate != null) {
       String originalQuestion = customQuestionToUpdate.getQuestion();
       List<QuestionOption> updatedOptions = createMockedQuestionOptionList("Updated", 8.0, 16.0, 24.0);
 
       Optional<Question> updatedCustomQuestionOpt = getQuestionService().updateCustomQuestion(
-          customQuestionToUpdate.getId(), originalQuestion + " (Updated with new options)", QuestionType.CUSTOMIZED, testTenantId, false, // Change to single choice
-          true,  // Change showFlushed
-          updatedOptions, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Updated custom question description"
+                                                                                              customQuestionToUpdate.getId(), originalQuestion + " (Updated with new options)", QuestionType.CUSTOMIZED, testTenantId, false, // Change to single choice
+                                                                                              true,  // Change showFlushed
+                                                                                              updatedOptions, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Updated custom question description"
       );
 
       if (updatedCustomQuestionOpt.isPresent()) {
         Question updatedCustomQuestion = updatedCustomQuestionOpt.get();
         log.info("✓ Updated custom question: {} -> {}", originalQuestion, updatedCustomQuestion.getQuestion());
-        log.info("  Multiple choice: {} -> {}", customQuestionToUpdate.getOptionGroup().isMultipleChoice(), updatedCustomQuestion.getOptionGroup().isMultipleChoice());
-        log.info("  Options count: {} -> {}", customQuestionToUpdate.getOptionGroup().getOptionMap().size(), updatedCustomQuestion.getOptionGroup().getOptionMap().size());
+        log.info("  Multiple choice: {} -> {}", customQuestionToUpdate.getOptionGroup()
+                                                                      .isMultipleChoice(), updatedCustomQuestion.getOptionGroup()
+                                                                                                                .isMultipleChoice());
+        log.info("  Options count: {} -> {}", customQuestionToUpdate.getOptionGroup()
+                                                                    .getOptionMap()
+                                                                    .size(), updatedCustomQuestion.getOptionGroup()
+                                                                                                  .getOptionMap()
+                                                                                                  .size());
       }
       else {
         log.error("✗ Failed to update custom question");
@@ -338,11 +352,14 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Test findByAssessmentMatrixId
     List<Question> matrixQuestions = getQuestionService().findByAssessmentMatrixId(
-        testAssessmentMatrix.getId(), testTenantId);
+                                                                                   testAssessmentMatrix.getId(), testTenantId);
     log.info("✓ Found {} questions for assessment matrix: {}", matrixQuestions.size(), testAssessmentMatrix.getName());
 
     // Verify all questions belong to correct matrix and tenant
-    boolean allCorrect = matrixQuestions.stream().allMatch(q -> q.getAssessmentMatrixId().equals(testAssessmentMatrix.getId()) && q.getTenantId().equals(testTenantId));
+    boolean allCorrect = matrixQuestions.stream()
+                                        .allMatch(q -> q.getAssessmentMatrixId()
+                                                        .equals(testAssessmentMatrix.getId()) && q.getTenantId()
+                                                                                                  .equals(testTenantId));
     if (allCorrect) {
       log.info("  All questions correctly filtered by matrix and tenant ✓");
     }
@@ -379,7 +396,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Test hasCategoryQuestions
     boolean hasQuestions = getQuestionService().hasCategoryQuestions(
-        testAssessmentMatrix.getId(), categoryId, testTenantId);
+                                                                     testAssessmentMatrix.getId(), categoryId, testTenantId);
     if (hasQuestions) {
       log.info("✓ Confirmed category {} has questions", categoryId);
     }
@@ -389,7 +406,7 @@ public class QuestionTableRunner implements CrudRunner {
 
     // Test with non-existent category
     boolean hasQuestionsNonExistent = getQuestionService().hasCategoryQuestions(
-        testAssessmentMatrix.getId(), "non-existent-category", testTenantId);
+                                                                                testAssessmentMatrix.getId(), "non-existent-category", testTenantId);
     if (!hasQuestionsNonExistent) {
       log.info("✓ Confirmed non-existent category has no questions");
     }
@@ -417,21 +434,31 @@ public class QuestionTableRunner implements CrudRunner {
 
       // Test potential score calculation
       AssessmentMatrix scoredMatrix = getAssessmentMatrixService().updateCurrentPotentialScore(
-          testAssessmentMatrix.getId(), testTenantId);
+                                                                                               testAssessmentMatrix.getId(), testTenantId);
 
       if (scoredMatrix.getPotentialScore() != null) {
         log.info("✓ Potential score calculated - Total: {}", scoredMatrix.getPotentialScore().getScore());
 
         // Calculate expected score based on our created questions
-        double expectedScore = createdQuestions.stream().filter(q -> q.getAssessmentMatrixId().equals(testAssessmentMatrix.getId())).mapToDouble(q -> {
-          if (q.getQuestionType() == QuestionType.CUSTOMIZED && q.getOptionGroup() != null) {
-            return q.getOptionGroup().getOptionMap().values().stream().mapToDouble(opt -> opt.getPoints()).max().orElse(0.0);
-          }
-          else if (q.getPoints() != null) {
-            return q.getPoints();
-          }
-          return 0.0;
-        }).sum();
+        double expectedScore = createdQuestions.stream()
+                                               .filter(q -> q.getAssessmentMatrixId()
+                                                             .equals(testAssessmentMatrix.getId()))
+                                               .mapToDouble(q -> {
+                                                 if (q.getQuestionType() == QuestionType.CUSTOMIZED && q.getOptionGroup() != null) {
+                                                   return q.getOptionGroup()
+                                                           .getOptionMap()
+                                                           .values()
+                                                           .stream()
+                                                           .mapToDouble(opt -> opt.getPoints())
+                                                           .max()
+                                                           .orElse(0.0);
+                                                 }
+                                                 else if (q.getPoints() != null) {
+                                                   return q.getPoints();
+                                                 }
+                                                 return 0.0;
+                                               })
+                                               .sum();
 
         log.info("  Expected score based on created questions: {}", expectedScore);
 
@@ -439,7 +466,8 @@ public class QuestionTableRunner implements CrudRunner {
           log.info("  Score calculation verified ✓");
         }
         else {
-          log.info("  Score calculation difference (may include other questions): {}", Math.abs(scoredMatrix.getPotentialScore().getScore() - expectedScore));
+          log.info("  Score calculation difference (may include other questions): {}", Math.abs(scoredMatrix.getPotentialScore()
+                                                                                                            .getScore() - expectedScore));
         }
       }
       else {
@@ -498,7 +526,9 @@ public class QuestionTableRunner implements CrudRunner {
   }
 
   private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
-    return IntStream.range(0, points.length).mapToObj(index -> createQuestionOption(index + 1, prefix, points[index])).collect(Collectors.toList());
+    return IntStream.range(0, points.length)
+                    .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
+                    .collect(Collectors.toList());
   }
 
   private QuestionOption createQuestionOption(Integer id, String prefix, double points) {

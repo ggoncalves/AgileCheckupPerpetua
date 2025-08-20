@@ -19,6 +19,9 @@ public class CustomizedScoreCalculationStrategy extends AbstractScoreCalculator 
   @Override
   public Double getCalculatedScore() {
     String[] stringValues = getSplitValues(value);
-    return Arrays.stream(stringValues).map(Integer::valueOf).mapToDouble(value -> question.getOptionGroup().getOptionMap().get(value).getPoints()).sum();
+    return Arrays.stream(stringValues)
+                 .map(Integer::valueOf)
+                 .mapToDouble(value -> question.getOptionGroup().getOptionMap().get(value).getPoints())
+                 .sum();
   }
 }

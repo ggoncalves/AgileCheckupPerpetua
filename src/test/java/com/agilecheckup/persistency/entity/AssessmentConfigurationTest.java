@@ -24,7 +24,12 @@ class AssessmentConfigurationTest {
   @Test
   void shouldCreateWithCustomValues() {
     // When
-    AssessmentConfiguration configuration = AssessmentConfiguration.builder().allowQuestionReview(false).requireAllQuestions(false).autoSave(false).navigationMode(QuestionNavigationType.SEQUENTIAL).build();
+    AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+                                                                   .allowQuestionReview(false)
+                                                                   .requireAllQuestions(false)
+                                                                   .autoSave(false)
+                                                                   .navigationMode(QuestionNavigationType.SEQUENTIAL)
+                                                                   .build();
 
     // Then
     assertThat(configuration.getAllowQuestionReview()).isFalse();
@@ -36,7 +41,10 @@ class AssessmentConfigurationTest {
   @Test
   void shouldCreateWithPartialCustomValues() {
     // When
-    AssessmentConfiguration configuration = AssessmentConfiguration.builder().allowQuestionReview(false).navigationMode(QuestionNavigationType.FREE_FORM).build();
+    AssessmentConfiguration configuration = AssessmentConfiguration.builder()
+                                                                   .allowQuestionReview(false)
+                                                                   .navigationMode(QuestionNavigationType.FREE_FORM)
+                                                                   .build();
 
     // Then
     assertThat(configuration.getAllowQuestionReview()).isFalse();
@@ -76,7 +84,7 @@ class AssessmentConfigurationTest {
   void shouldCreateWithAllArgsConstructor() {
     // When
     AssessmentConfiguration configuration = new AssessmentConfiguration(
-        false, true, false, QuestionNavigationType.SEQUENTIAL);
+                                                                        false, true, false, QuestionNavigationType.SEQUENTIAL);
 
     // Then
     assertThat(configuration.getAllowQuestionReview()).isFalse();
@@ -88,11 +96,26 @@ class AssessmentConfigurationTest {
   @Test
   void shouldSupportDataAnnotationMethods() {
     // Given
-    AssessmentConfiguration configuration1 = AssessmentConfiguration.builder().allowQuestionReview(true).requireAllQuestions(false).autoSave(true).navigationMode(QuestionNavigationType.RANDOM).build();
+    AssessmentConfiguration configuration1 = AssessmentConfiguration.builder()
+                                                                    .allowQuestionReview(true)
+                                                                    .requireAllQuestions(false)
+                                                                    .autoSave(true)
+                                                                    .navigationMode(QuestionNavigationType.RANDOM)
+                                                                    .build();
 
-    AssessmentConfiguration configuration2 = AssessmentConfiguration.builder().allowQuestionReview(true).requireAllQuestions(false).autoSave(true).navigationMode(QuestionNavigationType.RANDOM).build();
+    AssessmentConfiguration configuration2 = AssessmentConfiguration.builder()
+                                                                    .allowQuestionReview(true)
+                                                                    .requireAllQuestions(false)
+                                                                    .autoSave(true)
+                                                                    .navigationMode(QuestionNavigationType.RANDOM)
+                                                                    .build();
 
-    AssessmentConfiguration configuration3 = AssessmentConfiguration.builder().allowQuestionReview(false).requireAllQuestions(false).autoSave(true).navigationMode(QuestionNavigationType.RANDOM).build();
+    AssessmentConfiguration configuration3 = AssessmentConfiguration.builder()
+                                                                    .allowQuestionReview(false)
+                                                                    .requireAllQuestions(false)
+                                                                    .autoSave(true)
+                                                                    .navigationMode(QuestionNavigationType.RANDOM)
+                                                                    .build();
 
     // Then
     assertThat(configuration1).isEqualTo(configuration2);

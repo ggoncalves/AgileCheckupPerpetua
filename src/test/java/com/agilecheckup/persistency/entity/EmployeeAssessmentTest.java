@@ -1,15 +1,16 @@
 package com.agilecheckup.persistency.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Date;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.util.Date;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class EmployeeAssessmentTest {
 
@@ -48,14 +49,10 @@ class EmployeeAssessmentTest {
 
   @Test
   void testSetEmployeeUpdatesNormalizedEmail() {
-    NaturalPerson initialEmployee = createBasicTestEmployee("person-initial",
-                                                            "Initial Name",
-                                                            "initial@example.com");
+    NaturalPerson initialEmployee = createBasicTestEmployee("person-initial", "Initial Name", "initial@example.com");
     EmployeeAssessment assessment = createTestEmployeeAssessmentWithEmployee(initialEmployee);
 
-    NaturalPerson employee = createBasicTestEmployee("person-123",
-                                                     "Jane Smith",
-                                                     "JANE.SMITH@EXAMPLE.COM");
+    NaturalPerson employee = createBasicTestEmployee("person-123", "Jane Smith", "JANE.SMITH@EXAMPLE.COM");
     assessment.setEmployee(employee);
 
     assertThat(assessment.getEmployee()).isEqualTo(employee);
@@ -64,14 +61,10 @@ class EmployeeAssessmentTest {
 
   @Test
   void testSetEmployeeWithBlankEmailSetsNormalizedEmailToNull() {
-    NaturalPerson initialEmployee = createBasicTestEmployee("person-initial",
-                                                            "Initial Name",
-                                                            "initial@example.com");
+    NaturalPerson initialEmployee = createBasicTestEmployee("person-initial", "Initial Name", "initial@example.com");
     EmployeeAssessment assessment = createTestEmployeeAssessmentWithEmployee(initialEmployee);
 
-    NaturalPerson employee = createBasicTestEmployee("person-123",
-                                                     "Jane Smith",
-                                                     "   ");
+    NaturalPerson employee = createBasicTestEmployee("person-123", "Jane Smith", "   ");
     assessment.setEmployee(employee);
 
     assertThat(assessment.getEmployee()).isEqualTo(employee);
@@ -249,9 +242,7 @@ class EmployeeAssessmentTest {
   }
 
   private NaturalPerson createBasicTestEmployee() {
-    return createBasicTestEmployee("person-123",
-                                   "Test Employee",
-                                   "test@example.com");
+    return createBasicTestEmployee("person-123", "Test Employee", "test@example.com");
   }
 
   private NaturalPerson createBasicTestEmployee(String id, String name, String email) {

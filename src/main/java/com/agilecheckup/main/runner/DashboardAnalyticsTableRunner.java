@@ -137,7 +137,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     // Create test company
     Optional<Company> companyOpt = getCompanyService().create(
-        "12345678901", "Test Company Dashboard  - " + System.currentTimeMillis(), "testdashboard@company.com", "Test company for DashboardAnalytics demo", testTenantId
+                                                              "12345678901", "Test Company Dashboard  - " + System.currentTimeMillis(), "testdashboard@company.com", "Test company for DashboardAnalytics demo", testTenantId
     );
 
     if (companyOpt.isPresent()) {
@@ -151,7 +151,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     // Create test department
     Optional<Department> departmentOpt = getDepartmentService().create(
-        "Test Department Dashboard ", "Test department for DashboardAnalytics demo", testTenantId, testCompany.getId()
+                                                                       "Test Department Dashboard ", "Test department for DashboardAnalytics demo", testTenantId, testCompany.getId()
     );
 
     if (departmentOpt.isPresent()) {
@@ -165,11 +165,11 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     // Create test teams
     Optional<Team> team1Opt = getTeamService().create(
-        "Development Team", "Software development team", testTenantId, testDepartment.getId()
+                                                      "Development Team", "Software development team", testTenantId, testDepartment.getId()
     );
 
     Optional<Team> team2Opt = getTeamService().create(
-        "QA Team", "Quality assurance team", testTenantId, testDepartment.getId()
+                                                      "QA Team", "Quality assurance team", testTenantId, testDepartment.getId()
     );
 
     if (team1Opt.isPresent() && team2Opt.isPresent()) {
@@ -184,7 +184,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     // Create test performance cycle
     Optional<PerformanceCycle> cycleOpt = getPerformanceCycleService().create(
-        testTenantId, "Test Cycle Dashboard  - " + System.currentTimeMillis(), "Test performance cycle for DashboardAnalytics demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
+                                                                              testTenantId, "Test Cycle Dashboard  - " + System.currentTimeMillis(), "Test performance cycle for DashboardAnalytics demo", testCompany.getId(), true, true, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31)
     );
 
     if (cycleOpt.isPresent()) {
@@ -199,7 +199,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
     // Create test assessment matrix
     Map<String, Pillar> pillarMap = tableRunnerHelper.createPillarsWithCategoriesMap();
     Optional<AssessmentMatrix> matrixOpt = getAssessmentMatrixService().create(
-        "Test Assessment Matrix Dashboard ", "Assessment matrix for DashboardAnalytics demo", testTenantId, testPerformanceCycle.getId(), pillarMap
+                                                                               "Test Assessment Matrix Dashboard ", "Assessment matrix for DashboardAnalytics demo", testTenantId, testPerformanceCycle.getId(), pillarMap
     );
 
     if (matrixOpt.isPresent()) {
@@ -245,9 +245,9 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         // Create custom question with options
         List<QuestionOption> options = createMockedQuestionOptionList("Method", 10.0, 20.0, 30.0);
         Optional<Question> questionOpt = getQuestionService().createCustomQuestion(
-            questionTexts[i], questionTypes[i], testTenantId, false, // single choice
-            false, // not flushed
-            options, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test custom question for analytics"
+                                                                                   questionTexts[i], questionTypes[i], testTenantId, false, // single choice
+                                                                                   false, // not flushed
+                                                                                   options, testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test custom question for analytics"
         );
 
         if (questionOpt.isPresent()) {
@@ -258,8 +258,8 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
       else {
         // Create regular question
         Optional<Question> questionOpt = getQuestionService().create(
-            questionTexts[i], questionTypes[i], testTenantId, (i + 1) * 20.0, // 20, 40, 60, 80 points
-            testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for analytics"
+                                                                     questionTexts[i], questionTypes[i], testTenantId, (i + 1) * 20.0, // 20, 40, 60, 80 points
+                                                                     testAssessmentMatrix.getId(), firstPillar.getId(), firstCategory.getId(), "Test question for analytics"
         );
 
         if (questionOpt.isPresent()) {
@@ -282,7 +282,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
     for (int i = 0; i < devEmployees.length; i++) {
       NaturalPerson employee = createTestEmployee(devEmployees[i], devEmails[i], "1234567890" + i);
       Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentService().create(
-          testAssessmentMatrix.getId(), testTeam1.getId(), employee.getName(), employee.getEmail(), employee.getDocumentNumber(), employee.getPersonDocumentType(), employee.getGender(), employee.getGenderPronoun()
+                                                                                         testAssessmentMatrix.getId(), testTeam1.getId(), employee.getName(), employee.getEmail(), employee.getDocumentNumber(), employee.getPersonDocumentType(), employee.getGender(), employee.getGenderPronoun()
       );
 
       if (assessmentOpt.isPresent()) {
@@ -298,7 +298,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
     for (int i = 0; i < qaEmployees.length; i++) {
       NaturalPerson employee = createTestEmployee(qaEmployees[i], qaEmails[i], "2234567890" + i);
       Optional<EmployeeAssessment> assessmentOpt = getEmployeeAssessmentService().create(
-          testAssessmentMatrix.getId(), testTeam2.getId(), employee.getName(), employee.getEmail(), employee.getDocumentNumber(), employee.getPersonDocumentType(), employee.getGender(), employee.getGenderPronoun()
+                                                                                         testAssessmentMatrix.getId(), testTeam2.getId(), employee.getName(), employee.getEmail(), employee.getDocumentNumber(), employee.getPersonDocumentType(), employee.getGender(), employee.getGenderPronoun()
       );
 
       if (assessmentOpt.isPresent()) {
@@ -327,7 +327,8 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         String value = generateAnswerValue(question.getQuestionType(), assessment, i);
 
         Optional<Answer> answerOpt = getAnswerService().create(
-            assessment.getId(), question.getId(), answeredAt.plusMinutes(i * 5), value, testTenantId, "Test answer for analytics - " + assessment.getEmployee().getName()
+                                                               assessment.getId(), question.getId(), answeredAt.plusMinutes(i * 5), value, testTenantId, "Test answer for analytics - " + assessment.getEmployee()
+                                                                                                                                                                                                    .getName()
         );
 
         if (answerOpt.isPresent()) {
@@ -399,15 +400,28 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         double categoryScore = baseScore - (Math.random() * 10.0); // Add some variation
 
         for (int i = 0; i < 3; i++) { // Mock 3 questions per category
-          questionScores.add(QuestionScore.builder().questionId("question-" + categoryId + "-" + i).score(categoryScore / 3.0).build());
+          questionScores.add(QuestionScore.builder()
+                                          .questionId("question-" + categoryId + "-" + i)
+                                          .score(categoryScore / 3.0)
+                                          .build());
         }
 
-        categoryScoreMap.put(categoryId, CategoryScore.builder().categoryId(categoryId).categoryName(category.getName()).score(categoryScore).questionScores(questionScores).build());
+        categoryScoreMap.put(categoryId, CategoryScore.builder()
+                                                      .categoryId(categoryId)
+                                                      .categoryName(category.getName())
+                                                      .score(categoryScore)
+                                                      .questionScores(questionScores)
+                                                      .build());
 
         pillarTotalScore += categoryScore;
       }
 
-      pillarScoreMap.put(pillarId, PillarScore.builder().pillarId(pillarId).pillarName(pillar.getName()).score(pillarTotalScore).categoryIdToCategoryScoreMap(categoryScoreMap).build());
+      pillarScoreMap.put(pillarId, PillarScore.builder()
+                                              .pillarId(pillarId)
+                                              .pillarName(pillar.getName())
+                                              .score(pillarTotalScore)
+                                              .categoryIdToCategoryScoreMap(categoryScoreMap)
+                                              .build());
     }
 
     // Calculate total score from all pillars
@@ -456,7 +470,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
 
     // Test get team analytics
     Optional<DashboardAnalytics> team1AnalyticsOpt = getDashboardAnalyticsService().getTeamAnalytics(
-        testAssessmentMatrix.getId(), testTeam1.getId());
+                                                                                                     testAssessmentMatrix.getId(), testTeam1.getId());
     if (team1AnalyticsOpt.isPresent()) {
       DashboardAnalytics team1Analytics = team1AnalyticsOpt.get();
       log.info("✓ Found team analytics for {}:", team1Analytics.getTeamName());
@@ -470,7 +484,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
     }
 
     Optional<DashboardAnalytics> team2AnalyticsOpt = getDashboardAnalyticsService().getTeamAnalytics(
-        testAssessmentMatrix.getId(), testTeam2.getId());
+                                                                                                     testAssessmentMatrix.getId(), testTeam2.getId());
     if (team2AnalyticsOpt.isPresent()) {
       DashboardAnalytics team2Analytics = team2AnalyticsOpt.get();
       log.info("✓ Found team analytics for {}:", team2Analytics.getTeamName());
@@ -528,7 +542,7 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
       }
 
       Optional<Answer> updatedAnswerOpt = getAnswerService().update(
-          answerToUpdate.getId(), LocalDateTime.now(), newValue, "Updated for analytics testing"
+                                                                    answerToUpdate.getId(), LocalDateTime.now(), newValue, "Updated for analytics testing"
       );
 
       if (updatedAnswerOpt.isPresent()) {
@@ -574,12 +588,14 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
         isValid = false;
       }
 
-      if (analytics.getPerformanceCycleId() == null || !analytics.getPerformanceCycleId().equals(testPerformanceCycle.getId())) {
+      if (analytics.getPerformanceCycleId() == null || !analytics.getPerformanceCycleId()
+                                                                 .equals(testPerformanceCycle.getId())) {
         issues.add("Invalid performance cycle ID");
         isValid = false;
       }
 
-      if (analytics.getAssessmentMatrixId() == null || !analytics.getAssessmentMatrixId().equals(testAssessmentMatrix.getId())) {
+      if (analytics.getAssessmentMatrixId() == null || !analytics.getAssessmentMatrixId()
+                                                                 .equals(testAssessmentMatrix.getId())) {
         issues.add("Invalid assessment matrix ID");
         isValid = false;
       }
@@ -702,11 +718,20 @@ public class DashboardAnalyticsTableRunner implements CrudRunner {
   }
 
   private NaturalPerson createTestEmployee(String name, String email, String documentNumber) {
-    return NaturalPerson.builder().name(name).email(email).documentNumber(documentNumber).personDocumentType(PersonDocumentType.CPF).gender(Gender.MALE).genderPronoun(GenderPronoun.HE).build();
+    return NaturalPerson.builder()
+                        .name(name)
+                        .email(email)
+                        .documentNumber(documentNumber)
+                        .personDocumentType(PersonDocumentType.CPF)
+                        .gender(Gender.MALE)
+                        .genderPronoun(GenderPronoun.HE)
+                        .build();
   }
 
   private List<QuestionOption> createMockedQuestionOptionList(String prefix, Double... points) {
-    return IntStream.range(0, points.length).mapToObj(index -> createQuestionOption(index + 1, prefix, points[index])).collect(Collectors.toList());
+    return IntStream.range(0, points.length)
+                    .mapToObj(index -> createQuestionOption(index + 1, prefix, points[index]))
+                    .collect(Collectors.toList());
   }
 
   private QuestionOption createQuestionOption(Integer id, String prefix, double points) {

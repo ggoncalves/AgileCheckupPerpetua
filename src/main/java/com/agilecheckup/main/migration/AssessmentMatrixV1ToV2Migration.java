@@ -36,7 +36,8 @@ public class AssessmentMatrixV1ToV2Migration {
   public AssessmentMatrixV1ToV2Migration() {
     this.dynamoDBV1Client = AmazonDynamoDBClientBuilder.standard().build();
     this.dynamoDBV2Client = DynamoDbClient.builder().region(Region.US_EAST_1).build();
-    this.objectMapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).setDateFormat(new StdDateFormat());
+    this.objectMapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                          .setDateFormat(new StdDateFormat());
   }
 
   public void migrate(boolean dryRun) {
@@ -127,7 +128,10 @@ public class AssessmentMatrixV1ToV2Migration {
       Map<String, AttributeValue> v2Item = convertV1ItemToV2(item);
 
       // Use V2 SDK to put the item
-      software.amazon.awssdk.services.dynamodb.model.PutItemRequest putRequest = software.amazon.awssdk.services.dynamodb.model.PutItemRequest.builder().tableName(ASSESSMENT_MATRIX_TABLE_NAME).item(v2Item).build();
+      software.amazon.awssdk.services.dynamodb.model.PutItemRequest putRequest = software.amazon.awssdk.services.dynamodb.model.PutItemRequest.builder()
+                                                                                                                                              .tableName(ASSESSMENT_MATRIX_TABLE_NAME)
+                                                                                                                                              .item(v2Item)
+                                                                                                                                              .build();
 
       dynamoDBV2Client.putItem(putRequest);
 
@@ -191,18 +195,25 @@ public class AssessmentMatrixV1ToV2Migration {
       v2Builder.ns(v1Attr.getNS());
     }
     else if (v1Attr.getBS() != null) {
-      List<software.amazon.awssdk.core.SdkBytes> v2BS = v1Attr.getBS().stream().map(software.amazon.awssdk.core.SdkBytes::fromByteBuffer).collect(java.util.stream.Collectors.toList());
+      List<software.amazon.awssdk.core.SdkBytes> v2BS = v1Attr.getBS()
+                                                              .stream()
+                                                              .map(software.amazon.awssdk.core.SdkBytes::fromByteBuffer)
+                                                              .collect(java.util.stream.Collectors.toList());
       v2Builder.bs(v2BS);
     }
     else if (v1Attr.getM() != null) {
       Map<String, AttributeValue> v2Map = new HashMap<>();
-      for (Map.Entry<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> mapEntry : v1Attr.getM().entrySet()) {
+      for (Map.Entry<String, com.amazonaws.services.dynamodbv2.model.AttributeValue> mapEntry : v1Attr.getM()
+                                                                                                      .entrySet()) {
         v2Map.put(mapEntry.getKey(), convertV1AttributeToV2(mapEntry.getValue()));
       }
       v2Builder.m(v2Map);
     }
     else if (v1Attr.getL() != null) {
-      List<AttributeValue> v2List = v1Attr.getL().stream().map(this::convertV1AttributeToV2).collect(java.util.stream.Collectors.toList());
+      List<AttributeValue> v2List = v1Attr.getL()
+                                          .stream()
+                                          .map(this::convertV1AttributeToV2)
+                                          .collect(java.util.stream.Collectors.toList());
       v2Builder.l(v2List);
     }
     else if (v1Attr.getNULL() != null && v1Attr.getNULL()) {

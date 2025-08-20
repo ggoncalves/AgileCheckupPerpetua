@@ -44,8 +44,10 @@ public class AnswerRepository extends AbstractCrudRepository<Answer> {
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
 
-    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).consistentRead(false) // GSI queries are eventually consistent
-        .build();
+    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                            .queryConditional(queryConditional)
+                                                            .consistentRead(false) // GSI queries are eventually consistent
+                                                            .build();
 
     return gsi.query(queryRequest).stream().flatMap(page -> page.items().stream()).collect(Collectors.toList());
   }
@@ -66,12 +68,18 @@ public class AnswerRepository extends AbstractCrudRepository<Answer> {
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
 
-    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).consistentRead(false) // GSI queries are eventually consistent
-        // Note: DynamoDB Enhanced Client doesn't support projection expressions directly
-        // but we can still benefit from GSI query performance
-        .build();
+    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                            .queryConditional(queryConditional)
+                                                            .consistentRead(false) // GSI queries are eventually consistent
+                                                            // Note: DynamoDB Enhanced Client doesn't support projection expressions directly
+                                                            // but we can still benefit from GSI query performance
+                                                            .build();
 
-    return gsi.query(queryRequest).stream().flatMap(page -> page.items().stream()).map(Answer::getQuestionId).collect(Collectors.toSet());
+    return gsi.query(queryRequest)
+              .stream()
+              .flatMap(page -> page.items().stream())
+              .map(Answer::getQuestionId)
+              .collect(Collectors.toSet());
   }
 
   /**
@@ -91,9 +99,15 @@ public class AnswerRepository extends AbstractCrudRepository<Answer> {
 
     QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
 
-    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder().queryConditional(queryConditional).consistentRead(false) // GSI queries are eventually consistent
-        .build();
+    QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                            .queryConditional(queryConditional)
+                                                            .consistentRead(false) // GSI queries are eventually consistent
+                                                            .build();
 
-    return gsi.query(queryRequest).stream().flatMap(page -> page.items().stream()).filter(answer -> questionId.equals(answer.getQuestionId())).findFirst();
+    return gsi.query(queryRequest)
+              .stream()
+              .flatMap(page -> page.items().stream())
+              .filter(answer -> questionId.equals(answer.getQuestionId()))
+              .findFirst();
   }
 }

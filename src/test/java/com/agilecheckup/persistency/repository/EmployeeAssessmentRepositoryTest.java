@@ -63,7 +63,13 @@ class EmployeeAssessmentRepositoryTest {
 
     NaturalPerson employee = NaturalPerson.builder().id("person-123").name("John Doe").email(employeeEmail).build();
 
-    EmployeeAssessment existingAssessment = EmployeeAssessment.builder().id("assessment-123").assessmentMatrixId(assessmentMatrixId).teamId("team-123").employee(employee).employeeEmailNormalized(normalizedEmail).build();
+    EmployeeAssessment existingAssessment = EmployeeAssessment.builder()
+                                                              .id("assessment-123")
+                                                              .assessmentMatrixId(assessmentMatrixId)
+                                                              .teamId("team-123")
+                                                              .employee(employee)
+                                                              .employeeEmailNormalized(normalizedEmail)
+                                                              .build();
     existingAssessment.setTenantId("tenant-123");
 
     PageIterable<EmployeeAssessment> pageIterable = mock(PageIterable.class);
@@ -123,7 +129,8 @@ class EmployeeAssessmentRepositoryTest {
     lenient().doReturn(gsi).when(table).index("assessmentMatrixId-employeeEmail-index");
     lenient().doThrow(gsiException).when(gsi).query(any(QueryEnhancedRequest.class));
 
-    assertThatThrownBy(() -> repository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, employeeEmail)).isInstanceOf(RuntimeException.class).hasMessageContaining("GSI query failed");
+    assertThatThrownBy(() -> repository.existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, employeeEmail)).isInstanceOf(RuntimeException.class)
+                                                                                                                    .hasMessageContaining("GSI query failed");
   }
 
   @Test
@@ -135,10 +142,22 @@ class EmployeeAssessmentRepositoryTest {
 
     NaturalPerson employee2 = NaturalPerson.builder().name("Jane Smith").email("jane.smith@example.com").build();
 
-    EmployeeAssessment assessment1 = EmployeeAssessment.builder().id("assessment-1").assessmentMatrixId(assessmentMatrixId).teamId("team-123").employee(employee1).assessmentStatus(AssessmentStatus.IN_PROGRESS).build();
+    EmployeeAssessment assessment1 = EmployeeAssessment.builder()
+                                                       .id("assessment-1")
+                                                       .assessmentMatrixId(assessmentMatrixId)
+                                                       .teamId("team-123")
+                                                       .employee(employee1)
+                                                       .assessmentStatus(AssessmentStatus.IN_PROGRESS)
+                                                       .build();
     assessment1.setTenantId(tenantId);
 
-    EmployeeAssessment assessment2 = EmployeeAssessment.builder().id("assessment-2").assessmentMatrixId(assessmentMatrixId).teamId("team-123").employee(employee2).assessmentStatus(AssessmentStatus.COMPLETED).build();
+    EmployeeAssessment assessment2 = EmployeeAssessment.builder()
+                                                       .id("assessment-2")
+                                                       .assessmentMatrixId(assessmentMatrixId)
+                                                       .teamId("team-123")
+                                                       .employee(employee2)
+                                                       .assessmentStatus(AssessmentStatus.COMPLETED)
+                                                       .build();
     assessment2.setTenantId(tenantId);
 
     List<EmployeeAssessment> expectedResults = Arrays.asList(assessment1, assessment2);

@@ -46,7 +46,11 @@ class EmployeeValidationRequestTest {
     String tenantId = "tenant-012";
 
     // When
-    EmployeeValidationRequest request = EmployeeValidationRequest.builder().email(email).assessmentMatrixId(assessmentMatrixId).tenantId(tenantId).build();
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+                                                                 .email(email)
+                                                                 .assessmentMatrixId(assessmentMatrixId)
+                                                                 .tenantId(tenantId)
+                                                                 .build();
 
     // Then
     assertThat(request).isNotNull();
@@ -77,11 +81,23 @@ class EmployeeValidationRequestTest {
   @Test
   void shouldImplementEqualsAndHashCode() {
     // Given
-    EmployeeValidationRequest request1 = EmployeeValidationRequest.builder().email("test@example.com").assessmentMatrixId("matrix-123").tenantId("tenant-456").build();
+    EmployeeValidationRequest request1 = EmployeeValidationRequest.builder()
+                                                                  .email("test@example.com")
+                                                                  .assessmentMatrixId("matrix-123")
+                                                                  .tenantId("tenant-456")
+                                                                  .build();
 
-    EmployeeValidationRequest request2 = EmployeeValidationRequest.builder().email("test@example.com").assessmentMatrixId("matrix-123").tenantId("tenant-456").build();
+    EmployeeValidationRequest request2 = EmployeeValidationRequest.builder()
+                                                                  .email("test@example.com")
+                                                                  .assessmentMatrixId("matrix-123")
+                                                                  .tenantId("tenant-456")
+                                                                  .build();
 
-    EmployeeValidationRequest request3 = EmployeeValidationRequest.builder().email("different@example.com").assessmentMatrixId("matrix-123").tenantId("tenant-456").build();
+    EmployeeValidationRequest request3 = EmployeeValidationRequest.builder()
+                                                                  .email("different@example.com")
+                                                                  .assessmentMatrixId("matrix-123")
+                                                                  .tenantId("tenant-456")
+                                                                  .build();
 
     // Then
     assertThat(request1).isEqualTo(request2);
@@ -93,7 +109,11 @@ class EmployeeValidationRequestTest {
   @Test
   void shouldImplementToString() {
     // Given
-    EmployeeValidationRequest request = EmployeeValidationRequest.builder().email("test@example.com").assessmentMatrixId("matrix-123").tenantId("tenant-456").build();
+    EmployeeValidationRequest request = EmployeeValidationRequest.builder()
+                                                                 .email("test@example.com")
+                                                                 .assessmentMatrixId("matrix-123")
+                                                                 .tenantId("tenant-456")
+                                                                 .build();
 
     // When
     String toString = request.toString();

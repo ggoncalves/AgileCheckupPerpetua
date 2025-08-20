@@ -1,5 +1,33 @@
 package com.agilecheckup.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
@@ -18,33 +46,6 @@ import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
 import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentServiceTest {
@@ -67,7 +68,7 @@ class EmployeeAssessmentServiceTest {
   @BeforeEach
   void setUp() {
     service = new EmployeeAssessmentService(
-        employeeAssessmentRepository, assessmentMatrixService, teamService, answerRepository
+                                            employeeAssessmentRepository, assessmentMatrixService, teamService, answerRepository
     );
 
     // Setup default mocks
@@ -111,7 +112,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(Optional.of(savedAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
     Optional<EmployeeAssessment> result = service.create(
-        ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                                         ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     );
 
     assertThat(result).isPresent();
@@ -130,7 +131,7 @@ class EmployeeAssessmentServiceTest {
                   .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
 
     assertThatThrownBy(() -> service.create(
-        ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                            ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     )).isInstanceOf(EmployeeAssessmentAlreadyExistsException.class);
 
     verify(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
@@ -142,7 +143,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(Optional.empty()).when(teamService).findById(TEAM_ID);
 
     assertThatThrownBy(() -> service.create(
-        ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                            ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     )).isInstanceOf(InvalidIdReferenceException.class);
   }
 
@@ -151,7 +152,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(Optional.empty()).when(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
 
     assertThatThrownBy(() -> service.create(
-        ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                            ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     )).isInstanceOf(InvalidIdReferenceException.class);
   }
 
@@ -165,7 +166,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
     Optional<EmployeeAssessment> result = service.update(
-        assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com", "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
+                                                         assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com", "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
     );
 
     assertThat(result).isPresent();
@@ -180,7 +181,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(Optional.empty()).when(employeeAssessmentRepository).findById(assessmentId);
 
     Optional<EmployeeAssessment> result = service.update(
-        assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com", "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
+                                                         assessmentId, ASSESSMENT_MATRIX_ID, TEAM_ID, "Jane Smith", "jane.smith@example.com", "987654321", PersonDocumentType.CPF, Gender.FEMALE, GenderPronoun.SHE
     );
 
     assertThat(result).isEmpty();
@@ -653,8 +654,13 @@ class EmployeeAssessmentServiceTest {
     String email = EMPLOYEE_EMAIL;
 
     // Setup mock team with DIFFERENT tenant ID to expose bug
-    Team mockTeam = Team.builder().id(teamId).tenantId("team-tenant-123") // Different from matrix tenant
-                        .name("Test Team").description("Test team description").departmentId("dept-123").build();
+    Team mockTeam = Team.builder()
+                        .id(teamId)
+                        .tenantId("team-tenant-123") // Different from matrix tenant
+                        .name("Test Team")
+                        .description("Test team description")
+                        .departmentId("dept-123")
+                        .build();
     doReturn(Optional.of(mockTeam)).when(teamService).findById(teamId);
 
     // Setup mock assessment matrix
@@ -675,7 +681,7 @@ class EmployeeAssessmentServiceTest {
 
     // When
     Optional<EmployeeAssessment> result = service.create(
-        assessmentMatrixId, teamId, name, email, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
+                                                         assessmentMatrixId, teamId, name, email, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
     );
 
     // Then

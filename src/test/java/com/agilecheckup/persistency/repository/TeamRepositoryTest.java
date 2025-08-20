@@ -71,8 +71,20 @@ class TeamRepositoryTest {
   void testFindByDepartmentId() {
     // Given
     String departmentId = "dept-123";
-    Team team1 = Team.builder().id("team-1").departmentId(departmentId).name("Team 1").description("Team 1 description").tenantId("tenant-123").build();
-    Team team2 = Team.builder().id("team-2").departmentId(departmentId).name("Team 2").description("Team 2 description").tenantId("tenant-123").build();
+    Team team1 = Team.builder()
+                     .id("team-1")
+                     .departmentId(departmentId)
+                     .name("Team 1")
+                     .description("Team 1 description")
+                     .tenantId("tenant-123")
+                     .build();
+    Team team2 = Team.builder()
+                     .id("team-2")
+                     .departmentId(departmentId)
+                     .name("Team 2")
+                     .description("Team 2 description")
+                     .tenantId("tenant-123")
+                     .build();
 
     when(table.index("departmentId-index")).thenReturn(index);
     when(index.query(any(QueryEnhancedRequest.class))).thenReturn(pageIterable);

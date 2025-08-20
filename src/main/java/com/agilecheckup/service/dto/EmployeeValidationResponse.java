@@ -21,10 +21,22 @@ public class EmployeeValidationResponse {
   }
 
   public static EmployeeValidationResponse success(String message, String employeeAssessmentId, String name, String assessmentStatus) {
-    return EmployeeValidationResponse.builder().status("SUCCESS").message(message).employeeAssessmentId(employeeAssessmentId).name(name).assessmentStatus(assessmentStatus).build();
+    return EmployeeValidationResponse.builder()
+                                     .status("SUCCESS")
+                                     .message(message)
+                                     .employeeAssessmentId(employeeAssessmentId)
+                                     .name(name)
+                                     .assessmentStatus(assessmentStatus)
+                                     .build();
   }
 
   public static EmployeeValidationResponse info(String message, String employeeAssessmentId, String name, String assessmentStatus) {
-    return EmployeeValidationResponse.builder().status("INFO").message(message).employeeAssessmentId(employeeAssessmentId).name(name).assessmentStatus(assessmentStatus).build();
+    return EmployeeValidationResponse.builder()
+                                     .status("INFO")
+                                     .message(message)
+                                     .employeeAssessmentId(employeeAssessmentId)
+                                     .name(name)
+                                     .assessmentStatus(assessmentStatus)
+                                     .build();
   }
 }
