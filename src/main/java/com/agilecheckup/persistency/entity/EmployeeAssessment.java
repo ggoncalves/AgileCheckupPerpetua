@@ -1,23 +1,28 @@
 package com.agilecheckup.persistency.entity;
 
-import java.util.Date;
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.agilecheckup.persistency.converter.DateAttributeConverter;
 import com.agilecheckup.persistency.converter.EmployeeAssessmentScoreAttributeConverter;
 import com.agilecheckup.persistency.converter.NaturalPersonAttributeConverter;
 import com.agilecheckup.persistency.entity.base.TenantableEntity;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbConvertedBy;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
+
+import java.util.Date;
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -61,6 +66,22 @@ public class EmployeeAssessment extends TenantableEntity {
    */
   public void setEmployee(NaturalPerson employee) {
     this.employee = employee;
-    this.employeeEmailNormalized = Optional.ofNullable(employee).map(NaturalPerson::getEmail).filter(StringUtils::isNotBlank).map(email -> email.toLowerCase().trim()).orElse(null);
+    this.employeeEmailNormalized = Optional.ofNullable(employee)
+                                           .map(NaturalPerson::getEmail)
+                                           .filter(StringUtils::isNotBlank)
+                                           .map(email -> email.toLowerCase().trim())
+                                           .orElse(null);
+  }
+
+  public boolean isCompleted() {
+    return assessmentStatus == AssessmentStatus.COMPLETED;
+  }
+
+  public boolean isNotCompleted() {
+    return !isCompleted();
+  }
+
+  public void incrementAnswersCount() {
+    this.answeredQuestionCount = (this.answeredQuestionCount != null ? this.answeredQuestionCount : 0) + 1;
   }
 }

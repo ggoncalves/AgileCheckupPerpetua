@@ -1,16 +1,5 @@
 package com.agilecheckup.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
@@ -19,6 +8,7 @@ import com.agilecheckup.persistency.entity.Team;
 import com.agilecheckup.persistency.entity.person.Gender;
 import com.agilecheckup.persistency.entity.person.GenderPronoun;
 import com.agilecheckup.persistency.entity.person.NaturalPerson;
+import com.agilecheckup.persistency.entity.person.Person;
 import com.agilecheckup.persistency.entity.person.PersonDocumentType;
 import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.score.CategoryScore;
@@ -31,8 +21,17 @@ import com.agilecheckup.service.dto.EmployeeValidationResponse;
 import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.validator.AssessmentStatusValidator;
-
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAssessment, EmployeeAssessmentRepository> {
 
@@ -52,6 +51,18 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     this.answerRepository = answerRepository;
   }
 
+  public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
+    return NaturalPerson.builder()
+                        .id(personId)
+                        .name(name)
+                        .email(email)
+                        .documentNumber(documentNumber)
+                        .personDocumentType(documentType)
+                        .gender(gender)
+                        .genderPronoun(genderPronoun)
+                        .build();
+  }
+
   @Override
   public EmployeeAssessmentRepository getRepository() {
     return employeeAssessmentRepository;
@@ -66,10 +77,6 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(id);
     if (optionalEmployeeAssessment.isPresent()) {
       EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
-      Optional<AssessmentMatrix> assessmentMatrix = assessmentMatrixService.findById(assessmentMatrixId);
-      AssessmentMatrix assessmentMatrixEntity = assessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessmentMatrixId, getClass().getName(), "AssessmentMatrix"));
-
-      employeeAssessment.setAssessmentMatrixId(assessmentMatrixEntity.getId());
 
       if (StringUtils.isNotBlank(teamId)) {
         Optional<Team> team = teamService.findById(teamId);
@@ -79,7 +86,8 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       else {
         employeeAssessment.setTeamId(null);
       }
-      employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee().getId()));
+      employeeAssessment.setEmployee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, employeeAssessment.getEmployee()
+                                                                                                                                             .getId()));
       employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim());
       return super.update(employeeAssessment);
     }
@@ -101,38 +109,56 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
       finalTeamId = teamEntity.getId();
     }
 
-    return EmployeeAssessment.builder().assessmentMatrixId(assessmentMatrixEntity.getId()).teamId(finalTeamId).tenantId(tenantId).employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null)).employeeEmailNormalized(email.toLowerCase().trim()).answeredQuestionCount(0).assessmentStatus(AssessmentStatus.INVITED).build();
-  }
-
-  public static NaturalPerson createNaturalPerson(String name, @NonNull String email, String documentNumber, PersonDocumentType documentType, Gender gender, GenderPronoun genderPronoun, String personId) {
-    return NaturalPerson.builder().id(personId).name(name).email(email).documentNumber(documentNumber).personDocumentType(documentType).gender(gender).genderPronoun(genderPronoun).build();
+    return EmployeeAssessment.builder()
+                             .assessmentMatrixId(assessmentMatrixEntity.getId())
+                             .teamId(finalTeamId)
+                             .tenantId(tenantId)
+                             .employee(createNaturalPerson(name, email, documentNumber, documentType, gender, genderPronoun, null))
+                             .employeeEmailNormalized(email.toLowerCase().trim())
+                             .answeredQuestionCount(0)
+                             .assessmentStatus(AssessmentStatus.INVITED)
+                             .build();
   }
 
   public void incrementAnsweredQuestionCount(String employeeAssessmentId) {
-    Optional<EmployeeAssessment> optionalEmployeeAssessment = getRepository().findById(employeeAssessmentId);
-    if (optionalEmployeeAssessment.isPresent()) {
-      EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
-      employeeAssessment.setAnsweredQuestionCount(employeeAssessment.getAnsweredQuestionCount() + 1);
-      AssessmentStatus currentStatus = employeeAssessment.getAssessmentStatus();
-      boolean statusChanged = false;
 
-      if (currentStatus == null) {
-        currentStatus = AssessmentStatus.INVITED;
-        employeeAssessment.setAssessmentStatus(currentStatus);
-      }
-      if (employeeAssessment.getAnsweredQuestionCount() == 1 && currentStatus == AssessmentStatus.INVITED) {
-        employeeAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
-        statusChanged = true;
-      }
-      getRepository().save(employeeAssessment);
-
-      // Update lastActivityDate for status transition
-      if (statusChanged) {
-        updateLastActivityDate(employeeAssessmentId);
-      }
+    EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
+    employeeAssessment.incrementAnswersCount();
+    boolean hasAdvanced = advanceAssessmentProgress(employeeAssessment);
+    save(employeeAssessment);
+    if (hasAdvanced) {
+      this.updateEmployeeAssessmentScore(employeeAssessment);
     }
   }
 
+  private boolean advanceAssessmentProgress(EmployeeAssessment employeeAssessment) {
+    AssessmentStatus nextStatus = getNextAssessmentStatus(employeeAssessment);
+    if (employeeAssessment.getAssessmentStatus().equals(nextStatus)) return false;
+    if (nextStatus == AssessmentStatus.COMPLETED) {
+      finalizeAssessment(employeeAssessment);
+    }
+    else {
+      employeeAssessment.setAssessmentStatus(nextStatus);
+      employeeAssessment.setLastActivityDate(new Date());
+    }
+    return true;
+  }
+
+  private AssessmentStatus getNextAssessmentStatus(EmployeeAssessment assessment) {
+    if (assessment.getAssessmentStatus() == null) return AssessmentStatus.INVITED;
+    switch (assessment.getAssessmentStatus()) {
+      case INVITED:
+      case CONFIRMED:
+        return assessment.getAnsweredQuestionCount() >= 1 ? AssessmentStatus.IN_PROGRESS : AssessmentStatus.CONFIRMED;
+      case IN_PROGRESS:
+        Optional<AssessmentMatrix> optionalAssessmentMatrix = assessmentMatrixService.findById(assessment.getAssessmentMatrixId());
+        AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(assessment.getAssessmentMatrixId(), getClass().getName(), "AssessmentMatrix"));
+        return hasAnsweredAllQuestions(assessment, assessmentMatrix) ? AssessmentStatus.COMPLETED : AssessmentStatus.IN_PROGRESS;
+    }
+    return null;
+  }
+
+  // Gláucio: This is only used in Test and TableRunner.
   public Optional<EmployeeAssessment> updateAssessmentStatus(@NonNull String employeeAssessmentId, @NonNull AssessmentStatus status) {
     Optional<EmployeeAssessment> optionalEmployeeAssessment = findById(employeeAssessmentId);
     if (optionalEmployeeAssessment.isPresent()) {
@@ -157,19 +183,18 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     return Optional.empty();
   }
 
-  // TODO Remove this tenantId and refactor this code.
-  public EmployeeAssessment updateEmployeeAssessmentScore(String employeeAssessmentId, String tenantId) {
+  // TODO Gláucio Remove this tenantId.
+  public EmployeeAssessment updateEmployeeAssessmentScore(String employeeAssessmentId) {
     Optional<EmployeeAssessment> optionalEmployeeAssessment = getRepository().findById(employeeAssessmentId);
+    return optionalEmployeeAssessment.map(this::updateEmployeeAssessmentScore).orElse(null);
+  }
 
-    if (optionalEmployeeAssessment.isPresent()) {
-      EmployeeAssessment employeeAssessment = optionalEmployeeAssessment.get();
-      List<Answer> answers = retrieveAnswers(employeeAssessmentId, tenantId);
-      EmployeeAssessmentScore employeeAssessmentScore = calculateEmployeeAssessmentScore(answers);
-      employeeAssessment.setEmployeeAssessmentScore(employeeAssessmentScore);
-      getRepository().save(employeeAssessment);
-      return employeeAssessment;
-    }
-    return null;
+  public EmployeeAssessment updateEmployeeAssessmentScore(EmployeeAssessment employeeAssessment) {
+    List<Answer> answers = retrieveAnswers(employeeAssessment.getId(), employeeAssessment.getTenantId());
+    EmployeeAssessmentScore employeeAssessmentScore = calculateEmployeeAssessmentScore(answers);
+    employeeAssessment.setEmployeeAssessmentScore(employeeAssessmentScore);
+    getRepository().save(employeeAssessment);
+    return employeeAssessment;
   }
 
   private List<Answer> retrieveAnswers(String employeeAssessmentId, String tenantId) {
@@ -298,16 +323,21 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   /**
    * Save employee assessment (create or update)
    */
-  public EmployeeAssessment save(EmployeeAssessment employeeAssessment) {
+  public EmployeeAssessment save(EmployeeAssessment assessment) {
     // Ensure normalized email is set for GSI
-    Optional.ofNullable(employeeAssessment.getEmployee()).map(employee -> employee.getEmail()).filter(StringUtils::isNotBlank).ifPresent(email -> employeeAssessment.setEmployeeEmailNormalized(email.toLowerCase().trim()));
+    Optional.ofNullable(assessment.getEmployee())
+            .map(Person::getEmail)
+            .filter(StringUtils::isNotBlank)
+            .ifPresent(email -> assessment.setEmployeeEmailNormalized(email.toLowerCase().trim()));
 
     // For new assessments (no ID), validate employee assessment uniqueness
-    if (employeeAssessment.getId() == null) {
-      String email = Optional.ofNullable(employeeAssessment.getEmployee()).map(employee -> employee.getEmail()).orElseThrow(() -> new IllegalArgumentException("Employee email is required"));
-      validateEmployeeAssessmentUniqueness(email, employeeAssessment.getAssessmentMatrixId());
+    if (assessment.getId() == null) {
+      String email = Optional.ofNullable(assessment.getEmployee())
+                             .map(Person::getEmail)
+                             .orElseThrow(() -> new IllegalArgumentException("Employee email is required"));
+      validateEmployeeAssessmentUniqueness(email, assessment.getAssessmentMatrixId());
     }
-    return employeeAssessmentRepository.save(employeeAssessment).orElse(employeeAssessment);
+    return getRepository().save(assessment).orElse(assessment);
   }
 
   /**
@@ -337,7 +367,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   public EmployeeValidationResponse validateEmployee(EmployeeValidationRequest request) {
     Optional<EmployeeAssessment> matchingAssessment = findEmployeeAssessment(request);
 
-    if (!matchingAssessment.isPresent()) {
+    if (matchingAssessment.isEmpty()) {
       return createEmployeeNotFoundResponse();
     }
 
@@ -352,28 +382,23 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   }
 
   private EmployeeValidationResponse createEmployeeNotFoundResponse() {
-    return EmployeeValidationResponse.error(
-        "We couldn't find your assessment invitation. Please check that you're using the same email address that HR used to invite you, or contact your HR department for assistance."
-    );
+    return EmployeeValidationResponse.error("We couldn't find your assessment invitation. Please check that you're using the same email address that HR used to invite you, or contact your HR department for assistance.");
   }
 
   private Optional<EmployeeAssessment> findEmployeeAssessment(EmployeeValidationRequest request) {
-    List<EmployeeAssessment> assessments = findByAssessmentMatrix(
-        request.getAssessmentMatrixId(), request.getTenantId());
+    List<EmployeeAssessment> assessments = findByAssessmentMatrix(request.getAssessmentMatrixId(), request.getTenantId());
 
     return assessments.stream().filter(assessment -> isEmailMatch(assessment, request.getEmail())).findFirst();
   }
 
   private EmployeeValidationResponse handleActiveStatus(EmployeeAssessment assessment, AssessmentStatus currentStatus) {
-    return EmployeeValidationResponse.info(
-        "Welcome back! You can continue your assessment where you left off.", assessment.getId(), assessment.getEmployee().getName(), currentStatus.toString()
-    );
+    return EmployeeValidationResponse.info("Welcome back! You can continue your assessment where you left off.", assessment.getId(), assessment.getEmployee()
+                                                                                                                                               .getName(), currentStatus.toString());
   }
 
   private EmployeeValidationResponse handleCompletedStatus(EmployeeAssessment assessment) {
-    return EmployeeValidationResponse.info(
-        "You have already completed this assessment. Thank you for your participation!", assessment.getId(), assessment.getEmployee().getName(), AssessmentStatus.COMPLETED.toString()
-    );
+    return EmployeeValidationResponse.info("You have already completed this assessment. Thank you for your participation!", assessment.getId(), assessment.getEmployee()
+                                                                                                                                                          .getName(), AssessmentStatus.COMPLETED.toString());
   }
 
   private EmployeeValidationResponse handleEmployeeAssessmentValidation(EmployeeAssessment assessment) {
@@ -395,15 +420,13 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   private EmployeeValidationResponse handleInvitedStatus(EmployeeAssessment assessment) {
     confirmEmployeeAssessment(assessment);
 
-    return EmployeeValidationResponse.success(
-        "Welcome! Your assessment access has been confirmed.", assessment.getId(), assessment.getEmployee().getName(), AssessmentStatus.CONFIRMED.toString()
-    );
+    return EmployeeValidationResponse.success("Welcome! Your assessment access has been confirmed.", assessment.getId(), assessment.getEmployee()
+                                                                                                                                   .getName(), AssessmentStatus.CONFIRMED.toString());
   }
 
   private EmployeeValidationResponse handleUnknownStatus(EmployeeAssessment assessment, AssessmentStatus currentStatus) {
-    return EmployeeValidationResponse.info(
-        "Your assessment is in status: " + currentStatus, assessment.getId(), assessment.getEmployee().getName(), currentStatus.toString()
-    );
+    return EmployeeValidationResponse.info("Your assessment is in status: " + currentStatus, assessment.getId(), assessment.getEmployee()
+                                                                                                                           .getName(), currentStatus.toString());
   }
 
   private boolean isEmailMatch(EmployeeAssessment assessment, String email) {
@@ -413,7 +436,7 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   /**
    * Updates the lastActivityDate for an employee assessment.
    * This method should only be called for assessments that are not COMPLETED.
-   * 
+   *
    * @param employeeAssessmentId The employee assessment ID to update
    */
   public void updateLastActivityDate(@NonNull String employeeAssessmentId) {
@@ -425,6 +448,34 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
         getRepository().save(employeeAssessment);
       }
     }
+  }
+
+  private EmployeeAssessment getEmployeeAssessmentById(String employeeAssessmentId) {
+    Optional<EmployeeAssessment> employeeAssessment = findById(employeeAssessmentId);
+    return employeeAssessment.orElseThrow(() -> new InvalidIdReferenceException(employeeAssessmentId, getClass().getName(), "EmployeeAssessment"));
+  }
+
+  void finalizeAssessment(EmployeeAssessment employeeAssessment) {
+    if (employeeAssessment.isNotCompleted()) {
+      employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+      employeeAssessment.setLastActivityDate(new Date());
+//      this.save(employeeAssessment);
+//      this.updateEmployeeAssessmentScore(employeeAssessment);
+    }
+  }
+
+  public void finalizeAssessmentIfCompleted(String employeeAssessmentId) {
+    EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
+    Optional<AssessmentMatrix> optionalAssessmentMatrix = assessmentMatrixService.findById(employeeAssessment.getAssessmentMatrixId());
+    AssessmentMatrix assessmentMatrix = optionalAssessmentMatrix.orElseThrow(() -> new InvalidIdReferenceException(employeeAssessment.getAssessmentMatrixId(), getClass().getName(), "AssessmentMatrix"));
+
+    if (hasAnsweredAllQuestions(employeeAssessment, assessmentMatrix)) {
+      finalizeAssessment(employeeAssessment);
+    }
+  }
+
+  private boolean hasAnsweredAllQuestions(EmployeeAssessment employeeAssessment, AssessmentMatrix assessmentMatrix) {
+    return employeeAssessment.getAnsweredQuestionCount() >= assessmentMatrix.getQuestionCount();
   }
 
   @Override

@@ -1,5 +1,29 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentConfiguration;
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.QuestionNavigationType;
+import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.service.dto.AnswerWithProgressResponse;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,31 +34,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.agilecheckup.persistency.entity.AssessmentConfiguration;
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
-import com.agilecheckup.persistency.entity.QuestionNavigationType;
-import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.service.dto.AnswerWithProgressResponse;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 @ExtendWith(MockitoExtension.class)
 class AssessmentNavigationServiceTest {
@@ -119,9 +118,7 @@ class AssessmentNavigationServiceTest {
     assertThat(response.getTotalQuestions()).isEqualTo(3);
 
     // Verify assessment was updated to COMPLETED
-    ArgumentCaptor<EmployeeAssessment> assessmentCaptor = ArgumentCaptor.forClass(EmployeeAssessment.class);
-    verify(employeeAssessmentService).update(assessmentCaptor.capture());
-    assertThat(assessmentCaptor.getValue().getAssessmentStatus()).isEqualTo(AssessmentStatus.COMPLETED);
+    verify(employeeAssessmentService).finalizeAssessmentIfCompleted(any());
   }
 
   @Test

@@ -1,15 +1,5 @@
 package com.agilecheckup.service;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
@@ -19,8 +9,16 @@ import com.agilecheckup.persistency.entity.question.Answer;
 import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.service.dto.AnswerWithProgressResponse;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
-
 import lombok.NonNull;
+
+import javax.inject.Inject;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AssessmentNavigationService {
 
@@ -77,7 +75,9 @@ public class AssessmentNavigationService {
     List<Question> unansweredQuestions = getUnansweredQuestions(matrix.getId(), tenantId, answeredQuestionIds);
 
     if (unansweredQuestions.isEmpty()) {
-      updateStatusToCompletedIfNeeded(assessment);
+      if (assessment.isNotCompleted()) {
+        employeeAssessmentService.finalizeAssessmentIfCompleted(assessment.getId());
+      }
       return null;
     }
 
@@ -156,13 +156,6 @@ public class AssessmentNavigationService {
     }
   }
 
-  private void updateStatusToCompletedIfNeeded(EmployeeAssessment employeeAssessment) {
-    if (!AssessmentStatus.COMPLETED.equals(employeeAssessment.getAssessmentStatus())) {
-      employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
-      employeeAssessmentService.update(employeeAssessment);
-    }
-  }
-
   private EmployeeAssessment getEmployeeAssessmentById(String employeeAssessmentId) {
     Optional<EmployeeAssessment> employeeAssessment = employeeAssessmentService.findById(employeeAssessmentId);
     return employeeAssessment.orElseThrow(() -> new InvalidIdReferenceException(employeeAssessmentId, getClass().getName(), "EmployeeAssessment"));
@@ -186,14 +179,16 @@ public class AssessmentNavigationService {
    * @return AnswerWithProgressResponse containing the saved answer and next question with progress
    */
   public AnswerWithProgressResponse saveAnswerAndGetNext(@NonNull String employeeAssessmentId, @NonNull String questionId, LocalDateTime answeredAt, @NonNull String value, @NonNull String tenantId, String notes) {
-    // Save the answer first
-    Optional<Answer> savedAnswer = answerService.create(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes);
-
-    if (savedAnswer.isEmpty()) {
-      throw new RuntimeException("Failed to save answer - answerService.create returned empty Optional");
-    }
+    Answer answer = saveAnswer(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes);
 
     // Get the next unanswered question with progress
     return getNextUnansweredQuestion(employeeAssessmentId, tenantId);
+  }
+
+  private Answer saveAnswer(String employeeAssessmentId, String questionId, LocalDateTime answeredAt, String value, String tenantId, String notes) {
+    // Save the answer first
+    return answerService.create(employeeAssessmentId, questionId, answeredAt, value, tenantId, notes)
+                        .orElseThrow(() -> new RuntimeException("Failed to save answer - answerService.create returned empty Optional"));
+
   }
 }

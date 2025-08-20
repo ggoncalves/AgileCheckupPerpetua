@@ -1,26 +1,7 @@
 package com.agilecheckup.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.agilecheckup.persistency.entity.AnalyticsScope;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.Company;
 import com.agilecheckup.persistency.entity.DashboardAnalytics;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
@@ -36,8 +17,23 @@ import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.persistency.repository.DashboardAnalyticsRepository;
 import com.agilecheckup.persistency.repository.TeamRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for calculating and managing dashboard analytics.
@@ -63,7 +59,7 @@ public class DashboardAnalyticsService {
 
   @Inject
   public DashboardAnalyticsService(
-                                   DashboardAnalyticsRepository dashboardAnalyticsRepository, AssessmentMatrixService assessmentMatrixService, EmployeeAssessmentService employeeAssessmentService, CompanyService companyService, PerformanceCycleService performanceCycleService, TeamRepository teamRepository, AnswerRepository answerRepository) {
+      DashboardAnalyticsRepository dashboardAnalyticsRepository, AssessmentMatrixService assessmentMatrixService, EmployeeAssessmentService employeeAssessmentService, CompanyService companyService, PerformanceCycleService performanceCycleService, TeamRepository teamRepository, AnswerRepository answerRepository) {
     this.dashboardAnalyticsRepository = dashboardAnalyticsRepository;
     this.assessmentMatrixService = assessmentMatrixService;
     this.employeeAssessmentService = employeeAssessmentService;
@@ -150,7 +146,10 @@ public class DashboardAnalyticsService {
       return Collections.emptyList();
     }
 
-    return dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(companyId, performanceCycleId).stream().filter(da -> da.getAssessmentMatrixId().equals(assessmentMatrixId)).collect(Collectors.toList());
+    return dashboardAnalyticsRepository.findByCompanyAndPerformanceCycle(companyId, performanceCycleId)
+                                       .stream()
+                                       .filter(da -> da.getAssessmentMatrixId().equals(assessmentMatrixId))
+                                       .collect(Collectors.toList());
   }
 
   /**
@@ -184,7 +183,9 @@ public class DashboardAnalyticsService {
       return;
     }
 
-    Map<String, List<EmployeeAssessment>> assessmentsByTeam = allAssessments.stream().filter(ea -> ea.getTeamId() != null).collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
+    Map<String, List<EmployeeAssessment>> assessmentsByTeam = allAssessments.stream()
+                                                                            .filter(ea -> ea.getTeamId() != null)
+                                                                            .collect(Collectors.groupingBy(EmployeeAssessment::getTeamId));
 
     List<DashboardAnalytics> analyticsToSave = new ArrayList<>();
 
@@ -206,14 +207,14 @@ public class DashboardAnalyticsService {
   }
 
   private DashboardAnalytics calculateOverviewAnalytics(
-                                                        String companyId, String performanceCycleId, String assessmentMatrixId, List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
+      String companyId, String performanceCycleId, String assessmentMatrixId, List<EmployeeAssessment> allAssessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
 
     return calculateAnalytics(
         companyId, performanceCycleId, assessmentMatrixId, AnalyticsScope.ASSESSMENT_MATRIX, null, allAssessments, matrix, companyName, performanceCycleName, assessmentMatrixName);
   }
 
   private DashboardAnalytics calculateAnalytics(
-                                                String companyId, String performanceCycleId, String assessmentMatrixId, AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
+      String companyId, String performanceCycleId, String assessmentMatrixId, AnalyticsScope scope, String teamId, List<EmployeeAssessment> assessments, AssessmentMatrix matrix, String companyName, String performanceCycleName, String assessmentMatrixName) {
 
     String teamName = null;
     if (scope == AnalyticsScope.TEAM && teamId != null) {
@@ -222,18 +223,25 @@ public class DashboardAnalyticsService {
     }
 
     int employeeCount = assessments.size();
-    long completedCount = assessments.stream().filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED).count();
+    long completedCount = assessments.stream().filter(EmployeeAssessment::isCompleted).count();
     double completionPercentage = calculatePercentage(completedCount, employeeCount);
 
-    List<EmployeeAssessment> completedAssessments = assessments.stream().filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED).collect(Collectors.toList());
+    List<EmployeeAssessment> completedAssessments = assessments.stream()
+                                                               .filter(EmployeeAssessment::isCompleted)
+                                                               .collect(Collectors.toList());
 
-    List<EmployeeAssessment> scoredAssessments = completedAssessments.stream().filter(ea -> ea.getEmployeeAssessmentScore() != null).collect(Collectors.toList());
+    List<EmployeeAssessment> scoredAssessments = completedAssessments.stream()
+                                                                     .filter(ea -> ea.getEmployeeAssessmentScore() != null)
+                                                                     .collect(Collectors.toList());
 
     double totalScore = 0.0;
     Map<String, Object> analyticsData = new HashMap<>();
 
     if (!completedAssessments.isEmpty()) {
-      double sumOfScores = completedAssessments.stream().mapToDouble(ea -> ea.getEmployeeAssessmentScore() != null ? ea.getEmployeeAssessmentScore().getScore() : 0.0).sum();
+      double sumOfScores = completedAssessments.stream()
+                                               .mapToDouble(ea -> ea.getEmployeeAssessmentScore() != null ? ea.getEmployeeAssessmentScore()
+                                                                                                              .getScore() : 0.0)
+                                               .sum();
       totalScore = sumOfScores / completedAssessments.size();
 
       if (!scoredAssessments.isEmpty()) {
@@ -245,11 +253,28 @@ public class DashboardAnalyticsService {
 
     String analyticsDataJson = convertToJson(analyticsData);
 
-    return DashboardAnalytics.builder().companyPerformanceCycleId(companyId + "#" + performanceCycleId).assessmentMatrixScopeId(buildAssessmentMatrixScopeId(assessmentMatrixId, scope, teamId)).companyId(companyId).performanceCycleId(performanceCycleId).assessmentMatrixId(assessmentMatrixId).scope(scope).teamId(teamId).teamName(teamName).companyName(companyName).performanceCycleName(performanceCycleName).assessmentMatrixName(assessmentMatrixName).generalAverage(totalScore).employeeCount(employeeCount).completionPercentage(completionPercentage).lastUpdated(Instant.now()).analyticsDataJson(analyticsDataJson).build();
+    return DashboardAnalytics.builder()
+                             .companyPerformanceCycleId(companyId + "#" + performanceCycleId)
+                             .assessmentMatrixScopeId(buildAssessmentMatrixScopeId(assessmentMatrixId, scope, teamId))
+                             .companyId(companyId)
+                             .performanceCycleId(performanceCycleId)
+                             .assessmentMatrixId(assessmentMatrixId)
+                             .scope(scope)
+                             .teamId(teamId)
+                             .teamName(teamName)
+                             .companyName(companyName)
+                             .performanceCycleName(performanceCycleName)
+                             .assessmentMatrixName(assessmentMatrixName)
+                             .generalAverage(totalScore)
+                             .employeeCount(employeeCount)
+                             .completionPercentage(completionPercentage)
+                             .lastUpdated(Instant.now())
+                             .analyticsDataJson(analyticsDataJson)
+                             .build();
   }
 
   private Map<String, Object> calculatePillarAnalytics(
-                                                       List<EmployeeAssessment> completedAssessments, AssessmentMatrix matrix) {
+      List<EmployeeAssessment> completedAssessments, AssessmentMatrix matrix) {
 
     Map<String, Object> pillarAnalytics = new HashMap<>();
     PotentialScore potentialScore = matrix.getPotentialScore();
@@ -307,7 +332,7 @@ public class DashboardAnalyticsService {
   }
 
   private Map<String, Object> calculateCategoryAnalytics(
-                                                         String pillarId, List<PillarScore> pillarScores, PillarScore potentialPillarScore) {
+      String pillarId, List<PillarScore> pillarScores, PillarScore potentialPillarScore) {
 
     log.info("=== calculateCategoryAnalytics DEBUG START ===");
     log.info("Method called for pillarId: {}", pillarId);
@@ -316,7 +341,8 @@ public class DashboardAnalyticsService {
 
     if (potentialPillarScore != null) {
       log.info("potentialPillarScore pillarId: {}", potentialPillarScore.getPillarId());
-      log.info("potentialPillarScore categoryMap size: {}", potentialPillarScore.getCategoryIdToCategoryScoreMap() != null ? potentialPillarScore.getCategoryIdToCategoryScoreMap().size() : "NULL");
+      log.info("potentialPillarScore categoryMap size: {}", potentialPillarScore.getCategoryIdToCategoryScoreMap() != null ? potentialPillarScore.getCategoryIdToCategoryScoreMap()
+                                                                                                                                                 .size() : "NULL");
     }
 
     Map<String, Object> categoryAnalytics = new HashMap<>();
@@ -326,7 +352,8 @@ public class DashboardAnalyticsService {
     log.info("Processing {} pillar scores for category aggregation...", pillarScores.size());
     for (int i = 0; i < pillarScores.size(); i++) {
       PillarScore pillarScore = pillarScores.get(i);
-      log.info("PillarScore[{}]: pillarId={}, categoryMap size={}", i, pillarScore.getPillarId(), pillarScore.getCategoryIdToCategoryScoreMap() != null ? pillarScore.getCategoryIdToCategoryScoreMap().size() : "NULL");
+      log.info("PillarScore[{}]: pillarId={}, categoryMap size={}", i, pillarScore.getPillarId(), pillarScore.getCategoryIdToCategoryScoreMap() != null ? pillarScore.getCategoryIdToCategoryScoreMap()
+                                                                                                                                                                     .size() : "NULL");
 
       if (pillarScore.getCategoryIdToCategoryScoreMap() != null) {
         pillarScore.getCategoryIdToCategoryScoreMap().forEach((categoryId, categoryScore) -> {
@@ -347,7 +374,11 @@ public class DashboardAnalyticsService {
 
       Map<String, Object> categoryData = new HashMap<>();
 
-      String categoryName = scores.stream().map(CategoryScore::getCategoryName).filter(Objects::nonNull).findFirst().orElse(categoryId);
+      String categoryName = scores.stream()
+                                  .map(CategoryScore::getCategoryName)
+                                  .filter(Objects::nonNull)
+                                  .findFirst()
+                                  .orElse(categoryId);
 
       double avgActualScore = scores.stream().mapToDouble(CategoryScore::getScore).average().orElse(0.0);
 
@@ -408,12 +439,16 @@ public class DashboardAnalyticsService {
 
     Map<String, Integer> wordFrequencies = extractWordFrequencies(allNotes);
 
-    wordFrequencies.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).limit(MAX_WORD_CLOUD_WORDS).forEach(entry -> {
-      Map<String, Object> wordData = new HashMap<>();
-      wordData.put("text", entry.getKey());
-      wordData.put("count", entry.getValue());
-      words.add(wordData);
-    });
+    wordFrequencies.entrySet()
+                   .stream()
+                   .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                   .limit(MAX_WORD_CLOUD_WORDS)
+                   .forEach(entry -> {
+                     Map<String, Object> wordData = new HashMap<>();
+                     wordData.put("text", entry.getKey());
+                     wordData.put("count", entry.getValue());
+                     words.add(wordData);
+                   });
 
     String status = allNotes.size() < 10 ? "limited" : "sufficient";
 
@@ -437,16 +472,23 @@ public class DashboardAnalyticsService {
       }
     }
 
-    return frequencies.entrySet().stream().filter(entry -> entry.getValue() >= MIN_WORD_FREQUENCY).collect(Collectors.toMap(
-        Map.Entry::getKey, Map.Entry::getValue
-    ));
+    return frequencies.entrySet()
+                      .stream()
+                      .filter(entry -> entry.getValue() >= MIN_WORD_FREQUENCY)
+                      .collect(Collectors.toMap(
+                          Map.Entry::getKey, Map.Entry::getValue
+                      ));
   }
 
   private double calculatePercentage(double value, double total) {
     if (total == 0) {
       return 0.0;
     }
-    return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(total), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    return BigDecimal.valueOf(value)
+                     .divide(BigDecimal.valueOf(total), 4, RoundingMode.HALF_UP)
+                     .multiply(BigDecimal.valueOf(100))
+                     .setScale(2, RoundingMode.HALF_UP)
+                     .doubleValue();
   }
 
   private String convertToJson(Object object) {

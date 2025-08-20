@@ -1,5 +1,27 @@
 package com.agilecheckup.service;
 
+import com.agilecheckup.persistency.entity.AssessmentMatrix;
+import com.agilecheckup.persistency.entity.AssessmentStatus;
+import com.agilecheckup.persistency.entity.EmployeeAssessment;
+import com.agilecheckup.persistency.entity.QuestionType;
+import com.agilecheckup.persistency.entity.question.Answer;
+import com.agilecheckup.persistency.entity.question.Question;
+import com.agilecheckup.persistency.repository.AnswerRepository;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import com.agilecheckup.service.exception.InvalidLocalDateTimeException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import static com.agilecheckup.util.TestObjectFactory.createMockedQuestion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,29 +32,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
-import com.agilecheckup.persistency.entity.EmployeeAssessment;
-import com.agilecheckup.persistency.entity.QuestionType;
-import com.agilecheckup.persistency.entity.question.Answer;
-import com.agilecheckup.persistency.entity.question.Question;
-import com.agilecheckup.persistency.repository.AnswerRepository;
-import com.agilecheckup.service.exception.InvalidIdReferenceException;
-import com.agilecheckup.service.exception.InvalidLocalDateTimeException;
 
 @ExtendWith(MockitoExtension.class)
 class AnswerServiceTest {
@@ -132,7 +131,6 @@ class AnswerServiceTest {
     assertThat(result).isPresent();
     verify(answerRepository).findByEmployeeAssessmentIdAndQuestionId(employeeAssessmentId, questionId, tenantId);
     verify(answerRepository).save(existingAnswer);
-    verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
   }
 
   @Test
@@ -154,7 +152,6 @@ class AnswerServiceTest {
     assertThat(result).isPresent();
     verify(answerRepository).findById(answerId);
     verify(answerRepository).save(existingAnswer);
-    verify(employeeAssessmentService).incrementAnsweredQuestionCount("assessment-123");
   }
 
   @Test
@@ -260,9 +257,7 @@ class AnswerServiceTest {
 
     // Then
     verify(employeeAssessmentService).incrementAnsweredQuestionCount(employeeAssessmentId);
-    verify(employeeAssessmentService).updateLastActivityDate(employeeAssessmentId);
-    verify(employeeAssessmentService).save(testEmployeeAssessment);
-    verify(employeeAssessmentService).updateEmployeeAssessmentScore(employeeAssessmentId, "tenant-123");
+    verify(employeeAssessmentService).finalizeAssessmentIfCompleted(employeeAssessmentId);
   }
 
   @Test

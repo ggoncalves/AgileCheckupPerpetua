@@ -1,21 +1,7 @@
 package com.agilecheckup.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.agilecheckup.persistency.entity.AssessmentConfiguration;
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.PerformanceCycle;
 import com.agilecheckup.persistency.entity.Pillar;
@@ -34,8 +20,18 @@ import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
 import com.agilecheckup.service.dto.TeamAssessmentSummary;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.google.common.annotations.VisibleForTesting;
-
 import dagger.Lazy;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AssessmentMatrixRepository> {
 
@@ -232,7 +228,8 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
   private TeamAssessmentSummary createTeamSummary(String teamId, List<EmployeeAssessment> teamAssessments) {
     int totalEmployees = teamAssessments.size();
-    int completedAssessments = (int) teamAssessments.stream().filter(assessment -> AssessmentStatus.COMPLETED.equals(assessment.getAssessmentStatus())).count();
+    int completedAssessments = (int) teamAssessments.stream().filter(EmployeeAssessment::isCompleted).count();
+
     double completionPercentage = totalEmployees > 0 ? (double) completedAssessments / totalEmployees * 100.0 : 0.0;
 
     Double averageScore = teamAssessments.stream().filter(assessment -> assessment.getEmployeeAssessmentScore() != null && assessment.getEmployeeAssessmentScore().getScore() != null).mapToDouble(assessment -> assessment.getEmployeeAssessmentScore().getScore()).average().orElse(0.0);
@@ -332,7 +329,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
    * Counts completed assessments efficiently.
    */
   private int calculateCompletedCount(List<EmployeeAssessment> assessments) {
-    return (int) assessments.stream().filter(ea -> ea.getAssessmentStatus() == AssessmentStatus.COMPLETED).count();
+    return (int) assessments.stream().filter(EmployeeAssessment::isCompleted).count();
   }
 
   @Override

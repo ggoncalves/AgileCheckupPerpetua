@@ -1,29 +1,5 @@
 package com.agilecheckup.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
 import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
@@ -42,29 +18,51 @@ import com.agilecheckup.service.dto.EmployeeValidationRequest;
 import com.agilecheckup.service.dto.EmployeeValidationResponse;
 import com.agilecheckup.service.exception.EmployeeAssessmentAlreadyExistsException;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeAssessmentServiceTest {
-
-  @Mock
-  private EmployeeAssessmentRepository employeeAssessmentRepository;
-
-  @Mock
-  private AssessmentMatrixService assessmentMatrixService;
-
-  @Mock
-  private TeamService teamService;
-
-  @Mock
-  private AnswerRepository answerRepository;
-
-  private EmployeeAssessmentService service;
 
   private static final String TENANT_ID = "tenant-123";
   private static final String TEAM_ID = "team-123";
   private static final String ASSESSMENT_MATRIX_ID = "matrix-123";
   private static final String EMPLOYEE_EMAIL = "john.doe@example.com";
   private static final String EMPLOYEE_NAME = "John Doe";
+  @Mock
+  private EmployeeAssessmentRepository employeeAssessmentRepository;
+  @Mock
+  private AssessmentMatrixService assessmentMatrixService;
+  @Mock
+  private TeamService teamService;
+  @Mock
+  private AnswerRepository answerRepository;
+  private EmployeeAssessmentService service;
 
   @BeforeEach
   void setUp() {
@@ -78,7 +76,13 @@ class EmployeeAssessmentServiceTest {
   }
 
   private void setupMockTeam() {
-    Team mockTeam = Team.builder().id(TEAM_ID).tenantId(TENANT_ID).name("Test Team").description("Test team description").departmentId("dept-123").build();
+    Team mockTeam = Team.builder()
+                        .id(TEAM_ID)
+                        .tenantId(TENANT_ID)
+                        .name("Test Team")
+                        .description("Test team description")
+                        .departmentId("dept-123")
+                        .build();
 
     lenient().doReturn(Optional.of(mockTeam)).when(teamService).findById(TEAM_ID);
   }
@@ -86,14 +90,22 @@ class EmployeeAssessmentServiceTest {
   private void setupMockAssessmentMatrix() {
     Map<String, Pillar> emptyPillarMap = new HashMap<>();
 
-    AssessmentMatrix mockMatrix = AssessmentMatrix.builder().id(ASSESSMENT_MATRIX_ID).tenantId(TENANT_ID).name("Test Matrix").description("Test matrix description").performanceCycleId("cycle-123").pillarMap(emptyPillarMap).build();
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(ASSESSMENT_MATRIX_ID)
+                                                  .tenantId(TENANT_ID)
+                                                  .name("Test Matrix")
+                                                  .description("Test matrix description")
+                                                  .performanceCycleId("cycle-123")
+                                                  .pillarMap(emptyPillarMap)
+                                                  .build();
 
     lenient().doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(ASSESSMENT_MATRIX_ID);
   }
 
   @Test
   void testCreateEmployeeAssessment_Success() {
-    doReturn(false).when(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+    doReturn(false).when(employeeAssessmentRepository)
+                   .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
 
     EmployeeAssessment savedAssessment = createMockEmployeeAssessment();
     doReturn(Optional.of(savedAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
@@ -114,7 +126,8 @@ class EmployeeAssessmentServiceTest {
 
   @Test
   void testCreateEmployeeAssessment_ThrowsExceptionWhenAlreadyExists() {
-    doReturn(true).when(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+    doReturn(true).when(employeeAssessmentRepository)
+                  .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
 
     assertThatThrownBy(() -> service.create(
         ASSESSMENT_MATRIX_ID, TEAM_ID, EMPLOYEE_NAME, EMPLOYEE_EMAIL, "123456789", PersonDocumentType.CPF, Gender.MALE, GenderPronoun.HE
@@ -193,20 +206,69 @@ class EmployeeAssessmentServiceTest {
 
   @Test
   void testIncrementAnsweredQuestionCount_DoesNotChangeStatusWhenAlreadyInProgress() {
+    // Given
     String assessmentId = "assessment-123";
     EmployeeAssessment assessment = createMockEmployeeAssessment();
     assessment.setId(assessmentId);
+    assessment.setAssessmentMatrixId(assessmentId);
     assessment.setAnsweredQuestionCount(5);
     assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
 
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(assessment.getAssessmentMatrixId())
+                                                  .performanceCycleId(assessment.getAssessmentMatrixId())
+                                                  .name("name")
+                                                  .description("description")
+                                                  .questionCount(8)
+                                                  .build();
+
+    doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessment.getAssessmentMatrixId());
     doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
     doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
-    service.incrementAnsweredQuestionCount(assessmentId);
+    EmployeeAssessmentService serviceSpy = spy(service);
 
+    // When
+    serviceSpy.incrementAnsweredQuestionCount(assessmentId);
+
+    // Then
     assertThat(assessment.getAnsweredQuestionCount()).isEqualTo(6);
     assertThat(assessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.IN_PROGRESS);
-    verify(employeeAssessmentRepository).save(assessment);
+    verify(serviceSpy).save(assessment);
+  }
+
+  @Test
+  void testIncrementAnsweredQuestionCount_ChangeStatusToCompleted() {
+    // Given
+    String assessmentId = "assessment-123";
+    EmployeeAssessment assessment = createMockEmployeeAssessment();
+    assessment.setId(assessmentId);
+    assessment.setAssessmentMatrixId(assessmentId);
+    assessment.setAnsweredQuestionCount(7);
+    assessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(assessment.getAssessmentMatrixId())
+                                                  .performanceCycleId(assessment.getAssessmentMatrixId())
+                                                  .name("name")
+                                                  .description("description")
+                                                  .questionCount(8)
+                                                  .build();
+
+    doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessment.getAssessmentMatrixId());
+    doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).findById(assessmentId);
+    doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
+
+    EmployeeAssessmentService serviceSpy = spy(service);
+
+    // When
+    serviceSpy.incrementAnsweredQuestionCount(assessmentId);
+
+    // Then
+    assertThat(assessment.getAnsweredQuestionCount()).isEqualTo(8);
+    assertThat(assessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.COMPLETED);
+    verify(serviceSpy, times(1)).save(assessment);
+    verify(serviceSpy, times(1)).updateEmployeeAssessmentScore(assessment);
   }
 
   @Test
@@ -238,7 +300,7 @@ class EmployeeAssessmentServiceTest {
     doReturn(mockAnswers).when(answerRepository).findByEmployeeAssessmentId(assessmentId, TENANT_ID);
     doReturn(Optional.of(assessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
-    EmployeeAssessment result = service.updateEmployeeAssessmentScore(assessmentId, TENANT_ID);
+    EmployeeAssessment result = service.updateEmployeeAssessmentScore(assessmentId);
 
     assertThat(result).isNotNull();
     assertThat(result.getEmployeeAssessmentScore()).isNotNull();
@@ -248,7 +310,7 @@ class EmployeeAssessmentServiceTest {
 
   @Test
   void testFindAllByTenantId() {
-    List<EmployeeAssessment> expectedAssessments = Arrays.asList(createMockEmployeeAssessment());
+    List<EmployeeAssessment> expectedAssessments = List.of(createMockEmployeeAssessment());
     doReturn(expectedAssessments).when(employeeAssessmentRepository).findAllByTenantId(TENANT_ID);
 
     List<EmployeeAssessment> result = service.findAllByTenantId(TENANT_ID);
@@ -261,7 +323,8 @@ class EmployeeAssessmentServiceTest {
   @Test
   void testFindByAssessmentMatrix() {
     List<EmployeeAssessment> expectedAssessments = Arrays.asList(createMockEmployeeAssessment());
-    doReturn(expectedAssessments).when(employeeAssessmentRepository).findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
+    doReturn(expectedAssessments).when(employeeAssessmentRepository)
+                                 .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
     List<EmployeeAssessment> result = service.findByAssessmentMatrix(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
@@ -313,7 +376,8 @@ class EmployeeAssessmentServiceTest {
     EmployeeAssessment newAssessment = createMockEmployeeAssessment();
     newAssessment.setId(null); // New assessment
 
-    doReturn(false).when(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
+    doReturn(false).when(employeeAssessmentRepository)
+                   .existsByAssessmentMatrixAndEmployeeEmail(ASSESSMENT_MATRIX_ID, EMPLOYEE_EMAIL);
     doReturn(Optional.of(newAssessment)).when(employeeAssessmentRepository).save(newAssessment);
 
     EmployeeAssessment result = service.save(newAssessment);
@@ -350,7 +414,8 @@ class EmployeeAssessmentServiceTest {
 
   @Test
   void testValidateEmployee_NotFound() {
-    doReturn(Arrays.asList()).when(employeeAssessmentRepository).findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
+    doReturn(Arrays.asList()).when(employeeAssessmentRepository)
+                             .findByAssessmentMatrixId(ASSESSMENT_MATRIX_ID, TENANT_ID);
 
     EmployeeValidationRequest request = new EmployeeValidationRequest();
     request.setAssessmentMatrixId(ASSESSMENT_MATRIX_ID);
@@ -430,19 +495,68 @@ class EmployeeAssessmentServiceTest {
   }
 
   private EmployeeAssessment createMockEmployeeAssessment() {
-    NaturalPerson employee = NaturalPerson.builder().id("person-123").name(EMPLOYEE_NAME).email(EMPLOYEE_EMAIL).documentNumber("123456789").personDocumentType(PersonDocumentType.CPF).gender(Gender.MALE).genderPronoun(GenderPronoun.HE).build();
+    NaturalPerson employee = NaturalPerson.builder()
+                                          .id("person-123")
+                                          .name(EMPLOYEE_NAME)
+                                          .email(EMPLOYEE_EMAIL)
+                                          .documentNumber("123456789")
+                                          .personDocumentType(PersonDocumentType.CPF)
+                                          .gender(Gender.MALE)
+                                          .genderPronoun(GenderPronoun.HE)
+                                          .build();
 
-    EmployeeAssessment assessment = EmployeeAssessment.builder().id("assessment-123").assessmentMatrixId(ASSESSMENT_MATRIX_ID).teamId(TEAM_ID).employee(employee).employeeEmailNormalized(EMPLOYEE_EMAIL.toLowerCase()).answeredQuestionCount(0).assessmentStatus(AssessmentStatus.INVITED).build();
+    EmployeeAssessment assessment = EmployeeAssessment.builder()
+                                                      .id("assessment-123")
+                                                      .assessmentMatrixId(ASSESSMENT_MATRIX_ID)
+                                                      .teamId(TEAM_ID)
+                                                      .employee(employee)
+                                                      .employeeEmailNormalized(EMPLOYEE_EMAIL.toLowerCase())
+                                                      .answeredQuestionCount(0)
+                                                      .assessmentStatus(AssessmentStatus.INVITED)
+                                                      .build();
     assessment.setTenantId(TENANT_ID);
     return assessment;
   }
 
   private List<Answer> createMockAnswers() {
-    Question mockQuestion = Question.builder().id("question-123").assessmentMatrixId("matrix-123").pillarId("pillar-123").pillarName("Test Pillar").categoryId("category-123").categoryName("Test Category").question("Test Question").questionType(QuestionType.ONE_TO_TEN).points(10.0).tenantId(TENANT_ID).build();
+    Question mockQuestion = Question.builder()
+                                    .id("question-123")
+                                    .assessmentMatrixId("matrix-123")
+                                    .pillarId("pillar-123")
+                                    .pillarName("Test Pillar")
+                                    .categoryId("category-123")
+                                    .categoryName("Test Category")
+                                    .question("Test Question")
+                                    .questionType(QuestionType.ONE_TO_TEN)
+                                    .points(10.0)
+                                    .tenantId(TENANT_ID)
+                                    .build();
 
-    Answer answer1 = Answer.builder().questionId("question-123").pillarId("pillar-123").categoryId("category-123").score(8.5).question(mockQuestion).questionType(QuestionType.ONE_TO_TEN).employeeAssessmentId("assessment-123").answeredAt(LocalDateTime.now()).value("8").tenantId(TENANT_ID).build();
+    Answer answer1 = Answer.builder()
+                           .questionId("question-123")
+                           .pillarId("pillar-123")
+                           .categoryId("category-123")
+                           .score(8.5)
+                           .question(mockQuestion)
+                           .questionType(QuestionType.ONE_TO_TEN)
+                           .employeeAssessmentId("assessment-123")
+                           .answeredAt(LocalDateTime.now())
+                           .value("8")
+                           .tenantId(TENANT_ID)
+                           .build();
 
-    Answer answer2 = Answer.builder().questionId("question-124").pillarId("pillar-123").categoryId("category-123").score(7.0).question(mockQuestion).questionType(QuestionType.ONE_TO_TEN).employeeAssessmentId("assessment-123").answeredAt(LocalDateTime.now()).value("7").tenantId(TENANT_ID).build();
+    Answer answer2 = Answer.builder()
+                           .questionId("question-124")
+                           .pillarId("pillar-123")
+                           .categoryId("category-123")
+                           .score(7.0)
+                           .question(mockQuestion)
+                           .questionType(QuestionType.ONE_TO_TEN)
+                           .employeeAssessmentId("assessment-123")
+                           .answeredAt(LocalDateTime.now())
+                           .value("7")
+                           .tenantId(TENANT_ID)
+                           .build();
 
     return Arrays.asList(answer1, answer2);
   }
@@ -458,11 +572,17 @@ class EmployeeAssessmentServiceTest {
     Gender gender = Gender.MALE;
     GenderPronoun genderPronoun = GenderPronoun.HE;
 
-    AssessmentMatrix mockMatrix = AssessmentMatrix.builder().id(assessmentMatrixId).name("Test Matrix").description("Test Description").performanceCycleId("cycle-123").build();
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(assessmentMatrixId)
+                                                  .name("Test Matrix")
+                                                  .description("Test Description")
+                                                  .performanceCycleId("cycle-123")
+                                                  .build();
     mockMatrix.setTenantId(TENANT_ID);
 
     doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
-    doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
+    doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository)
+                                                         .save(any(EmployeeAssessment.class));
 
     // When
     Optional<EmployeeAssessment> result = service.create(assessmentMatrixId, null, name, email, documentNumber, documentType, gender, genderPronoun);
@@ -496,11 +616,16 @@ class EmployeeAssessmentServiceTest {
     EmployeeAssessment existingAssessment = createMockEmployeeAssessment();
     existingAssessment.setId(assessmentId);
 
-    AssessmentMatrix mockMatrix = AssessmentMatrix.builder().id(assessmentMatrixId).name("Test Matrix").description("Test Description").performanceCycleId("cycle-123").build();
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(assessmentMatrixId)
+                                                  .name("Test Matrix")
+                                                  .description("Test Description")
+                                                  .performanceCycleId("cycle-123")
+                                                  .build();
     mockMatrix.setTenantId(TENANT_ID);
 
     doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).findById(assessmentId);
-    doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
+//    doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
     doReturn(Optional.of(existingAssessment)).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
 
     // When
@@ -529,16 +654,24 @@ class EmployeeAssessmentServiceTest {
 
     // Setup mock team with DIFFERENT tenant ID to expose bug
     Team mockTeam = Team.builder().id(teamId).tenantId("team-tenant-123") // Different from matrix tenant
-        .name("Test Team").description("Test team description").departmentId("dept-123").build();
+                        .name("Test Team").description("Test team description").departmentId("dept-123").build();
     doReturn(Optional.of(mockTeam)).when(teamService).findById(teamId);
 
     // Setup mock assessment matrix
-    AssessmentMatrix mockMatrix = AssessmentMatrix.builder().id(assessmentMatrixId).tenantId(TENANT_ID) // Matrix tenant should be used
-        .name("Test Matrix").description("Test matrix description").performanceCycleId("cycle-123").pillarMap(new HashMap<>()).build();
+    AssessmentMatrix mockMatrix = AssessmentMatrix.builder()
+                                                  .id(assessmentMatrixId)
+                                                  .tenantId(TENANT_ID) // Matrix tenant should be used
+                                                  .name("Test Matrix")
+                                                  .description("Test matrix description")
+                                                  .performanceCycleId("cycle-123")
+                                                  .pillarMap(new HashMap<>())
+                                                  .build();
     doReturn(Optional.of(mockMatrix)).when(assessmentMatrixService).findById(assessmentMatrixId);
 
-    doReturn(false).when(employeeAssessmentRepository).existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, email);
-    doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository).save(any(EmployeeAssessment.class));
+    doReturn(false).when(employeeAssessmentRepository)
+                   .existsByAssessmentMatrixAndEmployeeEmail(assessmentMatrixId, email);
+    doReturn(Optional.of(createMockEmployeeAssessment())).when(employeeAssessmentRepository)
+                                                         .save(any(EmployeeAssessment.class));
 
     // When
     Optional<EmployeeAssessment> result = service.create(
@@ -559,5 +692,111 @@ class EmployeeAssessmentServiceTest {
     assertThat(createdAssessment.getAssessmentMatrixId()).isEqualTo(assessmentMatrixId);
     assertThat(createdAssessment.getEmployee().getName()).isEqualTo(name);
     assertThat(createdAssessment.getEmployee().getEmail()).isEqualTo(email);
+  }
+
+
+  @Test
+  void testFinalizeAssessmentIfCompleted_CallsFinalizeWhenAssessmentComplete() {
+    // Given
+    String employeeAssessmentId = "assessment-123";
+    EmployeeAssessment mockAssessment = createMockEmployeeAssessment();
+    mockAssessment.setAnsweredQuestionCount(10);
+    mockAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+
+    AssessmentMatrix mockMatrix = new AssessmentMatrix();
+    mockMatrix.setId(ASSESSMENT_MATRIX_ID);
+    mockMatrix.setQuestionCount(10); // Same as answered count
+    mockMatrix.setTenantId(TENANT_ID);
+
+    when(employeeAssessmentRepository.findById(employeeAssessmentId)).thenReturn(Optional.of(mockAssessment));
+    when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
+
+    // Spy on the service to verify method calls
+    EmployeeAssessmentService serviceSpy = spy(service);
+    doNothing().when(serviceSpy).finalizeAssessment(any(EmployeeAssessment.class));
+
+    // When
+    serviceSpy.finalizeAssessmentIfCompleted(employeeAssessmentId);
+
+    // Then
+    verify(serviceSpy).finalizeAssessment(mockAssessment);
+  }
+
+  @Test
+  void testFinalizeAssessmentIfCompleted_DoesNotCallFinalizeWhenAssessmentIncomplete() {
+    // Given
+    String employeeAssessmentId = "assessment-123";
+    EmployeeAssessment mockAssessment = createMockEmployeeAssessment();
+    mockAssessment.setAnsweredQuestionCount(5); // Less than total questions
+    mockAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+
+    AssessmentMatrix mockMatrix = new AssessmentMatrix();
+    mockMatrix.setId(ASSESSMENT_MATRIX_ID);
+    mockMatrix.setQuestionCount(10); // More than answered count
+    mockMatrix.setTenantId(TENANT_ID);
+
+    when(employeeAssessmentRepository.findById(employeeAssessmentId)).thenReturn(Optional.of(mockAssessment));
+    when(assessmentMatrixService.findById(ASSESSMENT_MATRIX_ID)).thenReturn(Optional.of(mockMatrix));
+
+    // Spy on the service to verify method calls
+    EmployeeAssessmentService spyService = spy(service);
+
+    // When
+    spyService.finalizeAssessmentIfCompleted(employeeAssessmentId);
+
+    // Then
+    verify(spyService, never()).finalizeAssessment(any(EmployeeAssessment.class));
+  }
+
+  @Test
+  void testFinalizeAssessment_DoesNotSaveWhenAlreadyCompleted() {
+    // Given
+    EmployeeAssessment mockAssessment = createMockEmployeeAssessment();
+    mockAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
+    // Spy on the service to verify method calls
+    EmployeeAssessmentService spyService = spy(service);
+
+    // When
+    spyService.finalizeAssessment(mockAssessment);
+
+    // Then
+    verify(employeeAssessmentRepository, never()).save(any(EmployeeAssessment.class));
+    verify(spyService, never()).updateEmployeeAssessmentScore(any(EmployeeAssessment.class));
+  }
+
+  @Test
+  void testFinalizeAssessment_SavesAndUpdatesScoreWhenNotCompleted() {
+    // Given
+    EmployeeAssessment mockAssessment = createMockEmployeeAssessment();
+    mockAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+
+    // Spy on the service to verify updateEmployeeAssessmentScore call
+    EmployeeAssessmentService spyService = spy(service);
+
+    // When
+    spyService.finalizeAssessment(mockAssessment);
+
+    // Then
+    assertThat(mockAssessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.COMPLETED);
+    assertThat(mockAssessment.getLastActivityDate()).isNotNull();
+  }
+
+  @Test
+  void testFinalizeAssessment_SetsCompletedStatusAndTimestamp() {
+    // Given
+    EmployeeAssessment mockAssessment = createMockEmployeeAssessment();
+    mockAssessment.setAssessmentStatus(AssessmentStatus.IN_PROGRESS);
+    mockAssessment.setLastActivityDate(null);
+
+    // Spy to avoid actual updateEmployeeAssessmentScore call
+    EmployeeAssessmentService spyService = spy(service);
+
+    // When
+    spyService.finalizeAssessment(mockAssessment);
+
+    // Then
+    assertThat(mockAssessment.getAssessmentStatus()).isEqualTo(AssessmentStatus.COMPLETED);
+    assertThat(mockAssessment.getLastActivityDate()).isNotNull();
+    assertThat(mockAssessment.getLastActivityDate()).isCloseTo(new Date(), 1000);
   }
 }

@@ -1,15 +1,6 @@
 package com.agilecheckup.service;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.inject.Inject;
-
 import com.agilecheckup.persistency.entity.AssessmentMatrix;
-import com.agilecheckup.persistency.entity.AssessmentStatus;
 import com.agilecheckup.persistency.entity.EmployeeAssessment;
 import com.agilecheckup.persistency.entity.QuestionType;
 import com.agilecheckup.persistency.entity.question.Answer;
@@ -21,8 +12,13 @@ import com.agilecheckup.persistency.entity.score.strategy.ScoreCalculationStrate
 import com.agilecheckup.persistency.repository.AnswerRepository;
 import com.agilecheckup.service.exception.InvalidIdReferenceException;
 import com.agilecheckup.service.exception.InvalidLocalDateTimeException;
-
 import lombok.NonNull;
+
+import javax.inject.Inject;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class AnswerService extends AbstractCrudService<Answer, AnswerRepository> {
 
@@ -103,37 +99,12 @@ public class AnswerService extends AbstractCrudService<Answer, AnswerRepository>
   @Override
   public void postCreate(Answer saved) {
     employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
-    updateLastActivityIfNotCompleted(saved.getEmployeeAssessmentId());
-    checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
+    employeeAssessmentService.finalizeAssessmentIfCompleted(saved.getEmployeeAssessmentId());
   }
 
   @Override
   public void postUpdate(Answer saved) {
-    employeeAssessmentService.incrementAnsweredQuestionCount(saved.getEmployeeAssessmentId());
     updateLastActivityIfNotCompleted(saved.getEmployeeAssessmentId());
-    checkAndUpdateAssessmentStatus(saved.getEmployeeAssessmentId());
-  }
-
-  private void checkAndUpdateAssessmentStatus(String employeeAssessmentId) {
-    EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
-    AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(employeeAssessment.getAssessmentMatrixId());
-
-    if (employeeAssessment.getAnsweredQuestionCount() >= assessmentMatrix.getQuestionCount()) {
-      AssessmentStatus previousStatus = employeeAssessment.getAssessmentStatus();
-      employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
-
-      // Set completion timestamp - this will be the final lastActivityDate
-      if (previousStatus != AssessmentStatus.COMPLETED) {
-        employeeAssessment.setLastActivityDate(new Date());
-      }
-
-      employeeAssessmentService.save(employeeAssessment);
-
-      // Automatically calculate score when assessment becomes COMPLETED
-      if (previousStatus != AssessmentStatus.COMPLETED) {
-        employeeAssessmentService.updateEmployeeAssessmentScore(employeeAssessmentId, employeeAssessment.getTenantId());
-      }
-    }
   }
 
   private AssessmentMatrix getAssessmentMatrixById(String assessmentMatrixId) {
@@ -199,7 +170,7 @@ public class AnswerService extends AbstractCrudService<Answer, AnswerRepository>
     EmployeeAssessment employeeAssessment = getEmployeeAssessmentById(employeeAssessmentId);
 
     // Only update lastActivityDate if assessment is not completed
-    if (employeeAssessment.getAssessmentStatus() != AssessmentStatus.COMPLETED) {
+    if (employeeAssessment.isNotCompleted()) {
       employeeAssessmentService.updateLastActivityDate(employeeAssessmentId);
     }
   }
