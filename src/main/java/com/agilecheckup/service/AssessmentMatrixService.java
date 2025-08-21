@@ -28,6 +28,8 @@ import com.agilecheckup.persistency.entity.score.PillarScore;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.entity.score.QuestionScore;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
+import com.agilecheckup.security.JwtTokenProvider;
+import com.agilecheckup.security.TenantAccessValidator;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
 import com.agilecheckup.service.dto.EmployeeAssessmentSummary;
 import com.agilecheckup.service.dto.TeamAssessmentSummary;
@@ -38,17 +40,13 @@ import dagger.Lazy;
 
 public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatrix, AssessmentMatrixRepository> {
 
-  private final AssessmentMatrixRepository assessmentMatrixRepository;
-
-  private final PerformanceCycleService performanceCycleService;
-
-  private final Lazy<QuestionService> questionService;
-
-  private final Lazy<EmployeeAssessmentService> employeeAssessmentService;
-
-  private final Lazy<TeamService> teamService;
-
   private static final String DEFAULT_WHEN_NULL = "";
+  private final AssessmentMatrixRepository assessmentMatrixRepository;
+  private final PerformanceCycleService performanceCycleService;
+  private final Lazy<QuestionService> questionService;
+  private final Lazy<EmployeeAssessmentService> employeeAssessmentService;
+  private final Lazy<TeamService> teamService;
+  private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
 
   @Inject
   public AssessmentMatrixService(AssessmentMatrixRepository assessmentMatrixRepository, PerformanceCycleService performanceCycleService, Lazy<QuestionService> questionService, Lazy<EmployeeAssessmentService> employeeAssessmentService, Lazy<TeamService> teamService) {
@@ -110,7 +108,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     Optional<AssessmentMatrix> optionalMatrix = findById(matrixId);
     if (optionalMatrix.isPresent()) {
       AssessmentMatrix matrix = optionalMatrix.get();
-      Integer currentCount = matrix.getQuestionCount() != null ? matrix.getQuestionCount() : 0;
+      int currentCount = matrix.getQuestionCount() != null ? matrix.getQuestionCount() : 0;
       matrix.setQuestionCount(currentCount + 1);
       return super.update(matrix).orElse(matrix);
     }
@@ -121,7 +119,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     Optional<AssessmentMatrix> optionalMatrix = findById(matrixId);
     if (optionalMatrix.isPresent()) {
       AssessmentMatrix matrix = optionalMatrix.get();
-      Integer currentCount = matrix.getQuestionCount() != null ? matrix.getQuestionCount() : 0;
+      int currentCount = matrix.getQuestionCount() != null ? matrix.getQuestionCount() : 0;
       matrix.setQuestionCount(Math.max(0, currentCount - 1));
       return super.update(matrix).orElse(matrix);
     }
@@ -137,6 +135,19 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
                                   .build();
   }
 
+  public String generateInvitationToken(String tenantId, String assessmentMatrixId, boolean lockMatrixAndRecalculateScore) {
+    AssessmentMatrix assessmentMatrix = getAssessmentMatrix(assessmentMatrixId, tenantId);
+    if (lockMatrixAndRecalculateScore) {
+      lockMatrixAndRecalculateScore(assessmentMatrix);
+    }
+    return jwtTokenProvider.generateInvitationToken(tenantId, assessmentMatrixId);
+  }
+
+  public void lockMatrixAndRecalculateScore(AssessmentMatrix assessmentMatrix) {
+    assessmentMatrix.setIsLocked(true);
+    updateCurrentPotentialScore(assessmentMatrix);
+  }
+
   public AssessmentConfiguration getEffectiveConfiguration(AssessmentMatrix assessmentMatrix) {
     AssessmentConfiguration configuration = assessmentMatrix.getConfiguration();
     if (configuration == null) {
@@ -149,47 +160,67 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     return getRepository().findAllByTenantId(tenantId);
   }
 
+  private AssessmentMatrix getAssessmentMatrix(String matrixId, String tenantId) {
+    AssessmentMatrix assessmentMatrix = getRepository().findById(matrixId)
+                                                       .orElseThrow(() -> new InvalidIdReferenceException(matrixId, "AssessmentMatrix"));
+
+    TenantAccessValidator.validateTenantAccess(tenantId, assessmentMatrix);
+
+    return assessmentMatrix;
+  }
+
   public AssessmentMatrix updateCurrentPotentialScore(String matrixId, String tenantId) {
-    List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrixId, tenantId);
+    AssessmentMatrix assessmentMatrix = getAssessmentMatrix(matrixId, tenantId);
+    return updateCurrentPotentialScore(assessmentMatrix);
+  }
 
-    // Map pillarId -> PillarScore
-    Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
+  private AssessmentMatrix updateCurrentPotentialScore(AssessmentMatrix matrix) {
+    List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrix.getId(), matrix.getTenantId());
 
-    // 2. Calculate the maximum possible total score from the retrieved questions
-    double totalPoints = questions.stream().mapToDouble(question -> {
-      // Retrieve or create the PillarScore
-      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder()
-                                                                                                                  .pillarId(id)
-                                                                                                                  .pillarName(question.getPillarName())
-                                                                                                                  .categoryIdToCategoryScoreMap(new HashMap<>())
-                                                                                                                  .build()
-      );
+    int estimatedPillars = Math.max(8, Math.min(50, questions.size() / 10));
+    Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>(estimatedPillars);
 
-      // Run the logic to update PillarScore and if necessary CategoryScore based on the question
-      updatePillarScoreWithQuestion(pillarScore, question);
+    Map<String, List<Question>> questionsByPillar = questions.stream()
+                                                             .collect(Collectors.groupingBy(Question::getPillarId));
 
-      return computeQuestionMaxScore(question);
-    }).sum();
+    // Calculate the maximum possible total score from the retrieved questions
+    double totalPoints = 0.0;
 
-    // 3.1 Retrieve the AssessmentMatrix
-    Optional<AssessmentMatrix> optionalMatrix = findById(matrixId);
-    if (optionalMatrix.isEmpty()) {
-      throw new RuntimeException("Matrix not found: " + matrixId);
+    // Process questions in batches by pillar for better performance
+    for (Map.Entry<String, List<Question>> pillarEntry : questionsByPillar.entrySet()) {
+      String pillarId = pillarEntry.getKey();
+      List<Question> pillarQuestions = pillarEntry.getValue();
+
+      // Create PillarScore once per pillar
+      Question firstQuestion = pillarQuestions.get(0);
+
+      int estimatedCategories = Math.max(4, Math.min(20, pillarQuestions.size() / 5));
+      PillarScore pillarScore = PillarScore.builder()
+                                           .pillarId(pillarId)
+                                           .pillarName(firstQuestion.getPillarName())
+                                           .categoryIdToCategoryScoreMap(new HashMap<>(estimatedCategories))
+                                           .build();
+
+      // Process all questions for this pillar
+      for (Question question : pillarQuestions) {
+        updatePillarScoreWithQuestionOptimized(pillarScore, question);
+        totalPoints += computeQuestionMaxScore(question);
+      }
+
+      pillarIdToPillarScoreMap.put(pillarId, pillarScore);
     }
 
-    AssessmentMatrix assessmentMatrix = optionalMatrix.get();
-
-    // 3.2 Update the PotentialScore of the AssessmentMatrix
-    PotentialScore potentialScore = assessmentMatrix.getPotentialScore();
+    // Update the PotentialScore of the AssessmentMatrix
+    PotentialScore potentialScore = matrix.getPotentialScore();
     if (potentialScore == null) {
       potentialScore = PotentialScore.builder().build();
-      assessmentMatrix.setPotentialScore(potentialScore);
+      matrix.setPotentialScore(potentialScore);
     }
     potentialScore.setPillarIdToPillarScoreMap(pillarIdToPillarScoreMap);
     potentialScore.setScore(totalPoints);
 
-    // 4. Save the updated AssessmentMatrix
-    return super.update(assessmentMatrix).orElse(assessmentMatrix);
+    // Save the updated AssessmentMatrix
+    return super.update(matrix).orElse(matrix);
   }
 
   public Optional<AssessmentDashboardData> getAssessmentDashboard(String matrixId, String tenantId) {
@@ -272,7 +303,7 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
 
     double completionPercentage = totalEmployees > 0 ? (double) completedAssessments / totalEmployees * 100.0 : 0.0;
 
-    Double averageScore = teamAssessments.stream()
+    double averageScore = teamAssessments.stream()
                                          .filter(assessment -> assessment.getEmployeeAssessmentScore() != null && assessment.getEmployeeAssessmentScore()
                                                                                                                             .getScore() != null)
                                          .mapToDouble(assessment -> assessment.getEmployeeAssessmentScore().getScore())
@@ -328,31 +359,6 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
     }
   }
 
-  private PotentialScore calculatePotentialScore(AssessmentMatrix matrix) {
-    List<Question> questions = getQuestionService().findByAssessmentMatrixId(matrix.getId(), matrix.getTenantId());
-
-    // Map pillarId -> PillarScore
-    Map<String, PillarScore> pillarIdToPillarScoreMap = new HashMap<>();
-
-    // Calculate the maximum possible total score from the retrieved questions
-    double totalPoints = questions.stream().mapToDouble(question -> {
-      // Retrieve or create the PillarScore
-      PillarScore pillarScore = pillarIdToPillarScoreMap.computeIfAbsent(question.getPillarId(), id -> PillarScore.builder()
-                                                                                                                  .pillarId(id)
-                                                                                                                  .pillarName(question.getPillarName())
-                                                                                                                  .categoryIdToCategoryScoreMap(new HashMap<>())
-                                                                                                                  .build()
-      );
-
-      // Run the logic to update PillarScore and if necessary CategoryScore based on the question
-      updatePillarScoreWithQuestion(pillarScore, question);
-
-      return computeQuestionMaxScore(question);
-    }).sum();
-
-    return PotentialScore.builder().pillarIdToPillarScoreMap(pillarIdToPillarScoreMap).score(totalPoints).build();
-  }
-
   private void updatePillarScoreWithQuestion(PillarScore pillarScore, Question question) {
     // Assuming each CategoryScore can be identified by the category ID in the question
     String categoryId = question.getCategoryId();
@@ -380,6 +386,35 @@ public class AssessmentMatrixService extends AbstractCrudService<AssessmentMatri
                                     .stream()
                                     .mapToDouble(CategoryScore::getScore)
                                     .sum());
+  }
+
+  // Quick Win 1: Optimized version that avoids O(n²) recalculation
+  private void updatePillarScoreWithQuestionOptimized(PillarScore pillarScore, Question question) {
+    String categoryId = question.getCategoryId();
+    CategoryScore categoryScore = pillarScore.getCategoryIdToCategoryScoreMap()
+                                             .computeIfAbsent(categoryId, id -> CategoryScore.builder()
+                                                                                             .categoryId(id)
+                                                                                             .categoryName(question.getCategoryName())
+                                                                                             .questionScores(new ArrayList<>())
+                                                                                             .score(0.0)
+                                                                                             .build()
+                                             );
+
+    // Create and add QuestionScore to the questionScores list in CategoryScore
+    double questionMaxScore = computeQuestionMaxScore(question);
+    QuestionScore questionScore = QuestionScore.builder()
+                                               .questionId(question.getId())
+                                               .score(questionMaxScore)
+                                               .build();
+    categoryScore.getQuestionScores().add(questionScore);
+
+    // Quick Win 1: Incremental addition instead of full recalculation
+    double currentCategoryScore = categoryScore.getScore() != null ? categoryScore.getScore() : 0.0;
+    categoryScore.setScore(currentCategoryScore + questionMaxScore);
+
+    // Quick Win 1: Incremental addition for pillar score
+    double currentPillarScore = pillarScore.getScore() != null ? pillarScore.getScore() : 0.0;
+    pillarScore.setScore(currentPillarScore + questionMaxScore);
   }
 
   @VisibleForTesting

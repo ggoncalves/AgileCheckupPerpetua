@@ -265,8 +265,7 @@ class QuestionServiceTest {
 
   @Test
   void testValidateQuestionOptions_TooFewOptions() {
-    List<QuestionOption> tooFewOptions = Arrays.asList(
-                                                       QuestionOption.builder()
+    List<QuestionOption> tooFewOptions = Arrays.asList(QuestionOption.builder()
                                                                      .id(1)
                                                                      .text("Only option")
                                                                      .points(10.0)

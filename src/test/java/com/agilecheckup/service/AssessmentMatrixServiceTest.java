@@ -1,9 +1,11 @@
 package com.agilecheckup.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
@@ -34,6 +36,7 @@ import com.agilecheckup.persistency.entity.question.Question;
 import com.agilecheckup.persistency.entity.score.PotentialScore;
 import com.agilecheckup.persistency.repository.AssessmentMatrixRepository;
 import com.agilecheckup.service.dto.AssessmentDashboardData;
+import com.agilecheckup.service.exception.InvalidIdReferenceException;
 
 import dagger.Lazy;
 
@@ -498,9 +501,9 @@ class AssessmentMatrixServiceTest {
     assertThat(result.getPotentialScore()).isNotNull();
     assertThat(result.getPotentialScore().getScore()).isEqualTo(15.0);
 
-    verify(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
-    verify(assessmentMatrixRepository).findById(matrixId);
-    verify(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
   }
 
   @Test
@@ -508,16 +511,12 @@ class AssessmentMatrixServiceTest {
     String matrixId = "nonexistent-matrix";
     String tenantId = "tenant-123";
 
-    List<Question> questions = Arrays.asList();
-
-    doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
     doReturn(Optional.empty()).when(assessmentMatrixRepository).findById(matrixId);
 
-    RuntimeException exception = org.junit.jupiter.api.Assertions.assertThrows(
-                                                                               RuntimeException.class, () -> service.updateCurrentPotentialScore(matrixId, tenantId)
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> service.updateCurrentPotentialScore(matrixId, tenantId)
     );
 
-    assertThat(exception.getMessage()).contains("Matrix not found: " + matrixId);
+    assertThat(exception.getMessage()).contains("Invalid - Not Found AssessmentMatrix id: " + matrixId);
   }
 
   @Test
@@ -558,5 +557,468 @@ class AssessmentMatrixServiceTest {
     Double result = service.computeQuestionMaxScore(question);
 
     assertThat(result).isEqualTo(5.0);
+  }
+
+  @Test
+  void shouldCalculateCorrectScoreWithSinglePillarMultipleCategories() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0), createQuestion("q2", "pillar1", "Technical", "category1", "Programming", QuestionType.YES_NO, 5.0), createQuestion("q3", "pillar1", "Technical", "category2", "Architecture", QuestionType.ONE_TO_TEN, 8.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(23.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(1);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar1").getScore()).isEqualTo(23.0);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()).hasSize(2);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldCalculateCorrectScoreWithMultiplePillarsAndCategories() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0), createQuestion("q2", "pillar1", "Technical", "category2", "Architecture", QuestionType.YES_NO, 5.0), createQuestion("q3", "pillar2", "Leadership", "category3", "Communication", QuestionType.ONE_TO_TEN, 8.0), createQuestion("q4", "pillar2", "Leadership", "category3", "Communication", QuestionType.YES_NO, 3.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(26.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(2);
+
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar1").getScore()).isEqualTo(15.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar2").getScore()).isEqualTo(11.0);
+
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()).hasSize(2);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar2")
+                     .getCategoryIdToCategoryScoreMap()).hasSize(1);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldHandleEmptyQuestionsList() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Collections.emptyList();
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(0.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).isEmpty();
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldHandleSingleQuestion() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(10.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(1);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar1").getScore()).isEqualTo(10.0);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()).hasSize(1);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()
+                     .get("category1")
+                     .getScore()).isEqualTo(10.0);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldCreateNewPotentialScoreWhenMatrixHasNullPotentialScore() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = AssessmentMatrix.builder()
+                                              .id(matrixId)
+                                              .name("Test Matrix")
+                                              .description("Test Description")
+                                              .tenantId(tenantId)
+                                              .performanceCycleId("cycle-123")
+                                              .potentialScore(null)
+                                              .build();
+
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore()).isNotNull();
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(10.0);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldAggregateMultipleQuestionsInSameCategory() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0), createQuestion("q2", "pillar1", "Technical", "category1", "Programming", QuestionType.YES_NO, 5.0), createQuestion("q3", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 8.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(23.0);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(1);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar1").getScore()).isEqualTo(23.0);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()).hasSize(1);
+    assertThat(result.getPotentialScore()
+                     .getPillarIdToPillarScoreMap()
+                     .get("pillar1")
+                     .getCategoryIdToCategoryScoreMap()
+                     .get("category1")
+                     .getScore()).isEqualTo(23.0);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldVerifyTotalScoreEqualsSumOfAllPillarScores() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0), createQuestion("q2", "pillar2", "Leadership", "category2", "Communication", QuestionType.YES_NO, 5.0), createQuestion("q3", "pillar3", "Strategy", "category3", "Planning", QuestionType.ONE_TO_TEN, 8.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    double totalFromPillars = result.getPotentialScore()
+                                    .getPillarIdToPillarScoreMap()
+                                    .values()
+                                    .stream()
+                                    .mapToDouble(pillar -> pillar.getScore())
+                                    .sum();
+
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(totalFromPillars);
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(23.0);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldHandleLargeNumberOfQuestions() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = new java.util.ArrayList<>();
+
+    for (int i = 1; i <= 50; i++) {
+      questions.add(createQuestion(
+                                   "q" + i, "pillar" + (i % 5 + 1), "Pillar " + (i % 5 + 1), "category" + (i % 10 + 1), "Category " + (i % 10 + 1), i % 2 == 0 ? QuestionType.YES_NO : QuestionType.ONE_TO_TEN, i % 2 == 0 ? 5.0 : 10.0
+      ));
+    }
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    double expectedTotal = questions.stream().mapToDouble(q -> q.getPoints()).sum();
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(expectedTotal);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(5);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldVerifyPillarScoreEqualsSumOfItsCategoryScores() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.ONE_TO_TEN, 10.0), createQuestion("q2", "pillar1", "Technical", "category1", "Programming", QuestionType.YES_NO, 5.0), createQuestion("q3", "pillar1", "Technical", "category2", "Architecture", QuestionType.ONE_TO_TEN, 8.0), createQuestion("q4", "pillar1", "Technical", "category3", "Testing", QuestionType.YES_NO, 3.0)
+    );
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+
+    double pillar1Score = result.getPotentialScore().getPillarIdToPillarScoreMap().get("pillar1").getScore();
+    double sumOfCategories = result.getPotentialScore()
+                                   .getPillarIdToPillarScoreMap()
+                                   .get("pillar1")
+                                   .getCategoryIdToCategoryScoreMap()
+                                   .values()
+                                   .stream()
+                                   .mapToDouble(category -> category.getScore())
+                                   .sum();
+
+    assertThat(pillar1Score).isEqualTo(sumOfCategories);
+    assertThat(pillar1Score).isEqualTo(26.0);
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  private AssessmentMatrix createTestMatrix(String matrixId, String tenantId) {
+    return AssessmentMatrix.builder()
+                           .id(matrixId)
+                           .name("Test Matrix")
+                           .description("Test Description")
+                           .tenantId(tenantId)
+                           .performanceCycleId("cycle-123")
+                           .build();
+  }
+
+  private Question createQuestion(String id, String pillarId, String pillarName, String categoryId, String categoryName, QuestionType type, Double points) {
+    return Question.builder()
+                   .id(id)
+                   .tenantId("tenant-123")
+                   .assessmentMatrixId("matrix-123")
+                   .pillarId(pillarId)
+                   .pillarName(pillarName)
+                   .categoryId(categoryId)
+                   .categoryName(categoryName)
+                   .question("Test Question " + id)
+                   .questionType(type)
+                   .points(points)
+                   .build();
+  }
+
+  private void setupMocksForScoreCalculation(String matrixId, String tenantId, AssessmentMatrix matrix, List<Question> questions) {
+    doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(matrixId, tenantId);
+    doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).findById(matrixId);
+    doReturn(Optional.of(matrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
+  }
+
+  private List<Question> createQuestionsInBulk(int totalQuestions, int pillarCount, int categoryCount) {
+    List<Question> questions = new java.util.ArrayList<>();
+
+    for (int i = 1; i <= totalQuestions; i++) {
+      int pillarIndex = (i - 1) % pillarCount + 1;
+      int categoryIndex = (i - 1) % categoryCount + 1;
+
+      questions.add(createQuestion(
+                                   "q" + i, "pillar" + pillarIndex, "Pillar " + pillarIndex, "category" + categoryIndex, "Category " + categoryIndex, i % 2 == 0 ? QuestionType.YES_NO : QuestionType.ONE_TO_TEN, i % 2 == 0 ? 5.0 : 10.0
+      ));
+    }
+
+    return questions;
+  }
+
+  @Test
+  void shouldHandle200QuestionsWithCorrectCalculationAndTiming() {
+    String matrixId = "matrix-123";
+    String tenantId = "tenant-123";
+
+    AssessmentMatrix matrix = createTestMatrix(matrixId, tenantId);
+
+    // Create 200 questions distributed across 10 pillars and 20 categories
+    List<Question> questions = createQuestionsInBulk(200, 10, 20);
+
+    setupMocksForScoreCalculation(matrixId, tenantId, matrix, questions);
+
+    // Measure execution time
+    long startTime = System.currentTimeMillis();
+    AssessmentMatrix result = service.updateCurrentPotentialScore(matrixId, tenantId);
+    long endTime = System.currentTimeMillis();
+    long executionTime = endTime - startTime;
+
+    // Calculate expected total manually
+    double expectedTotal = questions.stream().mapToDouble(q -> q.getPoints()).sum();
+
+    // Verify score calculations
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(expectedTotal);
+    assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).hasSize(10);
+
+    // Verify pillar distribution - each pillar should have 20 questions (200/10)
+    for (int pillarIndex = 1; pillarIndex <= 10; pillarIndex++) {
+      String pillarId = "pillar" + pillarIndex;
+      assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap()).containsKey(pillarId);
+
+      // Calculate actual questions for this pillar
+      long questionsInPillar = questions.stream()
+                                        .filter(q -> q.getPillarId().equals(pillarId))
+                                        .count();
+
+      double actualPillarScore = questions.stream()
+                                          .filter(q -> q.getPillarId().equals(pillarId))
+                                          .mapToDouble(Question::getPoints)
+                                          .sum();
+
+      assertThat(result.getPotentialScore().getPillarIdToPillarScoreMap().get(pillarId).getScore())
+                                                                                                   .isEqualTo(actualPillarScore);
+      assertThat(questionsInPillar).isEqualTo(20); // Each pillar should have exactly 20 questions
+    }
+
+    // Verify cross-calculation: total should equal sum of all pillar scores
+    double totalFromPillars = result.getPotentialScore()
+                                    .getPillarIdToPillarScoreMap()
+                                    .values()
+                                    .stream()
+                                    .mapToDouble(pillar -> pillar.getScore())
+                                    .sum();
+    assertThat(result.getPotentialScore().getScore()).isEqualTo(totalFromPillars);
+
+    // Performance assertions
+    assertThat(executionTime).isLessThan(1000); // Should complete within 1 second
+
+    // Log performance metrics for analysis
+    System.out.println("=== 200 Questions Performance Test Results ===");
+    System.out.println("Total Questions: " + questions.size());
+    System.out.println("Pillars Created: " + result.getPotentialScore().getPillarIdToPillarScoreMap().size());
+    System.out.println("Total Score Calculated: " + result.getPotentialScore().getScore());
+    System.out.println("Execution Time: " + executionTime + " ms");
+    System.out.println("Questions per millisecond: " + (200.0 / executionTime));
+    System.out.println("===============================================");
+
+    verify(assessmentMatrixRepository, times(1)).findById(matrixId);
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(matrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldGenerateInvitationTokenWithoutLockingMatrix() {
+    String tenantId = "tenant-123";
+    String assessmentMatrixId = "matrix-456";
+    boolean lockMatrixAndRecalculateScore = false;
+
+    AssessmentMatrix assessmentMatrix = createTestMatrix(assessmentMatrixId, tenantId);
+
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixRepository).findById(assessmentMatrixId);
+
+    String result = service.generateInvitationToken(tenantId, assessmentMatrixId, lockMatrixAndRecalculateScore);
+
+    assertThat(result).isNotNull();
+    assertThat(result).isNotEmpty();
+    assertThat(result.split("\\.")).hasSize(3); // JWT should have 3 parts
+    assertThat(assessmentMatrix.getIsLocked()).isNull(); // Should not be locked
+
+    verify(assessmentMatrixRepository, times(1)).findById(assessmentMatrixId);
+  }
+
+  @Test
+  void shouldGenerateInvitationTokenWithLockingAndRecalculatingMatrix() {
+    String tenantId = "tenant-123";
+    String assessmentMatrixId = "matrix-456";
+    boolean lockMatrixAndRecalculateScore = true;
+
+    AssessmentMatrix assessmentMatrix = createTestMatrix(assessmentMatrixId, tenantId);
+    List<Question> questions = Arrays.asList(
+                                             createQuestion("q1", "pillar1", "Technical", "category1", "Programming", QuestionType.YES_NO, 5.0)
+    );
+
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixRepository).findById(assessmentMatrixId);
+    doReturn(questions).when(mockQuestionService).findByAssessmentMatrixId(assessmentMatrixId, tenantId);
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixRepository).save(any(AssessmentMatrix.class));
+
+    String result = service.generateInvitationToken(tenantId, assessmentMatrixId, lockMatrixAndRecalculateScore);
+
+    assertThat(result).isNotNull();
+    assertThat(result).isNotEmpty();
+    assertThat(result.split("\\.")).hasSize(3); // JWT should have 3 parts
+    assertThat(assessmentMatrix.getIsLocked()).isTrue(); // Should be locked
+
+    verify(assessmentMatrixRepository, times(1)).findById(assessmentMatrixId); // Only once for getAssessmentMatrix
+    verify(mockQuestionService, times(1)).findByAssessmentMatrixId(assessmentMatrixId, tenantId);
+    verify(assessmentMatrixRepository, times(1)).save(any(AssessmentMatrix.class));
+  }
+
+  @Test
+  void shouldThrowExceptionWhenMatrixNotFoundDuringTokenGeneration() {
+    String tenantId = "tenant-123";
+    String assessmentMatrixId = "nonexistent-matrix";
+    boolean lockMatrixAndRecalculateScore = false;
+
+    doReturn(Optional.empty()).when(assessmentMatrixRepository).findById(assessmentMatrixId);
+
+    InvalidIdReferenceException exception = assertThrows(InvalidIdReferenceException.class, () -> service.generateInvitationToken(tenantId, assessmentMatrixId, lockMatrixAndRecalculateScore));
+
+    assertThat(exception.getMessage()).contains(assessmentMatrixId);
+    assertThat(exception.getMessage()).contains("AssessmentMatrix");
+
+    verify(assessmentMatrixRepository, times(1)).findById(assessmentMatrixId);
+  }
+
+  @Test
+  void shouldThrowExceptionWhenTenantAccessViolationDuringTokenGeneration() {
+    String tenantId = "tenant-123";
+    String differentTenantId = "different-tenant-456";
+    String assessmentMatrixId = "matrix-456";
+    boolean lockMatrixAndRecalculateScore = false;
+
+    AssessmentMatrix assessmentMatrix = createTestMatrix(assessmentMatrixId, differentTenantId);
+
+    doReturn(Optional.of(assessmentMatrix)).when(assessmentMatrixRepository).findById(assessmentMatrixId);
+
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> service.generateInvitationToken(tenantId, assessmentMatrixId, lockMatrixAndRecalculateScore));
+
+    assertThat(exception.getMessage()).contains("Access denied");
+
+    verify(assessmentMatrixRepository, times(1)).findById(assessmentMatrixId);
   }
 }

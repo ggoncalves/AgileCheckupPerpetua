@@ -186,7 +186,6 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     return Optional.empty();
   }
 
-  // TODO Gláucio Remove this tenantId.
   public EmployeeAssessment updateEmployeeAssessmentScore(String employeeAssessmentId) {
     Optional<EmployeeAssessment> optionalEmployeeAssessment = getRepository().findById(employeeAssessmentId);
     return optionalEmployeeAssessment.map(this::updateEmployeeAssessmentScore).orElse(null);

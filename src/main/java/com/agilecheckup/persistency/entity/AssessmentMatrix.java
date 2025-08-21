@@ -44,4 +44,7 @@ public class AssessmentMatrix extends TenantDescribableEntity {
 
   @Getter(onMethod_ = @__({@DynamoDbAttribute("configuration"), @DynamoDbConvertedBy(AssessmentConfigurationAttributeConverter.class)}))
   private AssessmentConfiguration configuration;
+
+  @Getter(onMethod_ = @__(@DynamoDbAttribute("isLocked")))
+  private Boolean isLocked;
 }

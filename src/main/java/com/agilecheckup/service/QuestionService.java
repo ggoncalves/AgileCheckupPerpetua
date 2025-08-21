@@ -44,13 +44,23 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   }
 
   public Optional<Question> create(String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
-    Question question = internalCreateQuestion(questionTxt, questionType, tenantId, points, assessmentMatrixId, pillarId, categoryId, extraDescription);
-    return createQuestion(question);
+    AssessmentMatrix matrix = getAssessmentMatrixById(assessmentMatrixId);
+    Pillar pillar = getPillar(matrix, pillarId);
+    Category category = getCategory(pillar, categoryId);
+
+    Question question = internalCreate(questionTxt, questionType, tenantId, points, matrix, pillar, category, extraDescription);
+    return create(question);
   }
 
   public Optional<Question> createCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
-    Question question = internalCreateCustomQuestion(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, assessmentMatrixId, pillarId, categoryId, extraDescription);
-    return createQuestion(question);
+    validateQuestionOptions(options);
+
+    AssessmentMatrix matrix = getAssessmentMatrixById(assessmentMatrixId);
+    Pillar pillar = getPillar(matrix, pillarId);
+    Category category = getCategory(pillar, categoryId);
+
+    Question question = internalCreateCustom(questionTxt, questionType, tenantId, isMultipleChoice, showFlushed, options, matrix, pillar, category, extraDescription);
+    return create(question);
   }
 
   public Optional<Question> update(String id, String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
@@ -116,22 +126,14 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
     return questionRepository.existsByCategoryId(matrixId, categoryId, tenantId);
   }
 
-  private Optional<Question> createQuestion(Question question) {
-    Optional<Question> savedQuestion = super.create(question);
-    postCreate(savedQuestion);
-    return savedQuestion;
+  @Override
+  protected void postCreate(Question question) {
+    assessmentMatrixService.incrementQuestionCount(question.getAssessmentMatrixId());
   }
 
-  private void postCreate(Optional<Question> question) {
-    question.ifPresent(q -> assessmentMatrixService.incrementQuestionCount(q.getAssessmentMatrixId()));
-  }
-
-  private Question internalCreateQuestion(String questionTxt, QuestionType questionType, String tenantId, Double points, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
-    AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-    Pillar pillar = getPillar(assessmentMatrix, pillarId);
-    Category category = getCategory(pillar, categoryId);
+  private Question internalCreate(String questionTxt, QuestionType questionType, String tenantId, Double points, AssessmentMatrix matrix, Pillar pillar, Category category, String extraDescription) {
     return Question.builder()
-                   .assessmentMatrixId(assessmentMatrix.getId())
+                   .assessmentMatrixId(matrix.getId())
                    .pillarId(pillar.getId())
                    .pillarName(pillar.getName())
                    .categoryId(category.getId())
@@ -144,13 +146,9 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
                    .build();
   }
 
-  private Question internalCreateCustomQuestion(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options, String assessmentMatrixId, String pillarId, String categoryId, String extraDescription) {
-    validateQuestionOptions(options);
-    AssessmentMatrix assessmentMatrix = getAssessmentMatrixById(assessmentMatrixId);
-    Pillar pillar = getPillar(assessmentMatrix, pillarId);
-    Category category = getCategory(pillar, categoryId);
+  private Question internalCreateCustom(String questionTxt, QuestionType questionType, String tenantId, boolean isMultipleChoice, boolean showFlushed, @NonNull List<QuestionOption> options, AssessmentMatrix matrix, Pillar pillar, Category category, String extraDescription) {
     return Question.builder()
-                   .assessmentMatrixId(assessmentMatrix.getId())
+                   .assessmentMatrixId(matrix.getId())
                    .pillarId(pillar.getId())
                    .pillarName(pillar.getName())
                    .categoryId(category.getId())
@@ -252,9 +250,7 @@ public class QuestionService extends AbstractCrudService<Question, QuestionRepos
   public void delete(Question question) {
     if (question != null) {
       deleteById(question.getId());
-      if (question.getAssessmentMatrixId() != null) {
-        assessmentMatrixService.decrementQuestionCount(question.getAssessmentMatrixId());
-      }
+      assessmentMatrixService.decrementQuestionCount(question.getAssessmentMatrixId());
     }
   }
 
