@@ -121,4 +121,145 @@ public class EmployeeAssessmentRepository extends AbstractCrudRepository<Employe
       throw new RuntimeException("Failed to query employee assessments by matrix ID: " + assessmentMatrixId, e);
     }
   }
+
+  /**
+   * Check if all employee assessments for a given assessment matrix and tenant are completed.
+   * This is a low-latency, low-cost method that stops as soon as it finds any non-completed assessment.
+   * 
+   * @param assessmentMatrixId The assessment matrix ID
+   * @param tenantId           The tenant ID for additional filtering
+   * @return true if all assessments are completed, false if any are not completed or if no assessments exist
+   */
+  public boolean areAllAssessmentsCompleted(String assessmentMatrixId, String tenantId) {
+    try {
+      DynamoDbIndex<EmployeeAssessment> gsi = getTable().index("assessmentMatrixId-employeeEmail-index");
+
+      QueryConditional queryConditional = QueryConditional.keyEqualTo(
+                                                                      Key.builder()
+                                                                         .partitionValue(assessmentMatrixId)
+                                                                         .build()
+      );
+
+      // Filter for tenant and non-completed assessments
+      Map<String, AttributeValue> expressionValues = new HashMap<>();
+      expressionValues.put(":tenantId", AttributeValue.builder().s(tenantId).build());
+      expressionValues.put(":completedStatus", AttributeValue.builder().s("COMPLETED").build());
+
+      Expression filterExpression = Expression.builder()
+                                              .expression("tenantId = :tenantId AND #status <> :completedStatus")
+                                              .expressionValues(expressionValues)
+                                              .putExpressionName("#status", "status")
+                                              .build();
+
+      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                              .queryConditional(queryConditional)
+                                                              .filterExpression(filterExpression)
+                                                              .limit(1) // Stop as soon as we find one non-completed
+                                                              .build();
+
+      // If we find any non-completed assessment, return false
+      boolean hasNonCompleted = gsi.query(queryRequest)
+                                   .stream()
+                                   .flatMap(page -> page.items().stream())
+                                   .findFirst()
+                                   .isPresent();
+
+      if (hasNonCompleted) {
+        return false;
+      }
+
+      // Now check if there are any assessments at all for this matrix/tenant
+      return hasAnyAssessments(assessmentMatrixId, tenantId);
+
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Failed to check completion status for matrix ID: " + assessmentMatrixId, e);
+    }
+  }
+
+  /**
+   * Check if there are any assessments for the given matrix and tenant.
+   * Used internally to distinguish between "all completed" and "no assessments exist".
+   * 
+   * @param assessmentMatrixId The assessment matrix ID
+   * @param tenantId           The tenant ID
+   * @return true if at least one assessment exists, false otherwise
+   */
+  private boolean hasAnyAssessments(String assessmentMatrixId, String tenantId) {
+    try {
+      DynamoDbIndex<EmployeeAssessment> gsi = getTable().index("assessmentMatrixId-employeeEmail-index");
+
+      QueryConditional queryConditional = QueryConditional.keyEqualTo(
+                                                                      Key.builder()
+                                                                         .partitionValue(assessmentMatrixId)
+                                                                         .build()
+      );
+
+      Map<String, AttributeValue> expressionValues = new HashMap<>();
+      expressionValues.put(":tenantId", AttributeValue.builder().s(tenantId).build());
+
+      Expression filterExpression = Expression.builder()
+                                              .expression("tenantId = :tenantId")
+                                              .expressionValues(expressionValues)
+                                              .build();
+
+      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                              .queryConditional(queryConditional)
+                                                              .filterExpression(filterExpression)
+                                                              .limit(1)
+                                                              .build();
+
+      return gsi.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .isPresent();
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Failed to check if assessments exist for matrix ID: " + assessmentMatrixId, e);
+    }
+  }
+
+  /**
+   * Count the number of non-completed assessments for a given matrix and tenant.
+   * This method can be used for progress tracking and dashboard metrics.
+   * 
+   * @param assessmentMatrixId The assessment matrix ID
+   * @param tenantId           The tenant ID
+   * @return count of non-completed assessments
+   */
+  public long countNonCompletedAssessments(String assessmentMatrixId, String tenantId) {
+    try {
+      DynamoDbIndex<EmployeeAssessment> gsi = getTable().index("assessmentMatrixId-employeeEmail-index");
+
+      QueryConditional queryConditional = QueryConditional.keyEqualTo(
+                                                                      Key.builder()
+                                                                         .partitionValue(assessmentMatrixId)
+                                                                         .build()
+      );
+
+      Map<String, AttributeValue> expressionValues = new HashMap<>();
+      expressionValues.put(":tenantId", AttributeValue.builder().s(tenantId).build());
+      expressionValues.put(":completedStatus", AttributeValue.builder().s("COMPLETED").build());
+
+      Expression filterExpression = Expression.builder()
+                                              .expression("tenantId = :tenantId AND #status <> :completedStatus")
+                                              .expressionValues(expressionValues)
+                                              .putExpressionName("#status", "status")
+                                              .build();
+
+      QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                                                              .queryConditional(queryConditional)
+                                                              .filterExpression(filterExpression)
+                                                              .build();
+
+      return gsi.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .count();
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Failed to count non-completed assessments for matrix ID: " + assessmentMatrixId, e);
+    }
+  }
 }

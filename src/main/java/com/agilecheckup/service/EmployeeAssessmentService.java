@@ -137,13 +137,8 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
   private boolean advanceAssessmentProgress(EmployeeAssessment employeeAssessment) {
     AssessmentStatus nextStatus = getNextAssessmentStatus(employeeAssessment);
     if (employeeAssessment.getAssessmentStatus().equals(nextStatus)) return false;
-    if (nextStatus == AssessmentStatus.COMPLETED) {
-      finalizeAssessment(employeeAssessment);
-    }
-    else {
-      employeeAssessment.setAssessmentStatus(nextStatus);
-      employeeAssessment.setLastActivityDate(new Date());
-    }
+    employeeAssessment.setAssessmentStatus(nextStatus);
+    employeeAssessment.setLastActivityDate(new Date());
     return true;
   }
 
@@ -461,8 +456,6 @@ public class EmployeeAssessmentService extends AbstractCrudService<EmployeeAsses
     if (employeeAssessment.isNotCompleted()) {
       employeeAssessment.setAssessmentStatus(AssessmentStatus.COMPLETED);
       employeeAssessment.setLastActivityDate(new Date());
-//      this.save(employeeAssessment);
-//      this.updateEmployeeAssessmentScore(employeeAssessment);
     }
   }
 
